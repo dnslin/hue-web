@@ -9,9 +9,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import useAuthStore from "@/lib/store/authStore";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
 // 注册表单验证模式
 const registerSchema = z
@@ -26,11 +26,11 @@ const registerSchema = z
       .string()
       .min(6, "密码至少需要6个字符")
       .max(100, "密码不能超过100个字符"),
-    confirmPassword: z.string().min(1, "请确认密码"),
+    confirm_password: z.string().min(1, "请确认密码"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "两次输入的密码不匹配",
-    path: ["confirmPassword"],
+  .refine((data) => data.password === data.confirm_password, {
+    message: "两次输入的密码不一致",
+    path: ["confirm_password"],
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -45,14 +45,6 @@ export default function RegisterPage() {
     clearError,
   } = useAuthStore();
 
-  // 如果已登录，重定向到首页
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/images");
-    }
-  }, [isAuthenticated, router]);
-
-  // 设置表单
   const {
     register,
     handleSubmit,
@@ -61,132 +53,116 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  // 提交表单
-  const onSubmit = async (data: RegisterFormValues) => {
-    clearError();
-    const success = await registerUser(
-      data.username,
-      data.email,
-      data.password
-    );
-    if (success) {
-      // 注册成功，跳转到登录页
-      router.push("/login?registered=true");
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/");
     }
+  }, [isAuthenticated, router]);
+
+  const onSubmit = async (data: RegisterFormValues) => {
+    await registerUser(data.username, data.email, data.password);
   };
 
   return (
-    <AuthLayout title="注册账号" subtitle="创建您的兰空图床账号">
-      <div className="space-y-6">
-        {/* 错误提示 */}
+    <AuthLayout title="注册">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+            className="rounded-md bg-destructive/15 p-3 text-sm text-destructive"
           >
-            {error}
+            <p>{error}</p>
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <label
-              htmlFor="username"
-              className="text-sm font-medium text-foreground"
-            >
-              用户名
-            </label>
-            <Input
-              id="username"
-              type="text"
-              placeholder="请输入用户名"
-              className={errors.username ? "border-destructive" : ""}
-              {...register("username")}
-            />
-            {errors.username && (
-              <p className="text-xs text-destructive">
-                {errors.username.message}
-              </p>
-            )}
-          </div>
+        <div className="space-y-2">
+          <Input
+            id="username"
+            type="text"
+            placeholder="用户名"
+            {...register("username")}
+            autoComplete="username"
+            className={errors.username ? "border-destructive" : ""}
+            onChange={() => error && clearError()}
+          />
+          {errors.username && (
+            <p className="text-xs text-destructive">
+              {errors.username.message}
+            </p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-foreground"
-            >
-              邮箱
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="请输入邮箱"
-              className={errors.email ? "border-destructive" : ""}
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
-          </div>
+        <div className="space-y-2">
+          <Input
+            id="email"
+            type="email"
+            placeholder="邮箱"
+            {...register("email")}
+            autoComplete="email"
+            className={errors.email ? "border-destructive" : ""}
+            onChange={() => error && clearError()}
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-foreground"
-            >
-              密码
-            </label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="请输入密码"
-              className={errors.password ? "border-destructive" : ""}
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-xs text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+        <div className="space-y-2">
+          <Input
+            id="password"
+            type="password"
+            placeholder="密码"
+            {...register("password")}
+            autoComplete="new-password"
+            className={errors.password ? "border-destructive" : ""}
+            onChange={() => error && clearError()}
+          />
+          {errors.password && (
+            <p className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <label
-              htmlFor="confirmPassword"
-              className="text-sm font-medium text-foreground"
-            >
-              确认密码
-            </label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="请再次输入密码"
-              className={errors.confirmPassword ? "border-destructive" : ""}
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-xs text-destructive">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+        <div className="space-y-2">
+          <Input
+            id="confirm_password"
+            type="password"
+            placeholder="确认密码"
+            {...register("confirm_password")}
+            autoComplete="new-password"
+            className={errors.confirm_password ? "border-destructive" : ""}
+            onChange={() => error && clearError()}
+          />
+          {errors.confirm_password && (
+            <p className="text-xs text-destructive">
+              {errors.confirm_password.message}
+            </p>
+          )}
+        </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+        <div className="pt-2">
+          <ShimmerButton
+            type="submit"
+            className="w-full text-white dark:text-white"
+            disabled={isLoading}
+            borderRadius="10px"
+          >
             {isLoading ? "注册中..." : "注册"}
-          </Button>
-        </form>
+          </ShimmerButton>
+        </div>
 
-        <p className="text-center text-sm text-muted-foreground">
-          已经有账号？
+        <div className="text-center text-sm">
+          <span className="text-muted-foreground">已有账号？</span>{" "}
           <Link
             href="/login"
-            className="ml-1 font-medium text-primary hover:underline"
+            className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            登录
+            立即登录
           </Link>
-        </p>
-      </div>
+        </div>
+      </form>
     </AuthLayout>
   );
 }

@@ -9,9 +9,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import useAuthStore from "@/lib/store/authStore";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
 // 登录表单验证模式
 const loginSchema = z.object({
@@ -79,6 +79,8 @@ export default function LoginPage() {
               placeholder="请输入用户名或邮箱"
               className={errors.username_or_email ? "border-destructive" : ""}
               {...register("username_or_email")}
+              autoComplete="username"
+              onChange={() => error && clearError()}
             />
             {errors.username_or_email && (
               <p className="text-xs text-destructive">
@@ -100,6 +102,8 @@ export default function LoginPage() {
               placeholder="请输入密码"
               className={errors.password ? "border-destructive" : ""}
               {...register("password")}
+              autoComplete="current-password"
+              onChange={() => error && clearError()}
             />
             {errors.password && (
               <p className="text-xs text-destructive">
@@ -108,9 +112,16 @@ export default function LoginPage() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "登录中..." : "登录"}
-          </Button>
+          <div className="pt-2">
+            <ShimmerButton
+              type="submit"
+              className="w-full text-white dark:text-white"
+              disabled={isLoading}
+              borderRadius="10px"
+            >
+              {isLoading ? "登录中..." : "登录"}
+            </ShimmerButton>
+          </div>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
