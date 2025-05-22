@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" baseProfile="basic" viewBox="0 0 32 32">
+    <linearGradient id="CPkv5EywtjS5B5RL5itvVa" x1="16" x2="16" y1="5" y2="21.5" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#009cf7"/>
+        <stop offset=".63" stop-color="#00bff8"/>
+        <stop offset="1" stop-color="#00cff9"/>
+    </linearGradient>
+    <path fill="url(#CPkv5EywtjS5B5RL5itvVa)" d="M29,21.5H3V6c0-0.552,0.448-1,1-1h24c0.552,0,1,0.448,1,1V21.5z"/>
+    <circle cx="24" cy="10" r="2" fill="#fff4db"/>
+    <linearGradient id="CPkv5EywtjS5B5RL5itvVb" x1="23.166" x2="21.893" y1="16.818" y2="27.728" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#0096d6"/>
+        <stop offset=".095" stop-color="#0087cb"/>
+        <stop offset=".352" stop-color="#0065af"/>
+        <stop offset=".596" stop-color="#004c9c"/>
+        <stop offset=".818" stop-color="#003d90"/>
+        <stop offset="1" stop-color="#00388c"/>
+    </linearGradient>
+    <path fill="url(#CPkv5EywtjS5B5RL5itvVb)" d="M28,27H16v-8l4.696-2.625	c0.818-0.457,1.806-0.488,2.651-0.083L29,19v7C29,26.552,28.552,27,28,27z"/>
+    <linearGradient id="CPkv5EywtjS5B5RL5itvVc" x1="16" x2="16" y1="14.014" y2="27" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#0096d6"/>
+        <stop offset=".186" stop-color="#0090d2"/>
+        <stop offset=".431" stop-color="#0080c8"/>
+        <stop offset=".708" stop-color="#0065b8"/>
+        <stop offset="1" stop-color="#0040a1"/>
+    </linearGradient>
+    <path fill="url(#CPkv5EywtjS5B5RL5itvVc)" d="M28,27H4c-0.552,0-1-0.448-1-1v-8	l6.15-3.734c0.527-0.32,1.184-0.337,1.726-0.044L29,24v2C29,26.552,28.552,27,28,27z"/>
+    <linearGradient id="CPkv5EywtjS5B5RL5itvVd" x1="16" x2="16" y1="5" y2="27" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-opacity=".05"/>
+        <stop offset="1" stop-opacity=".15"/>
+    </linearGradient>
+    <path fill="url(#CPkv5EywtjS5B5RL5itvVd)" d="M28,5H4C3.448,5,3,5.448,3,6v20	c0,0.552,0.448,1,1,1h24c0.552,0,1-0.448,1-1V6C29,5.448,28.552,5,28,5z M28.75,26c0,0.414-0.336,0.75-0.75,0.75H4	c-0.414,0-0.75-0.336-0.75-0.75V6c0-0.414,0.336-0.75,0.75-0.75h24c0.414,0,0.75,0.336,0.75,0.75V26z"/>
+</svg>
