@@ -85,9 +85,9 @@ export const apiUtils = {
     const status = error.response?.status || 500;
     // 安全地处理响应数据中的消息
     const responseData = error.response?.data as
-      | Record<string, any>
+      | Record<string, unknown>
       | undefined;
-    const message = responseData?.message || "请求失败，请稍后重试";
+    const message = (responseData?.message as string) || "请求失败，请稍后重试";
 
     return {
       code: status,
@@ -103,7 +103,9 @@ export const apiUtils = {
    * @returns Next.js响应对象
    */
   createResponse(
-    data: any,
+    data:
+      | Record<string, unknown>
+      | { error: boolean; message: string; code?: number },
     options?: {
       status?: number;
       setCookie?: {

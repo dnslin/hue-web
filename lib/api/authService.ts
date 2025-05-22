@@ -94,7 +94,7 @@ const authService = {
       // 尝试获取用户信息
       await authService.getCurrentUser();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   },

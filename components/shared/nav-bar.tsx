@@ -10,7 +10,8 @@ import {
   Github,
   LogIn,
   UserPlus,
-  Image,
+  Home,
+  ImageIcon,
   Users,
   BookOpen,
 } from "lucide-react";
@@ -50,8 +51,8 @@ export function NavBar() {
   const navItems = [
     { name: "社区", href: "/community", icon: <Users className="h-4 w-4" /> },
     { name: "文档", href: "/docs", icon: <BookOpen className="h-4 w-4" /> },
-    { name: "首页", href: "/", icon: <Image className="h-4 w-4" /> },
-    { name: "相册", href: "/gallery", icon: <Image className="h-4 w-4" /> },
+    { name: "首页", href: "/", icon: <Home className="h-4 w-4" /> },
+    { name: "相册", href: "/gallery", icon: <ImageIcon className="h-4 w-4" /> },
     {
       name: "GitHub",
       href: "https://github.com/lsky-org/lsky-pro",
