@@ -1,21 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Logo } from "./logo";
 import { ThemeSwitcher } from "./theme-switcher";
-import { Menu, X, Github, LogIn, UserPlus } from "lucide-react";
+import {
+  Menu,
+  X,
+  Github,
+  LogIn,
+  UserPlus,
+  Image,
+  Users,
+  BookOpen,
+  Code,
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ReactNode } from "react";
+
+// 定义导航项类型
+interface NavItemProps {
+  item: {
+    name: string;
+    href: string;
+    icon: ReactNode;
+  };
+  hoveredItem: string | null;
+  setHoveredItem: (name: string | null) => void;
+}
 
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
 
-  // 简化导航项
+  // 监听滚动事件，当页面滚动时改变导航栏样式
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // 更丰富的导航项
   const navItems = [
-    { name: "首页", href: "/" },
-    { name: "文档", href: "/docs" },
+    { name: "首页", href: "/", icon: <Image className="h-4 w-4" /> },
+    { name: "相册", href: "/gallery", icon: <Image className="h-4 w-4" /> },
+    { name: "社区", href: "/community", icon: <Users className="h-4 w-4" /> },
+    { name: "文档", href: "/docs", icon: <BookOpen className="h-4 w-4" /> },
     {
       name: "GitHub",
       href: "https://github.com/lsky-org/lsky-pro",
@@ -24,57 +61,54 @@ export function NavBar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-background/95 backdrop-blur-md shadow-md"
+          : "bg-background/80 backdrop-blur-sm border-b"
+      }`}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex items-center"
           >
             <Logo />
+            <div className="hidden md:flex ml-8 space-x-1 text-sm font-medium">
+              {navItems.slice(0, 2).map((item) => (
+                <NavItem
+                  key={item.name}
+                  item={item}
+                  hoveredItem={hoveredItem}
+                  setHoveredItem={setHoveredItem}
+                />
+              ))}
+            </div>
           </motion.div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 text-sm font-medium">
-            {navItems.map((item) => (
-              <motion.div
+          {/* Desktop Navigation - 中间部分 */}
+          <nav className="hidden md:flex space-x-1 text-sm font-medium">
+            {navItems.slice(2, 4).map((item) => (
+              <NavItem
                 key={item.name}
-                className="relative"
-                onHoverStart={() => setHoveredItem(item.name)}
-                onHoverEnd={() => setHoveredItem(null)}
-              >
-                <Link
-                  href={item.href}
-                  className="text-foreground/80 hover:text-foreground transition-colors flex items-center gap-1"
-                  target={item.href.startsWith("http") ? "_blank" : undefined}
-                  rel={
-                    item.href.startsWith("http")
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
-                >
-                  {item.icon && item.icon}
-                  {item.name}
-                </Link>
-                <AnimatePresence>
-                  {hoveredItem === item.name && (
-                    <motion.div
-                      layoutId="navHover"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                item={item}
+                hoveredItem={hoveredItem}
+                setHoveredItem={setHoveredItem}
+              />
             ))}
           </nav>
 
           {/* Desktop Right Section - 登录注册按钮 */}
           <div className="hidden md:flex items-center space-x-3">
+            <NavItem
+              key={navItems[4].name}
+              item={navItems[4]}
+              hoveredItem={hoveredItem}
+              setHoveredItem={setHoveredItem}
+            />
             <ThemeSwitcher />
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -135,7 +169,7 @@ export function NavBar() {
             transition={{ duration: 0.3 }}
           >
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-              {navItems.map((item) => (
+              {navItems.map((item, index) => (
                 <motion.div
                   key={item.name}
                   initial={{ opacity: 0, x: -10 }}
@@ -143,12 +177,12 @@ export function NavBar() {
                   exit={{ opacity: 0, x: -10 }}
                   transition={{
                     duration: 0.2,
-                    delay: navItems.indexOf(item) * 0.1,
+                    delay: index * 0.1,
                   }}
                 >
                   <Link
                     href={item.href}
-                    className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-accent"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent"
                     onClick={() => setIsOpen(false)}
                     target={item.href.startsWith("http") ? "_blank" : undefined}
                     rel={
@@ -157,8 +191,8 @@ export function NavBar() {
                         : undefined
                     }
                   >
-                    {item.icon && item.icon}
-                    {item.name}
+                    {item.icon}
+                    <span>{item.name}</span>
                   </Link>
                 </motion.div>
               ))}
@@ -214,5 +248,39 @@ export function NavBar() {
         )}
       </AnimatePresence>
     </header>
+  );
+}
+
+// 抽取导航项组件，增强复用性和可维护性
+function NavItem({ item, hoveredItem, setHoveredItem }: NavItemProps) {
+  return (
+    <motion.div
+      className="relative"
+      onHoverStart={() => setHoveredItem(item.name)}
+      onHoverEnd={() => setHoveredItem(null)}
+    >
+      <Link
+        href={item.href}
+        className="px-3 py-2 rounded-md text-foreground/80 hover:text-foreground transition-colors flex items-center gap-1.5"
+        target={item.href.startsWith("http") ? "_blank" : undefined}
+        rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+      >
+        {item.icon}
+        <span>{item.name}</span>
+      </Link>
+      <AnimatePresence>
+        {hoveredItem === item.name && (
+          <motion.div
+            layoutId="navHover"
+            className="absolute inset-0 rounded-md bg-accent/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ zIndex: -1 }}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

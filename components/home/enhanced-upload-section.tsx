@@ -6,36 +6,31 @@ import { Upload, Copy, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 
-// BorderBeam组件实现
-// 简化版的BorderBeam效果，模仿MagicUI的BorderBeam组件
-function BorderBeam({
-  size = 50,
-  duration = 6,
-  colorFrom = "#6366f1",
-  colorTo = "#8b5cf6",
-  reverse = false,
-  className = "",
-}) {
+// 增强版BorderBeam组件实现
+function BorderBeam({ className = "" }) {
   return (
-    <div className={`absolute inset-0 rounded-lg ${className}`}>
+    <div className={`absolute inset-0 rounded-lg overflow-hidden ${className}`}>
+      {/* 边框基础 */}
       <div
-        className="absolute inset-0 overflow-hidden rounded-lg"
+        className="absolute inset-0 rounded-lg"
         style={{
           mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
           maskComposite: "exclude",
           padding: "1px",
+          background: "rgba(99, 102, 241, 0.1)",
         }}
       >
+        {/* 主光束 - 顺时针方向 */}
         <motion.div
           className="absolute"
           style={{
-            width: size,
-            height: size,
-            background: `linear-gradient(to right, ${colorFrom}, ${colorTo})`,
-            filter: "blur(8px)",
+            width: 80,
+            height: 80,
+            background: "linear-gradient(to right, #6366f1, #8b5cf6)",
+            filter: "blur(15px)",
             borderRadius: "50%",
-            left: "-25px",
-            top: "-25px",
+            left: "-40px",
+            top: "-40px",
             offsetPath: "path('M0,0 V100 H100 V0 H0')",
             offsetRotate: "0deg",
           }}
@@ -47,12 +42,73 @@ function BorderBeam({
             offsetDistance: "0%",
           }}
           transition={{
-            duration: duration,
+            duration: 4,
             repeat: Infinity,
             ease: "linear",
-            direction: reverse ? "reverse" : "normal",
           }}
         />
+
+        {/* 第二个光束 - 逆时针方向 */}
+        <motion.div
+          className="absolute"
+          style={{
+            width: 60,
+            height: 60,
+            background: "linear-gradient(to right, #8b5cf6, #ec4899)",
+            filter: "blur(12px)",
+            borderRadius: "50%",
+            right: "-30px",
+            bottom: "-30px",
+            offsetPath: "path('M100,100 H0 V0 H100 V100')",
+            offsetRotate: "0deg",
+          }}
+          animate={{
+            pathLength: 1,
+            offsetDistance: "100%",
+          }}
+          initial={{
+            offsetDistance: "0%",
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+
+        {/* 第三个小型光束 - 更快速 */}
+        <motion.div
+          className="absolute"
+          style={{
+            width: 30,
+            height: 30,
+            background: "linear-gradient(to right, #ec4899, #6366f1)",
+            filter: "blur(8px)",
+            borderRadius: "50%",
+            right: "-15px",
+            top: "-15px",
+            offsetPath: "path('M100,0 V100 H0 V0 H100')",
+            offsetRotate: "0deg",
+          }}
+          animate={{
+            pathLength: 1,
+            offsetDistance: "100%",
+          }}
+          initial={{
+            offsetDistance: "0%",
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+
+        {/* 角落闪光效果 */}
+        <div className="absolute top-0 left-0 w-4 h-4 bg-primary/30 rounded-full blur-md"></div>
+        <div className="absolute top-0 right-0 w-4 h-4 bg-purple-500/30 rounded-full blur-md"></div>
+        <div className="absolute bottom-0 left-0 w-4 h-4 bg-pink-500/30 rounded-full blur-md"></div>
+        <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary/30 rounded-full blur-md"></div>
       </div>
     </div>
   );
@@ -120,8 +176,8 @@ export function EnhancedUploadSection() {
   return (
     <section className="py-12 pb-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-2xl mx-auto overflow-hidden relative">
-          {/* 添加BorderBeam特效 */}
+        <Card className="max-w-2xl mx-auto overflow-hidden relative shadow-lg">
+          {/* 添加增强版BorderBeam特效 */}
           <BorderBeam />
           <CardContent className="p-6 relative z-10">
             {!uploadedImage ? (
