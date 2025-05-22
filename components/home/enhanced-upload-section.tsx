@@ -6,6 +6,7 @@ import { Upload, Copy, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { BorderBeam } from "@/components/magicui/border-beam";
+import Image from "next/image";
 
 export function EnhancedUploadSection() {
   const [isDragging, setIsDragging] = useState(false);
@@ -134,11 +135,15 @@ export function EnhancedUploadSection() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative aspect-video rounded-lg overflow-hidden border">
-                  <img
-                    src={uploadedImage}
-                    alt="已上传图片预览"
-                    className="w-full h-full object-contain"
-                  />
+                  {uploadedImage && (
+                    <Image
+                      src={uploadedImage}
+                      alt="已上传图片预览"
+                      className="object-contain"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">
