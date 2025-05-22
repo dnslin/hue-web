@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Image as ImageIcon, Upload } from "lucide-react";
+import { Image as ImageIcon, Upload } from "lucide-react";
 import { ReactNode } from "react";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import { TypingAnimation } from "@/components/magicui/typing-animation";

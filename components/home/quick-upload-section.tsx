@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Image as ImageIcon, Copy, ExternalLink } from "lucide-react";
+import { Upload, Copy, ExternalLink } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export function QuickUploadSection() {
   const [isDragging, setIsDragging] = useState(false);
@@ -110,11 +111,15 @@ export function QuickUploadSection() {
             ) : (
               <div className="space-y-6">
                 <div className="relative aspect-video rounded-lg overflow-hidden border">
-                  <img
-                    src={uploadedImage}
-                    alt="Uploaded preview"
-                    className="w-full h-full object-contain"
-                  />
+                  {uploadedImage && (
+                    <Image
+                      src={uploadedImage}
+                      alt="Uploaded preview"
+                      className="object-contain"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">

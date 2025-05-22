@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ThemeSwitcher } from "@/components/shared/theme-switcher";
+
 import { Meteors } from "@/components/magicui/meteors";
 
 interface AuthLayoutProps {
