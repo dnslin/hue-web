@@ -4,6 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Image as ImageIcon, Upload } from "lucide-react";
 import { ReactNode } from "react";
+import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
+import { TypingAnimation } from "@/components/magicui/typing-animation";
 
 // 定义动画变体
 const containerVariants = {
@@ -136,20 +138,23 @@ export function MinimalHeroSection() {
             </span>
           </motion.h1>
 
-          <motion.p
-            variants={itemVariants}
-            className="mt-4 text-lg text-muted-foreground max-w-2xl"
-          >
-            专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全
-          </motion.p>
+          <motion.div variants={itemVariants} className="mt-4">
+            <TypingAnimation
+              className="text-lg text-muted-foreground max-w-2xl"
+              delay={800}
+              duration={30}
+              startOnView={true}
+              as="p"
+            >
+              专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全
+            </TypingAnimation>
+          </motion.div>
 
           <motion.div variants={itemVariants} className="mt-10">
-            <Link
-              href="/docs"
-              className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
-            >
-              <span>开始使用</span>
-              <ArrowRight className="h-4 w-4" />
+            <Link href="/docs">
+              <InteractiveHoverButton className="text-sm">
+                开始使用
+              </InteractiveHoverButton>
             </Link>
           </motion.div>
 
