@@ -59,7 +59,7 @@ export default function LoginPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-md bg-red-50 p-3 text-sm text-red-500"
+            className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
           >
             {error}
           </motion.div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <label
               htmlFor="username_or_email"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium text-foreground"
             >
               用户名或邮箱
             </label>
@@ -77,11 +77,11 @@ export default function LoginPage() {
               id="username_or_email"
               type="text"
               placeholder="请输入用户名或邮箱"
-              className={errors.username_or_email ? "border-red-300" : ""}
+              className={errors.username_or_email ? "border-destructive" : ""}
               {...register("username_or_email")}
             />
             {errors.username_or_email && (
-              <p className="text-xs text-red-500">
+              <p className="text-xs text-destructive">
                 {errors.username_or_email.message}
               </p>
             )}
@@ -90,7 +90,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium text-foreground"
             >
               密码
             </label>
@@ -98,28 +98,26 @@ export default function LoginPage() {
               id="password"
               type="password"
               placeholder="请输入密码"
-              className={errors.password ? "border-red-300" : ""}
+              className={errors.password ? "border-destructive" : ""}
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-xs text-red-500">{errors.password.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "登录中..." : "登录"}
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-muted-foreground">
           还没有账号？
           <Link
             href="/register"
-            className="ml-1 font-medium text-blue-600 hover:text-blue-500"
+            className="ml-1 font-medium text-primary hover:underline"
           >
             注册账号
           </Link>
