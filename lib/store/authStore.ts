@@ -27,7 +27,7 @@ interface AuthState {
  * 认证状态管理
  * 使用Zustand创建全局认证状态
  */
-const useAuthStore = create<AuthState>((set, get) => ({
+const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -46,10 +46,11 @@ const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       set({
         isLoading: false,
-        error: error.response?.data?.message || "登录失败，请检查用户名和密码",
+        error: err.response?.data?.message || "登录失败，请检查用户名和密码",
       });
       return false;
     }
@@ -64,10 +65,11 @@ const useAuthStore = create<AuthState>((set, get) => ({
       await authService.register({ username, email, password });
       set({ isLoading: false });
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       set({
         isLoading: false,
-        error: error.response?.data?.message || "注册失败，请检查表单信息",
+        error: err.response?.data?.message || "注册失败，请检查表单信息",
       });
       return false;
     }
