@@ -32,7 +32,7 @@ export const TopBar: React.FC<TopBarProps> = ({ className }) => {
         className
       )}
     >
-      <div className="flex h-16 items-center justify-between px-4 lg:px-6">
+      <div className="flex min-h-[64px] items-center justify-between px-4 lg:px-6">
         {/* 左侧：移动端菜单按钮 + 面包屑 */}
         <div className="flex items-center gap-4">
           {/* 移动端菜单按钮 */}

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { ShineBorder } from "@/components/magicui/shine-border";
+import Image from "next/image";
 
 interface SidebarProps {
   className?: string;
@@ -81,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         )}
 
         {/* 侧边栏头部 */}
-        <div className="flex items-center justify-between p-4 border-b border-border relative min-h-[73px]">
+        <div className="flex items-center justify-between p-4 border-b border-border relative min-h-[64px]">
           <AnimatePresence mode="wait">
             {!sidebarCollapsed ? (
               <motion.div
@@ -94,9 +95,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
               >
                 <div className="relative">
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold text-sm">
-                      L
-                    </span>
+                    <Image
+                      src="/logo.svg"
+                      alt="Lsky Pro Logo"
+                      width={32}
+                      height={32}
+                    />
                   </div>
                   <ShineBorder
                     className="absolute inset-0 rounded-lg"
@@ -119,9 +123,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 transition={{ duration: 0.2 }}
                 className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto relative"
               >
-                <span className="text-primary-foreground font-bold text-sm">
-                  L
-                </span>
+                <Image
+                  src="/logo.svg"
+                  alt="Lsky Pro Logo"
+                  width={32}
+                  height={32}
+                />
                 <ShineBorder
                   className="absolute inset-0 rounded-lg"
                   shineColor={["#3b82f6", "#8b5cf6"]}
