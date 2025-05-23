@@ -19,7 +19,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   className,
 }) => {
   const pathname = usePathname();
-  const { setCurrentRoute, setBreadcrumbs } = useAdminStore();
+  const { setCurrentRoute, setBreadcrumbs, sidebarCollapsed } = useAdminStore();
 
   // 根据当前路径更新面包屑和路由状态
   useEffect(() => {
@@ -29,17 +29,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   }, [pathname, setCurrentRoute, setBreadcrumbs]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       {/* 侧边栏 */}
       <Sidebar />
 
       {/* 主内容区域 */}
-      <div className="flex flex-col min-h-screen">
+      <div
+        className={cn(
+          "flex flex-col flex-1 min-h-screen transition-all duration-300",
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-70"
+        )}
+        style={{
+          marginLeft: sidebarCollapsed ? "80px" : "280px",
+        }}
+      >
         {/* 顶部工具栏 */}
         <TopBar />
 
         {/* 页面内容 */}
-        <main className={cn("flex-1 overflow-hidden", className)}>
+        <main className={cn("flex-1 overflow-auto", className)}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
