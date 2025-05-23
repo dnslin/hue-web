@@ -96,7 +96,7 @@ const quickActions = [
 
 export default function DashboardPage() {
   return (
-    <div className="relative p-6 space-y-6 overflow-hidden">
+    <div className="relative p-6 space-y-6 overflow-hidden h-full">
       {/* 背景网格动画 */}
       <AnimatedGridPattern
         numSquares={30}

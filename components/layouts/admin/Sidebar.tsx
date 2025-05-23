@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       <motion.aside
         initial={false}
         animate={{
-          width: sidebarCollapsed ? 64 : 240,
+          width: sidebarCollapsed ? (isMobile ? 0 : 64) : 240,
         }}
         transition={{
           duration: 0.3,
@@ -195,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
       {/* 折叠状态下的浮动展开按钮 */}
       <AnimatePresence>
-        {sidebarCollapsed && (
+        {sidebarCollapsed && !isMobile && (
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
