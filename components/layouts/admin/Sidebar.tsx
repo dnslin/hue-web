@@ -94,20 +94,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 className="flex items-center gap-3"
               >
                 <div className="relative">
-                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 flex items-center justify-center">
                     <Image
                       src="/logo.svg"
                       alt="Lsky Pro Logo"
                       width={32}
                       height={32}
+                      className="drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] dark:drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
                     />
                   </div>
-                  <ShineBorder
-                    className="absolute inset-0 rounded-lg"
-                    shineColor={["#3b82f6", "#8b5cf6"]}
-                    duration={3}
-                    borderWidth={1}
-                  />
                 </div>
                 <div>
                   <h1 className="font-semibold text-lg">Lsky Pro</h1>
@@ -121,13 +116,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
-                className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto relative"
+                className="w-8 h-8 flex items-center justify-center mx-auto relative"
               >
                 <Image
                   src="/logo.svg"
                   alt="Lsky Pro Logo"
                   width={32}
                   height={32}
+                  className="drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] dark:drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
                 />
                 <ShineBorder
                   className="absolute inset-0 rounded-lg"
