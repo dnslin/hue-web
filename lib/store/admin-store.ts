@@ -10,7 +10,6 @@ export interface BreadcrumbItem {
 export interface AdminState {
   // 侧边栏状态
   sidebarCollapsed: boolean;
-  sidebarHovered: boolean;
 
   // 导航状态
   currentRoute: string;
@@ -23,7 +22,6 @@ export interface AdminState {
   // 操作方法
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
-  setSidebarHovered: (hovered: boolean) => void;
   setCurrentRoute: (route: string) => void;
   setBreadcrumbs: (breadcrumbs: BreadcrumbItem[]) => void;
   toggleRightPanel: () => void;
@@ -35,7 +33,6 @@ export const useAdminStore = create<AdminState>()(
     (set) => ({
       // 初始状态
       sidebarCollapsed: false,
-      sidebarHovered: false,
       currentRoute: "/admin/dashboard",
       breadcrumbs: [
         { label: "控制台", href: "/admin/dashboard", icon: "dashboard" },
@@ -52,11 +49,6 @@ export const useAdminStore = create<AdminState>()(
       setSidebarCollapsed: (collapsed: boolean) =>
         set({
           sidebarCollapsed: collapsed,
-        }),
-
-      setSidebarHovered: (hovered: boolean) =>
-        set({
-          sidebarHovered: hovered,
         }),
 
       // 导航操作

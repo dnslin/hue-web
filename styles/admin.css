@@ -1,16 +1,24 @@
 /* 管理界面专用样式 */
 
+/* 侧边栏尺寸变量 */
+:root {
+  --admin-sidebar-width-expanded: 240px;
+  --admin-sidebar-width-collapsed: 64px;
+  --admin-sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* 侧边栏动画和过渡效果 */
 .admin-sidebar {
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width var(--admin-sidebar-transition);
+  will-change: transform;
 }
 
 .admin-sidebar-collapsed {
-  width: 80px;
+  width: var(--admin-sidebar-width-collapsed);
 }
 
 .admin-sidebar-expanded {
-  width: 280px;
+  width: var(--admin-sidebar-width-expanded);
 }
 
 /* 导航项悬停效果 */
@@ -74,14 +82,15 @@
 }
 
 /* 响应式布局 */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .admin-sidebar {
-    position: fixed;
+    position: fixed !important;
     z-index: 50;
+    width: var(--admin-sidebar-width-expanded) !important;
   }
 
   .admin-main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
 }
 
@@ -90,6 +99,22 @@
     position: relative;
     z-index: auto;
   }
+}
+
+/* 高度确保样式 */
+.admin-layout-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.admin-sidebar-container {
+  height: 100vh;
+}
+
+.admin-main-content {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 滚动条样式 */
@@ -158,4 +183,112 @@
 .admin-button:active::after {
   width: 300px;
   height: 300px;
+}
+
+/* 性能优化 */
+.admin-sidebar,
+.admin-main-content {
+  will-change: transform;
+}
+
+/* 移动端专用样式 */
+@media (max-width: 767px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* 移动端底部导航栏样式 */
+  .admin-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--admin-sidebar-bg);
+    border-top: 1px solid var(--admin-sidebar-border);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 16px;
+  }
+
+  .admin-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .admin-bottom-nav-item.active {
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+  }
+
+  .admin-bottom-nav-item:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .admin-bottom-nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .admin-bottom-nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  /* 为移动端主内容区域添加底部间距 */
+  .admin-main-content-mobile {
+    padding-bottom: 80px;
+  }
+}
+
+/* Tooltip样式优化 */
+.admin-tooltip {
+  background: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--popover-foreground));
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 浮动按钮样式优化 */
+.admin-floating-button {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-floating-button:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }

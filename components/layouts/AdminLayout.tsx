@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { useAdminStore } from "@/lib/store/admin-store";
 import { generateBreadcrumbs } from "@/lib/constants/admin-navigation";
 import { Sidebar } from "./admin/Sidebar";
 import { TopBar } from "./admin/TopBar";
+import { MobileBottomNav } from "./admin/MobileBottomNav";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const pathname = usePathname();
   const { setCurrentRoute, setBreadcrumbs, sidebarCollapsed } = useAdminStore();
+  const [isMobile, setIsMobile] = useState(false);
 
   // 根据当前路径更新面包屑和路由状态
   useEffect(() => {
@@ -28,26 +30,40 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     setBreadcrumbs(breadcrumbs);
   }, [pathname, setCurrentRoute, setBreadcrumbs]);
 
+  // 检测移动端设备
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       {/* 侧边栏 */}
       <Sidebar />
 
       {/* 主内容区域 */}
       <div
         className={cn(
-          "flex flex-col flex-1 min-h-screen transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-70"
+          "flex flex-col flex-1 h-screen transition-all duration-300 ease-in-out",
+          sidebarCollapsed ? "lg:ml-16" : "lg:ml-60"
         )}
-        style={{
-          marginLeft: sidebarCollapsed ? "80px" : "280px",
-        }}
       >
         {/* 顶部工具栏 */}
         <TopBar />
 
         {/* 页面内容 */}
-        <main className={cn("flex-1 overflow-auto", className)}>
+        <main
+          className={cn(
+            "flex-1 overflow-auto bg-background",
+            isMobile && "admin-main-content-mobile",
+            className
+          )}
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -58,6 +74,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </motion.div>
         </main>
       </div>
+
+      {/* 移动端底部导航栏 */}
+      {isMobile && <MobileBottomNav />}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,18 +16,17 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
-  const {
-    sidebarCollapsed,
-    sidebarHovered,
-    toggleSidebar,
-    setSidebarHovered,
-    setSidebarCollapsed,
-  } = useAdminStore();
+  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
+    useAdminStore();
+
+  const [isMobile, setIsMobile] = useState(false);
 
   // 响应式处理：在小屏幕上自动折叠
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) {
         setSidebarCollapsed(true);
       }
     };
@@ -37,13 +36,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, [setSidebarCollapsed]);
 
-  const isExpanded = !sidebarCollapsed || sidebarHovered;
-
   return (
     <>
       {/* 移动端遮罩 */}
       <AnimatePresence>
-        {isExpanded && sidebarCollapsed && (
+        {!sidebarCollapsed && isMobile && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -58,23 +55,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       <motion.aside
         initial={false}
         animate={{
-          width: isExpanded ? 280 : 80,
+          width: sidebarCollapsed ? 64 : 240,
         }}
         transition={{
           duration: 0.3,
           ease: [0.4, 0, 0.2, 1],
         }}
         className={cn(
-          "fixed left-0 top-0 z-50 h-full bg-background border-r border-border",
-          "flex flex-col overflow-hidden relative",
+          "fixed left-0 top-0 z-50 h-screen bg-background border-r border-border",
+          "flex flex-col overflow-hidden",
           "lg:relative lg:z-auto",
+          "will-change-transform",
           className
         )}
-        onMouseEnter={() => setSidebarHovered(true)}
-        onMouseLeave={() => setSidebarHovered(false)}
       >
         {/* 边框动画效果 */}
-        {isExpanded && (
+        {!sidebarCollapsed && (
           <BorderBeam
             size={60}
             duration={12}
@@ -85,9 +81,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         )}
 
         {/* 侧边栏头部 */}
-        <div className="flex items-center justify-between p-4 border-b border-border relative">
+        <div className="flex items-center justify-between p-4 border-b border-border relative min-h-[73px]">
           <AnimatePresence mode="wait">
-            {isExpanded ? (
+            {!sidebarCollapsed ? (
               <motion.div
                 key="expanded"
                 initial={{ opacity: 0, x: -20 }}
@@ -136,9 +132,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             )}
           </AnimatePresence>
 
-          {/* 折叠按钮 */}
+          {/* 展开状态下的折叠按钮 */}
           <AnimatePresence>
-            {isExpanded && (
+            {!sidebarCollapsed && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -149,13 +145,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                   variant="ghost"
                   size="sm"
                   onClick={toggleSidebar}
-                  className="h-8 w-8 p-0 hover:bg-accent/50"
+                  className="h-8 w-8 p-0 hover:bg-accent/50 transition-colors"
+                  aria-label="收起侧边栏"
                 >
-                  {sidebarCollapsed ? (
-                    <PanelLeftOpen className="h-4 w-4" />
-                  ) : (
-                    <PanelLeftClose className="h-4 w-4" />
-                  )}
+                  <PanelLeftClose className="h-4 w-4" />
                 </Button>
               </motion.div>
             )}
@@ -172,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         {/* 侧边栏底部 */}
         <div className="p-4 border-t border-border">
           <AnimatePresence mode="wait">
-            {isExpanded ? (
+            {!sidebarCollapsed ? (
               <motion.div
                 key="expanded-footer"
                 initial={{ opacity: 0, y: 20 }}
@@ -198,33 +191,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             )}
           </AnimatePresence>
         </div>
-
-        {/* 折叠状态下的展开提示 */}
-        {sidebarCollapsed && !sidebarHovered && (
-          <div className="absolute right-0 top-1/2 transform translate-x-full -translate-y-1/2">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-popover border border-border rounded-r-lg p-2 shadow-lg"
-            >
-              <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />
-            </motion.div>
-          </div>
-        )}
       </motion.aside>
 
-      {/* 占位符，防止内容被侧边栏遮挡 */}
-      <motion.div
-        initial={false}
-        animate={{
-          width: isExpanded ? 280 : 80,
-        }}
-        transition={{
-          duration: 0.3,
-          ease: [0.4, 0, 0.2, 1],
-        }}
-        className="hidden lg:block flex-shrink-0"
-      />
+      {/* 折叠状态下的浮动展开按钮 */}
+      <AnimatePresence>
+        {sidebarCollapsed && (
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed left-16 top-6 z-[60] lg:left-16"
+            style={{ left: sidebarCollapsed ? "68px" : "244px" }}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleSidebar}
+              className="h-8 w-8 p-0 bg-background border border-border rounded-full shadow-lg hover:bg-accent/50 hover:shadow-xl transition-all duration-200"
+              aria-label="展开侧边栏"
+            >
+              <PanelLeftOpen className="h-3.5 w-3.5" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -13,6 +13,12 @@ import {
   type NavigationGroup,
 } from "@/lib/constants/admin-navigation";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface NavigationItemProps {
   item: NavigationItem;
@@ -111,7 +117,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
     </div>
   );
 
-  return (
+  const navigationElement = (
     <div className="relative">
       {hasChildren ? (
         <button
@@ -154,6 +160,23 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
       )}
     </div>
   );
+
+  // 在折叠状态下为顶级导航项添加Tooltip
+  if (isCollapsed && level === 0) {
+    return (
+      <Tooltip delayDuration={500}>
+        <TooltipTrigger asChild>{navigationElement}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8} align="center">
+          <p className="font-medium">{item.label}</p>
+          {item.badge && (
+            <p className="text-xs text-muted-foreground mt-1">{item.badge}</p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return navigationElement;
 };
 
 interface NavigationGroupProps {
@@ -198,14 +221,16 @@ export const AdminNavigation: React.FC<AdminNavigationProps> = ({
   const { sidebarCollapsed } = useAdminStore();
 
   return (
-    <nav className={cn("space-y-6", className)}>
-      {adminNavigation.map((group) => (
-        <NavigationGroupComponent
-          key={group.id}
-          group={group}
-          isCollapsed={sidebarCollapsed}
-        />
-      ))}
-    </nav>
+    <TooltipProvider>
+      <nav className={cn("space-y-6", className)}>
+        {adminNavigation.map((group) => (
+          <NavigationGroupComponent
+            key={group.id}
+            group={group}
+            isCollapsed={sidebarCollapsed}
+          />
+        ))}
+      </nav>
+    </TooltipProvider>
   );
 };
