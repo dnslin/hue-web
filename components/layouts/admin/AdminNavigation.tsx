@@ -55,6 +55,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
         "group relative overflow-hidden",
         level > 0 && "ml-6 pl-6 border-l border-border/50",
+        isCollapsed && level === 0 && "justify-center px-0",
         isActive && "bg-primary text-primary-foreground shadow-sm",
         !isActive && "hover:bg-accent hover:text-accent-foreground",
         isChildActive && !isActive && "bg-accent/50"
@@ -70,7 +71,12 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
       />
 
       {/* 图标 */}
-      <div className="relative z-10 flex-shrink-0">
+      <div
+        className={cn(
+          "relative z-10 flex-shrink-0",
+          isCollapsed && level === 0 && "mx-auto"
+        )}
+      >
         <item.icon
           className={cn(
             "h-5 w-5 transition-colors",
