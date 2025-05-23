@@ -20,7 +20,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   className,
 }) => {
   const pathname = usePathname();
-  const { setCurrentRoute, setBreadcrumbs, sidebarCollapsed } = useAdminStore();
+  const { setCurrentRoute, setBreadcrumbs } = useAdminStore();
   const [isMobile, setIsMobile] = useState(false);
 
   // 根据当前路径更新面包屑和路由状态
