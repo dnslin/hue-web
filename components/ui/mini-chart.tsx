@@ -43,6 +43,7 @@ export const MiniChart: React.FC<MiniChartProps> = ({
   height = 40,
   className,
   animated = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type = "area",
 }) => {
   const [isDark, setIsDark] = useState(false);

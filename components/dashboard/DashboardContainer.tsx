@@ -11,6 +11,7 @@ import { useDashboardData } from "@/lib/dashboard/useDashboardData";
 import { MetricsGrid } from "./MetricsGrid";
 import { ANIMATION_CONFIG } from "@/lib/dashboard/animations";
 import { cn } from "@/lib/utils";
+import { QuickAction } from "@/lib/types/dashboard";
 
 interface DashboardContainerProps {
   children?: React.ReactNode;
@@ -112,7 +113,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
                 <div className="space-y-4 p-6 rounded-lg border bg-card/50 backdrop-blur-sm">
                   <h3 className="text-lg font-semibold">快捷操作</h3>
                   <div className="grid gap-3">
-                    {data.quickActions.map((action: any) => (
+                    {data.quickActions.map((action: QuickAction) => (
                       <motion.div
                         key={action.id}
                         initial={{ opacity: 0, x: -20 }}
