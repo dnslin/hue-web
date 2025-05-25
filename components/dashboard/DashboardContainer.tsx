@@ -5,8 +5,6 @@ import { motion } from "motion/react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-
 import { useDashboardData } from "@/lib/dashboard/useDashboardData";
 import { MetricsGrid } from "./MetricsGrid";
 import { ANIMATION_CONFIG } from "@/lib/dashboard/animations";
@@ -71,14 +69,6 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
   return (
     <div className={cn("relative min-h-full", className)}>
-      {/* 背景网格动画 - 更加微妙 */}
-      <AnimatedGridPattern
-        numSquares={ANIMATION_CONFIG.gridPattern.numSquares}
-        maxOpacity={ANIMATION_CONFIG.gridPattern.maxOpacity}
-        duration={ANIMATION_CONFIG.gridPattern.duration}
-        className="inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-      />
-
       {/* 主要内容区域 */}
       <motion.div
         {...ANIMATION_CONFIG.pageTransition}

@@ -11,14 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 function DashboardSkeleton() {
   return (
     <div className="relative p-6 space-y-6 overflow-hidden h-full">
-      {/* 背景网格动画 */}
-      <AnimatedGridPattern
-        numSquares={30}
-        maxOpacity={0.05}
-        duration={3}
-        className="inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-      />
-
       {/* 页面标题骨架 */}
       <div className="space-y-4 relative z-10">
         <Skeleton className="h-12 w-48" />
