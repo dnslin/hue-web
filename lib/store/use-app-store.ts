@@ -42,15 +42,27 @@ export const useAppStore = create<AppState>((set) => ({
   setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false }),
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
   setTheme: (theme) => {
+    console.log("AppStore setTheme调用:", { theme });
+
     set({ theme });
+
+    // 确保DOM类正确应用
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
         : "light";
       document.documentElement.classList.toggle("dark", systemTheme === "dark");
+      console.log("系统主题应用:", {
+        systemTheme,
+        hasDarkClass: document.documentElement.classList.contains("dark"),
+      });
     } else {
       document.documentElement.classList.toggle("dark", theme === "dark");
+      console.log("主题应用:", {
+        theme,
+        hasDarkClass: document.documentElement.classList.contains("dark"),
+      });
     }
   },
   setIsUploading: (isUploading) => set({ isUploading }),

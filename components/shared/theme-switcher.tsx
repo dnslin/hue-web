@@ -14,27 +14,44 @@ export function ThemeSwitcher() {
   useEffect(() => {
     setMounted(true);
 
-    // 初始化主题
+    // 初始化主题 - 确保DOM类立即应用
     const savedTheme =
       (localStorage.getItem("theme") as "light" | "dark") || "light";
+
+    console.log("ThemeSwitcher初始化:", { savedTheme });
+
+    // 立即应用DOM类
+    document.documentElement.classList.toggle("dark", savedTheme === "dark");
+
+    // 同步到状态管理
     setTheme(savedTheme);
 
-    // 监听系统主题变化
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => {
-      const systemTheme = mediaQuery.matches ? "dark" : "light";
-      document.documentElement.classList.toggle("dark", systemTheme === "dark");
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    console.log("DOM类应用后:", {
+      hasDarkClass: document.documentElement.classList.contains("dark"),
+      theme: savedTheme,
+    });
   }, [setTheme]);
 
   // 切换主题 - 简化为只有light/dark两种模式
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
+
+    console.log("主题切换:", { from: theme, to: newTheme });
+
+    // 立即应用DOM类
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+
+    // 保存到localStorage
     localStorage.setItem("theme", newTheme);
+
+    // 同步到状态管理
+    setTheme(newTheme);
+
+    console.log("主题切换完成:", {
+      hasDarkClass: document.documentElement.classList.contains("dark"),
+      localStorage: localStorage.getItem("theme"),
+      newTheme,
+    });
   };
 
   if (!mounted) {

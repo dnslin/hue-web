@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,37 @@ export const MiniChart: React.FC<MiniChartProps> = ({
   animated = true,
   type = "area",
 }) => {
+  const [isDark, setIsDark] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 生成唯一ID避免SVG渐变冲突
+  const gradientId = React.useMemo(
+    () => `fillGradient-${Math.random().toString(36).substr(2, 9)}`,
+    []
+  );
+
+  // 检测暗色模式 - 使用DOM类检测而非状态依赖
+  useEffect(() => {
+    setIsMounted(true);
+
+    const checkDarkMode = () => {
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkMode);
+    };
+
+    // 初始检测
+    checkDarkMode();
+
+    // 监听类变化
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (!data || data.length === 0) {
     return (
       <div
@@ -38,6 +69,24 @@ export const MiniChart: React.FC<MiniChartProps> = ({
     index,
     value,
   }));
+
+  // 根据主题调整渐变透明度 - 确保最小可见度
+  const gradientStartOpacity = isMounted && isDark ? 0.8 : Math.max(0.4, 0.3);
+  const gradientEndOpacity = isMounted && isDark ? 0.2 : Math.max(0.1, 0.05);
+
+  // 在暗色模式下使用更明亮的颜色
+  const effectiveColor =
+    isMounted && isDark
+      ? color.includes("--chart-1")
+        ? "#8B5CF6" // 紫色
+        : color.includes("--chart-2")
+        ? "#10B981" // 绿色
+        : color.includes("--chart-3")
+        ? "#F59E0B" // 橙色
+        : color.includes("--chart-4")
+        ? "#EF4444" // 红色
+        : color
+      : color;
 
   const chartConfig = {
     value: {
@@ -61,17 +110,25 @@ export const MiniChart: React.FC<MiniChartProps> = ({
           }}
         >
           <defs>
-            <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="5%"
+                stopColor={effectiveColor}
+                stopOpacity={gradientStartOpacity}
+              />
+              <stop
+                offset="95%"
+                stopColor={effectiveColor}
+                stopOpacity={gradientEndOpacity}
+              />
             </linearGradient>
           </defs>
           <Area
             type="monotone"
             dataKey="value"
-            stroke={color}
+            stroke={effectiveColor}
             strokeWidth={2}
-            fill="url(#fillGradient)"
+            fill={`url(#${gradientId})`}
             fillOpacity={1}
             dot={false}
             activeDot={false}
@@ -119,6 +176,37 @@ export const AdvancedMiniChart: React.FC<AdvancedMiniChartProps> = ({
   strokeWidth = 2,
   fillOpacity = 0.3,
 }) => {
+  const [isDark, setIsDark] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 生成唯一ID避免SVG渐变冲突
+  const gradientId = React.useMemo(
+    () => `advancedFillGradient-${Math.random().toString(36).substr(2, 9)}`,
+    []
+  );
+
+  // 检测暗色模式 - 使用DOM类检测而非状态依赖
+  useEffect(() => {
+    setIsMounted(true);
+
+    const checkDarkMode = () => {
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkMode);
+    };
+
+    // 初始检测
+    checkDarkMode();
+
+    // 监听类变化
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (!data || data.length === 0) {
     return (
       <div
@@ -134,6 +222,27 @@ export const AdvancedMiniChart: React.FC<AdvancedMiniChartProps> = ({
     index,
     value,
   }));
+
+  // 根据主题调整渐变透明度 - 确保最小可见度
+  const adjustedFillOpacity =
+    isMounted && isDark
+      ? Math.min(Math.max(fillOpacity * 2, 0.6), 0.8)
+      : Math.max(fillOpacity, 0.3);
+  const gradientEndOpacity = isMounted && isDark ? 0.2 : Math.max(0.1, 0.05);
+
+  // 在暗色模式下使用更明亮的颜色
+  const effectiveColor =
+    isMounted && isDark
+      ? color.includes("--chart-1")
+        ? "#8B5CF6" // 紫色
+        : color.includes("--chart-2")
+        ? "#10B981" // 绿色
+        : color.includes("--chart-3")
+        ? "#F59E0B" // 橙色
+        : color.includes("--chart-4")
+        ? "#EF4444" // 红色
+        : color
+      : color;
 
   const chartConfig = {
     value: {
@@ -157,26 +266,30 @@ export const AdvancedMiniChart: React.FC<AdvancedMiniChartProps> = ({
           }}
         >
           <defs>
-            <linearGradient
-              id={`fillGradient-${color}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop offset="5%" stopColor={color} stopOpacity={fillOpacity} />
-              <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="5%"
+                stopColor={effectiveColor}
+                stopOpacity={adjustedFillOpacity}
+              />
+              <stop
+                offset="95%"
+                stopColor={effectiveColor}
+                stopOpacity={gradientEndOpacity}
+              />
             </linearGradient>
           </defs>
           <Area
             type="monotone"
             dataKey="value"
-            stroke={color}
+            stroke={effectiveColor}
             strokeWidth={strokeWidth}
-            fill={`url(#fillGradient-${color})`}
+            fill={`url(#${gradientId})`}
             fillOpacity={1}
-            dot={showDots ? { fill: color, strokeWidth: 0, r: 2 } : false}
-            activeDot={showDots ? { r: 3, fill: color } : false}
+            dot={
+              showDots ? { fill: effectiveColor, strokeWidth: 0, r: 2 } : false
+            }
+            activeDot={showDots ? { r: 3, fill: effectiveColor } : false}
             isAnimationActive={animated}
             animationDuration={1200}
             animationEasing="ease-in-out"
