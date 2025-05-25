@@ -100,6 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                       alt="Lsky Pro Logo"
                       width={32}
                       height={32}
+                      priority={true}
                       className="drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] dark:drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
                     />
                   </div>
@@ -123,6 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                   alt="Lsky Pro Logo"
                   width={32}
                   height={32}
+                  priority={true}
                   className="drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] dark:drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
                 />
                 <ShineBorder

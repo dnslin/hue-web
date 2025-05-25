@@ -49,37 +49,37 @@ export const MiniChart: React.FC<MiniChartProps> = ({
   return (
     <div className={cn("w-full", className)} style={{ height }}>
       <ChartContainer config={chartConfig} className="h-full w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={chartData}
-            margin={{
-              top: 2,
-              right: 2,
-              left: 2,
-              bottom: 2,
-            }}
-          >
-            <defs>
-              <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={color} stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              strokeWidth={2}
-              fill="url(#fillGradient)"
-              fillOpacity={1}
-              dot={false}
-              activeDot={false}
-              isAnimationActive={animated}
-              animationDuration={1200}
-              animationEasing="ease-in-out"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <AreaChart
+          width={405}
+          height={height}
+          data={chartData}
+          margin={{
+            top: 2,
+            right: 2,
+            left: 2,
+            bottom: 2,
+          }}
+        >
+          <defs>
+            <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={2}
+            fill="url(#fillGradient)"
+            fillOpacity={1}
+            dot={false}
+            activeDot={false}
+            isAnimationActive={animated}
+            animationDuration={1200}
+            animationEasing="ease-in-out"
+          />
+        </AreaChart>
       </ChartContainer>
     </div>
   );
@@ -145,43 +145,43 @@ export const AdvancedMiniChart: React.FC<AdvancedMiniChartProps> = ({
   return (
     <div className={cn("w-full", className)} style={{ height }}>
       <ChartContainer config={chartConfig} className="h-full w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={chartData}
-            margin={{
-              top: 4,
-              right: 4,
-              left: 4,
-              bottom: 4,
-            }}
-          >
-            <defs>
-              <linearGradient
-                id={`fillGradient-${color}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="5%" stopColor={color} stopOpacity={fillOpacity} />
-                <stop offset="95%" stopColor={color} stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              strokeWidth={strokeWidth}
-              fill={`url(#fillGradient-${color})`}
-              fillOpacity={1}
-              dot={showDots ? { fill: color, strokeWidth: 0, r: 2 } : false}
-              activeDot={showDots ? { r: 3, fill: color } : false}
-              isAnimationActive={animated}
-              animationDuration={1200}
-              animationEasing="ease-in-out"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <AreaChart
+          width={405}
+          height={height}
+          data={chartData}
+          margin={{
+            top: 4,
+            right: 4,
+            left: 4,
+            bottom: 4,
+          }}
+        >
+          <defs>
+            <linearGradient
+              id={`fillGradient-${color}`}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
+              <stop offset="5%" stopColor={color} stopOpacity={fillOpacity} />
+              <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill={`url(#fillGradient-${color})`}
+            fillOpacity={1}
+            dot={showDots ? { fill: color, strokeWidth: 0, r: 2 } : false}
+            activeDot={showDots ? { r: 3, fill: color } : false}
+            isAnimationActive={animated}
+            animationDuration={1200}
+            animationEasing="ease-in-out"
+          />
+        </AreaChart>
       </ChartContainer>
     </div>
   );
