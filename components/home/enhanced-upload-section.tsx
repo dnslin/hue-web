@@ -68,7 +68,7 @@ export function EnhancedUploadSection() {
   };
 
   return (
-    <section className="py-12 pb-20">
+    <section className="py-10 pb-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="max-w-2xl mx-auto overflow-hidden relative shadow-lg">
           {/* 第一个BorderBeam - 顺时针方向 */}
