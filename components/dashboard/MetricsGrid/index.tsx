@@ -4,8 +4,8 @@ import React from "react";
 import { motion } from "motion/react";
 import { Users, Images, HardDrive, Activity } from "lucide-react";
 import { MetricCard } from "./MetricCard";
-import { DashboardMetrics } from "../../types/dashboard.types";
-import { containerVariants, itemVariants } from "../../utils/animations";
+import { DashboardMetrics } from "@/lib/types/dashboard";
+import { containerVariants, itemVariants } from "@/lib/dashboard/animations";
 
 interface MetricsGridProps {
   metrics: DashboardMetrics | null;

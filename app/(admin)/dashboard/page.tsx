@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 import { BoxReveal } from "@/components/magicui/box-reveal";
 import { TextAnimate } from "@/components/magicui/text-animate";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { DashboardContainer } from "./components/DashboardContainer";
+import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // 加载状态组件
@@ -70,7 +70,7 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   return (
-    <div className="relative overflow-hidden h-full">
+    <div className="relative overflow-hidden h-screen">
       {/* 背景网格动画 */}
       <AnimatedGridPattern
         numSquares={30}
@@ -79,34 +79,37 @@ export default function DashboardPage() {
         className="inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
       />
 
-      <div className="relative z-10 p-6 space-y-6">
-        {/* 页面标题 */}
-        <div className="space-y-4">
-          <BoxReveal boxColor="#3b82f6" duration={0.5}>
-            <TextAnimate
-              animation="slideUp"
-              by="word"
-              className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text"
-            >
-              控制台
-            </TextAnimate>
-          </BoxReveal>
-          <BoxReveal boxColor="#3b82f6" duration={0.7}>
-            <TextAnimate
-              animation="fadeIn"
-              by="word"
-              delay={0.3}
-              className="text-muted-foreground text-lg"
-            >
-              欢迎回来！这里是您的 Lsky Pro 管理中心。
-            </TextAnimate>
-          </BoxReveal>
-        </div>
+      {/* 主要内容 - 修复滚动问题 */}
+      <div className="relative z-10 h-full overflow-y-auto custom-scrollbar">
+        <div className="p-4 md:p-6 space-y-6 min-h-full">
+          {/* 页面标题 */}
+          <div className="space-y-4">
+            <BoxReveal boxColor="#3b82f6" duration={0.5}>
+              <TextAnimate
+                animation="slideUp"
+                by="word"
+                className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text"
+              >
+                控制台
+              </TextAnimate>
+            </BoxReveal>
+            <BoxReveal boxColor="#3b82f6" duration={0.7}>
+              <TextAnimate
+                animation="fadeIn"
+                by="word"
+                delay={0.3}
+                className="text-muted-foreground text-base md:text-lg"
+              >
+                欢迎回来！这里是您的 Lsky Pro 管理中心。
+              </TextAnimate>
+            </BoxReveal>
+          </div>
 
-        {/* Dashboard 主要内容 */}
-        <Suspense fallback={<DashboardSkeleton />}>
-          <DashboardContainer />
-        </Suspense>
+          {/* Dashboard 主要内容 */}
+          <Suspense fallback={<DashboardSkeleton />}>
+            <DashboardContainer />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

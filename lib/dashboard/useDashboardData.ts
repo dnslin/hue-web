@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
-import { DashboardData, DashboardError } from "../types/dashboard.types";
+import { DashboardData, DashboardError } from "@/lib/types/dashboard";
 
 // 模拟 API 数据 - 实际项目中应该从真实 API 获取
 const mockDashboardData: DashboardData = {

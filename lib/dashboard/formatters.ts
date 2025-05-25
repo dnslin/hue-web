@@ -1,4 +1,4 @@
-import { TrendDirection, SystemStatus } from "../types/dashboard.types";
+import { TrendDirection, SystemStatus } from "@/lib/types/dashboard";
 
 // 数字格式化函数
 export const formatNumber = (value: number): string => {

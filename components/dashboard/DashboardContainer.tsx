@@ -6,9 +6,10 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { useDashboardData } from "../hooks/useDashboardData";
+
+import { useDashboardData } from "@/lib/dashboard/useDashboardData";
 import { MetricsGrid } from "./MetricsGrid";
-import { ANIMATION_CONFIG } from "../utils/animations";
+import { ANIMATION_CONFIG } from "@/lib/dashboard/animations";
 import { cn } from "@/lib/utils";
 
 interface DashboardContainerProps {
@@ -50,7 +51,7 @@ const LoadingState: React.FC = () => (
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="h-32 bg-muted/50 animate-pulse rounded-lg"
+          className="h-40 bg-muted/50 animate-pulse rounded-lg"
         />
       ))}
     </div>
@@ -108,10 +109,10 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
                   <div className="h-64 bg-muted/50 animate-pulse rounded-lg" />
                 }
               >
-                <div className="space-y-4">
+                <div className="space-y-4 p-6 rounded-lg border bg-card/50 backdrop-blur-sm">
                   <h3 className="text-lg font-semibold">快捷操作</h3>
                   <div className="grid gap-3">
-                    {data.quickActions.map((action) => (
+                    {data.quickActions.map((action: any) => (
                       <motion.div
                         key={action.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -142,12 +143,15 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
                   <div className="h-64 bg-muted/50 animate-pulse rounded-lg" />
                 }
               >
-                <div className="space-y-4">
+                <div className="space-y-4 p-6 rounded-lg border bg-card/50 backdrop-blur-sm">
                   <h3 className="text-lg font-semibold">系统状态</h3>
                   <div className="space-y-3">
                     {[
                       { label: "CPU 使用率", value: data.systemStatus.cpu },
-                      { label: "内存使用率", value: data.systemStatus.memory },
+                      {
+                        label: "内存使用率",
+                        value: data.systemStatus.memory,
+                      },
                       { label: "磁盘使用率", value: data.systemStatus.disk },
                     ].map((item, index) => (
                       <motion.div
