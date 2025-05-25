@@ -252,7 +252,7 @@
 
   /* 为移动端主内容区域添加底部间距 */
   .admin-main-content-mobile {
-    padding-bottom: 80px;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
   }
 }
 

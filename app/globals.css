@@ -205,6 +205,15 @@
     -webkit-overflow-scrolling: touch;
   }
   
+  /* 移动端视口高度优化 */
+  .mobile-viewport-height {
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  
+  .mobile-content-height {
+    height: calc(100vh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  
   /* 自定义滚动条 */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

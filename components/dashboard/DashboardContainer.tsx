@@ -72,7 +72,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
       {/* 主要内容区域 */}
       <motion.div
         {...ANIMATION_CONFIG.pageTransition}
-        className="relative z-10 p-6 space-y-6"
+        className="relative z-10 p-6 space-y-6 pb-safe"
       >
         {/* 错误状态 */}
         {error && !loading && (

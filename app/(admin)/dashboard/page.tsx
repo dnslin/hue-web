@@ -73,7 +73,7 @@ export default function DashboardPage() {
 
       {/* 主要内容 - 优化滚动架构 */}
       <div className="relative z-10 h-full overflow-y-auto custom-scrollbar">
-        <div className="p-4 md:p-6 space-y-6 min-h-full">
+        <div className="p-4 md:p-6 space-y-6 min-h-full pb-safe">
           {/* 页面标题 */}
           <div className="space-y-4">
             <BoxReveal boxColor="#3b82f6" duration={0.5}>
