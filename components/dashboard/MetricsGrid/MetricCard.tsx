@@ -67,6 +67,18 @@ const getIconColors = (title: string) => {
   );
 };
 
+// 根据指标标题获取图表颜色 - 使用CSS变量
+const getChartColorByTitle = (title: string): string => {
+  const colorMap: Record<string, string> = {
+    总用户数: "hsl(var(--chart-1))", // 蓝色
+    图片总数: "hsl(var(--chart-2))", // 绿色
+    存储使用: "hsl(var(--chart-3))", // 橙色
+    今日访问: "hsl(var(--chart-4))", // 紫色
+  };
+
+  return colorMap[title] || "hsl(var(--chart-1))"; // 默认使用第一个图表颜色
+};
+
 // 生成模拟图表数据
 const generateChartData = (trend: string): number[] => {
   const baseData = Array.from({ length: 7 }, () => Math.random() * 100);
@@ -114,13 +126,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const iconColors = getIconColors(title);
   const chartData = generateChartData(trend);
 
-  // 获取图表颜色
-  const chartColor =
-    trend === "up"
-      ? "hsl(var(--chart-1))"
-      : trend === "down"
-      ? "hsl(var(--chart-4))"
-      : "hsl(var(--chart-2))";
+  // 根据标题获取对应的图表颜色
+  const chartColor = getChartColorByTitle(title);
+
+  console.log("MetricCard 渲染:", {
+    title,
+    chartColor,
+    trend,
+  });
 
   return (
     <motion.div
@@ -202,7 +215,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               )}
             </div>
 
-            {/* 迷你图表 */}
+            {/* 迷你图表 - 使用指标特定的颜色 */}
             <div className="mt-3">
               <MiniChart
                 data={chartData}
