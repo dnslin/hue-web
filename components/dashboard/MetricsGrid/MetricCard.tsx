@@ -132,7 +132,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       className={cn("group", className)}
     >
       <MagicCard
-        className="rounded-lg"
+        className="rounded-lg h-full"
         gradientSize={200}
         gradientColor="#1a1a1a"
         gradientOpacity={0.8}
