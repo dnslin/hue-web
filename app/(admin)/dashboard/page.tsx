@@ -70,7 +70,7 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   return (
-    <div className="relative overflow-hidden h-screen">
+    <div className="relative overflow-hidden h-full">
       {/* 背景网格动画 */}
       <AnimatedGridPattern
         numSquares={30}
@@ -79,7 +79,7 @@ export default function DashboardPage() {
         className="inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
       />
 
-      {/* 主要内容 - 修复滚动问题 */}
+      {/* 主要内容 - 优化滚动架构 */}
       <div className="relative z-10 h-full overflow-y-auto custom-scrollbar">
         <div className="p-4 md:p-6 space-y-6 min-h-full">
           {/* 页面标题 */}

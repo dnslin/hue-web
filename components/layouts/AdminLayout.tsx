@@ -58,7 +58,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* 页面内容 */}
         <main
           className={cn(
-            "flex-1 overflow-auto bg-background",
+            "flex-1 overflow-hidden bg-background",
             isMobile && "admin-main-content-mobile",
             className
           )}

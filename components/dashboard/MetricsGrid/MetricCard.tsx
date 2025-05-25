@@ -133,9 +133,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     >
       <MagicCard
         className="h-full"
-        gradientSize={150}
-        gradientColor="#262626"
-        gradientOpacity={0.05}
+        gradientSize={200}
+        gradientColor="#1a1a1a"
+        gradientOpacity={0.8}
+        gradientFrom="#9E7AFF"
+        gradientTo="#FE8BBB"
       >
         <Card className="relative overflow-hidden border-0 bg-transparent h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
