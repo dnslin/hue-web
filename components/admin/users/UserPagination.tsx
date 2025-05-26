@@ -1,7 +1,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -10,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 interface UserPaginationProps {
   currentPage: number;
@@ -22,65 +30,39 @@ interface UserPaginationProps {
   isMobile?: boolean;
 }
 
-// 动画变体
+// 轻微的动画变体
 const containerVariants = {
-  hidden: { opacity: 0, y: 10 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.3,
-      staggerChildren: 0.05,
+      duration: 0.2,
+      staggerChildren: 0.03,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 0, y: 4 },
   visible: {
     opacity: 1,
-    scale: 1,
+    y: 0,
     transition: {
-      duration: 0.2,
+      duration: 0.15,
       ease: "easeOut",
     },
   },
 };
 
-const buttonVariants = {
-  idle: { scale: 1, backgroundColor: "transparent" },
-  hover: {
-    scale: 1.05,
-    backgroundColor: "hsl(var(--accent))",
-    transition: { duration: 0.2 },
-  },
-  tap: { scale: 0.95, transition: { duration: 0.1 } },
-  disabled: { scale: 1, opacity: 0.5 },
-};
-
-const activeButtonVariants = {
-  idle: {
-    scale: 1,
-    backgroundColor: "hsl(var(--primary))",
-    color: "hsl(var(--primary-foreground))",
-  },
-  hover: {
-    scale: 1.05,
-    backgroundColor: "hsl(var(--primary))",
-    transition: { duration: 0.2 },
-  },
-  tap: { scale: 0.95, transition: { duration: 0.1 } },
-};
-
-// 数字动画组件
+// 数字动画组件（保留精巧的数字变化效果）
 const AnimatedNumber = ({ number }: { number: number }) => (
   <AnimatePresence mode="wait">
     <motion.span
       key={number}
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.15, ease: "easeInOut" }}
       className="inline-block"
     >
       {number}
@@ -88,50 +70,64 @@ const AnimatedNumber = ({ number }: { number: number }) => (
   </AnimatePresence>
 );
 
-// 分页按钮组件
-const PaginationButton = ({
-  children,
+// 优化的上一页按钮
+const OptimizedPaginationPrevious = ({
   onClick,
-  disabled = false,
-  active = false,
+  disabled,
   className,
 }: {
-  children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
-  active?: boolean;
   className?: string;
 }) => (
-  <motion.button
-    variants={active ? activeButtonVariants : buttonVariants}
-    initial="idle"
-    whileHover={disabled ? "disabled" : "hover"}
-    whileTap={disabled ? "disabled" : "tap"}
-    animate={disabled ? "disabled" : "idle"}
+  <motion.a
+    whileHover={disabled ? {} : { scale: 1.02 }}
+    whileTap={disabled ? {} : { scale: 0.98 }}
     onClick={disabled ? undefined : onClick}
-    disabled={disabled}
+    aria-label="Go to previous page"
     className={cn(
-      "relative flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      active
-        ? "border-primary bg-primary text-primary-foreground shadow-sm"
-        : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
-      disabled && "cursor-not-allowed opacity-50",
+      buttonVariants({
+        variant: "ghost",
+        size: "sm",
+      }),
+      "h-8 px-3 flex items-center gap-1.5",
+      disabled && "pointer-events-none opacity-50 cursor-not-allowed",
       className
     )}
   >
-    {children}
-  </motion.button>
+    <ChevronLeft className="h-4 w-4" />
+    <span className="hidden sm:inline">上一页</span>
+  </motion.a>
 );
 
-// 椭圆指示器组件
-const EllipsisIndicator = () => (
-  <motion.div
-    variants={itemVariants}
-    className="flex h-9 w-9 items-center justify-center"
+// 优化的下一页按钮
+const OptimizedPaginationNext = ({
+  onClick,
+  disabled,
+  className,
+}: {
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+}) => (
+  <motion.a
+    whileHover={disabled ? {} : { scale: 1.02 }}
+    whileTap={disabled ? {} : { scale: 0.98 }}
+    onClick={disabled ? undefined : onClick}
+    aria-label="Go to next page"
+    className={cn(
+      buttonVariants({
+        variant: "ghost",
+        size: "sm",
+      }),
+      "h-8 px-3 flex items-center gap-1.5",
+      disabled && "pointer-events-none opacity-50 cursor-not-allowed",
+      className
+    )}
   >
-    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-  </motion.div>
+    <span className="hidden sm:inline">下一页</span>
+    <ChevronRight className="h-4 w-4" />
+  </motion.a>
 );
 
 export function UserPagination({
@@ -199,13 +195,13 @@ export function UserPagination({
   const pageNumbers = generatePageNumbers();
 
   if (isMobile) {
-    // 移动端精简分页
+    // 移动端简化分页
     return (
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3"
       >
         <motion.div
           variants={itemVariants}
@@ -216,33 +212,29 @@ export function UserPagination({
           <AnimatedNumber number={totalItems} /> 条
         </motion.div>
 
-        <motion.div
-          variants={itemVariants}
-          className="flex items-center justify-center gap-2"
-        >
-          <PaginationButton
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage <= 1 || loading}
-            className="px-3"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </PaginationButton>
-
-          <motion.div
-            className="flex h-9 items-center justify-center rounded-lg border bg-background px-3 text-sm font-medium"
-            variants={itemVariants}
-          >
-            <AnimatedNumber number={currentPage} /> /{" "}
-            <AnimatedNumber number={totalPages} />
-          </motion.div>
-
-          <PaginationButton
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage >= totalPages || loading}
-            className="px-3"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </PaginationButton>
+        <motion.div variants={itemVariants}>
+          <Pagination>
+            <PaginationContent className="gap-1">
+              <PaginationItem>
+                <OptimizedPaginationPrevious
+                  onClick={() => onPageChange(currentPage - 1)}
+                  disabled={currentPage <= 1 || loading}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <span className="flex h-8 items-center justify-center px-3 text-sm font-medium">
+                  <AnimatedNumber number={currentPage} /> /{" "}
+                  <AnimatedNumber number={totalPages} />
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <OptimizedPaginationNext
+                  onClick={() => onPageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages || loading}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </motion.div>
       </motion.div>
     );
@@ -254,7 +246,7 @@ export function UserPagination({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
     >
       <motion.div
         variants={itemVariants}
@@ -272,7 +264,7 @@ export function UserPagination({
               value={pageSize.toString()}
               onValueChange={(value) => onPageSizeChange(parseInt(value))}
             >
-              <SelectTrigger className="w-20 h-8">
+              <SelectTrigger className="w-20 h-7">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -287,49 +279,49 @@ export function UserPagination({
         )}
       </motion.div>
 
-      <motion.div variants={itemVariants} className="flex items-center gap-1">
-        <PaginationButton
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1 || loading}
-          className="px-3"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="hidden sm:inline ml-1">上一页</span>
-        </PaginationButton>
+      <motion.div variants={itemVariants}>
+        <Pagination>
+          <PaginationContent className="gap-1">
+            <PaginationItem>
+              <OptimizedPaginationPrevious
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage <= 1 || loading}
+              />
+            </PaginationItem>
 
-        <AnimatePresence mode="wait">
-          {pageNumbers.map((page, index) => (
-            <motion.div
-              key={`${page}-${index}`}
-              variants={itemVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              layout
-            >
-              {page === "ellipsis" ? (
-                <EllipsisIndicator />
-              ) : (
-                <PaginationButton
-                  onClick={() => onPageChange(page)}
-                  active={page === currentPage}
-                  disabled={loading}
-                >
-                  <AnimatedNumber number={page} />
-                </PaginationButton>
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+            {pageNumbers.map((page, index) => (
+              <PaginationItem key={`${page}-${index}`}>
+                {page === "ellipsis" ? (
+                  <PaginationEllipsis className="h-8 w-8" />
+                ) : (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <PaginationLink
+                      onClick={() => onPageChange(page)}
+                      isActive={page === currentPage}
+                      size="sm"
+                      className={cn(
+                        "h-8 w-8",
+                        loading && "pointer-events-none opacity-50"
+                      )}
+                    >
+                      <AnimatedNumber number={page} />
+                    </PaginationLink>
+                  </motion.div>
+                )}
+              </PaginationItem>
+            ))}
 
-        <PaginationButton
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages || loading}
-          className="px-3"
-        >
-          <span className="hidden sm:inline mr-1">下一页</span>
-          <ChevronRight className="h-4 w-4" />
-        </PaginationButton>
+            <PaginationItem>
+              <OptimizedPaginationNext
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages || loading}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </motion.div>
     </motion.div>
   );
