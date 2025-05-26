@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface UserPaginationProps {
   currentPage: number;
@@ -28,6 +22,118 @@ interface UserPaginationProps {
   isMobile?: boolean;
 }
 
+// 动画变体
+const containerVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut",
+    },
+  },
+};
+
+const buttonVariants = {
+  idle: { scale: 1, backgroundColor: "transparent" },
+  hover: {
+    scale: 1.05,
+    backgroundColor: "hsl(var(--accent))",
+    transition: { duration: 0.2 },
+  },
+  tap: { scale: 0.95, transition: { duration: 0.1 } },
+  disabled: { scale: 1, opacity: 0.5 },
+};
+
+const activeButtonVariants = {
+  idle: {
+    scale: 1,
+    backgroundColor: "hsl(var(--primary))",
+    color: "hsl(var(--primary-foreground))",
+  },
+  hover: {
+    scale: 1.05,
+    backgroundColor: "hsl(var(--primary))",
+    transition: { duration: 0.2 },
+  },
+  tap: { scale: 0.95, transition: { duration: 0.1 } },
+};
+
+// 数字动画组件
+const AnimatedNumber = ({ number }: { number: number }) => (
+  <AnimatePresence mode="wait">
+    <motion.span
+      key={number}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.2, ease: "easeInOut" }}
+      className="inline-block"
+    >
+      {number}
+    </motion.span>
+  </AnimatePresence>
+);
+
+// 分页按钮组件
+const PaginationButton = ({
+  children,
+  onClick,
+  disabled = false,
+  active = false,
+  className,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  active?: boolean;
+  className?: string;
+}) => (
+  <motion.button
+    variants={active ? activeButtonVariants : buttonVariants}
+    initial="idle"
+    whileHover={disabled ? "disabled" : "hover"}
+    whileTap={disabled ? "disabled" : "tap"}
+    animate={disabled ? "disabled" : "idle"}
+    onClick={disabled ? undefined : onClick}
+    disabled={disabled}
+    className={cn(
+      "relative flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      active
+        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+        : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+      disabled && "cursor-not-allowed opacity-50",
+      className
+    )}
+  >
+    {children}
+  </motion.button>
+);
+
+// 椭圆指示器组件
+const EllipsisIndicator = () => (
+  <motion.div
+    variants={itemVariants}
+    className="flex h-9 w-9 items-center justify-center"
+  >
+    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+  </motion.div>
+);
+
 export function UserPagination({
   currentPage,
   totalPages,
@@ -38,8 +144,8 @@ export function UserPagination({
   loading = false,
   isMobile = false,
 }: UserPaginationProps) {
-  // 如果只有一页或没有数据，不显示分页
-  if (totalPages <= 1) {
+  // 如果没有数据，不显示分页
+  if (totalItems === 0) {
     return null;
   }
 
@@ -52,14 +158,11 @@ export function UserPagination({
     const maxVisiblePages = isMobile ? 3 : 5;
 
     if (totalPages <= maxVisiblePages) {
-      // 如果总页数小于等于最大显示页数，显示所有页码
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // 复杂分页逻辑
       if (currentPage <= 3) {
-        // 当前页在前面
         for (let i = 1; i <= Math.min(maxVisiblePages - 1, totalPages); i++) {
           pages.push(i);
         }
@@ -68,7 +171,6 @@ export function UserPagination({
           pages.push(totalPages);
         }
       } else if (currentPage >= totalPages - 2) {
-        // 当前页在后面
         pages.push(1);
         if (totalPages > maxVisiblePages - 1) {
           pages.push("ellipsis");
@@ -81,7 +183,6 @@ export function UserPagination({
           pages.push(i);
         }
       } else {
-        // 当前页在中间
         pages.push(1);
         pages.push("ellipsis");
         for (let i = currentPage - 1; i <= currentPage + 1; i++) {
@@ -98,51 +199,71 @@ export function UserPagination({
   const pageNumbers = generatePageNumbers();
 
   if (isMobile) {
-    // 移动端简化分页
+    // 移动端精简分页
     return (
-      <div className="flex flex-col gap-4">
-        <div className="text-center text-sm text-muted-foreground">
-          第 {startItem}-{endItem} 条，共 {totalItems} 条
-        </div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => onPageChange(currentPage - 1)}
-                className={
-                  currentPage <= 1 || loading
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-            <PaginationItem>
-              <span className="flex h-9 w-auto items-center justify-center px-3 text-sm">
-                {currentPage} / {totalPages}
-              </span>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => onPageChange(currentPage + 1)}
-                className={
-                  currentPage >= totalPages || loading
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col gap-4"
+      >
+        <motion.div
+          variants={itemVariants}
+          className="text-center text-sm text-muted-foreground"
+        >
+          第 <AnimatedNumber number={startItem} />-
+          <AnimatedNumber number={endItem} /> 条，共{" "}
+          <AnimatedNumber number={totalItems} /> 条
+        </motion.div>
+
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center justify-center gap-2"
+        >
+          <PaginationButton
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || loading}
+            className="px-3"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </PaginationButton>
+
+          <motion.div
+            className="flex h-9 items-center justify-center rounded-lg border bg-background px-3 text-sm font-medium"
+            variants={itemVariants}
+          >
+            <AnimatedNumber number={currentPage} /> /{" "}
+            <AnimatedNumber number={totalPages} />
+          </motion.div>
+
+          <PaginationButton
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages || loading}
+            className="px-3"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </PaginationButton>
+        </motion.div>
+      </motion.div>
     );
   }
 
   // PC端完整分页
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <motion.div
+        variants={itemVariants}
+        className="flex items-center gap-4 text-sm text-muted-foreground"
+      >
         <span>
-          显示第 {startItem}-{endItem} 条，共 {totalItems} 条
+          显示第 <AnimatedNumber number={startItem} />-
+          <AnimatedNumber number={endItem} /> 条，共{" "}
+          <AnimatedNumber number={totalItems} /> 条
         </span>
         {onPageSizeChange && (
           <div className="flex items-center gap-2">
@@ -151,7 +272,7 @@ export function UserPagination({
               value={pageSize.toString()}
               onValueChange={(value) => onPageSizeChange(parseInt(value))}
             >
-              <SelectTrigger className="w-20">
+              <SelectTrigger className="w-20 h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -164,53 +285,52 @@ export function UserPagination({
             <span>条</span>
           </div>
         )}
-      </div>
+      </motion.div>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => onPageChange(currentPage - 1)}
-              className={
-                currentPage <= 1 || loading
-                  ? "pointer-events-none opacity-50"
-                  : "cursor-pointer"
-              }
-            />
-          </PaginationItem>
+      <motion.div variants={itemVariants} className="flex items-center gap-1">
+        <PaginationButton
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1 || loading}
+          className="px-3"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span className="hidden sm:inline ml-1">上一页</span>
+        </PaginationButton>
 
+        <AnimatePresence mode="wait">
           {pageNumbers.map((page, index) => (
-            <PaginationItem key={index}>
+            <motion.div
+              key={`${page}-${index}`}
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              layout
+            >
               {page === "ellipsis" ? (
-                <PaginationEllipsis />
+                <EllipsisIndicator />
               ) : (
-                <PaginationLink
+                <PaginationButton
                   onClick={() => onPageChange(page)}
-                  isActive={page === currentPage}
-                  className={
-                    loading
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
+                  active={page === currentPage}
+                  disabled={loading}
                 >
-                  {page}
-                </PaginationLink>
+                  <AnimatedNumber number={page} />
+                </PaginationButton>
               )}
-            </PaginationItem>
+            </motion.div>
           ))}
+        </AnimatePresence>
 
-          <PaginationItem>
-            <PaginationNext
-              onClick={() => onPageChange(currentPage + 1)}
-              className={
-                currentPage >= totalPages || loading
-                  ? "pointer-events-none opacity-50"
-                  : "cursor-pointer"
-              }
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    </div>
+        <PaginationButton
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages || loading}
+          className="px-3"
+        >
+          <span className="hidden sm:inline mr-1">下一页</span>
+          <ChevronRight className="h-4 w-4" />
+        </PaginationButton>
+      </motion.div>
+    </motion.div>
   );
 }

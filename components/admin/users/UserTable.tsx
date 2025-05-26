@@ -217,19 +217,20 @@ export function UserTable({
                       {formatFileSize(user.storage_used)} /{" "}
                       {formatFileSize(user.storage_limit)}
                     </div>
-                    {user.storage_limit && user.storage_used && (
-                      <div className="w-full bg-muted rounded-full h-1.5">
-                        <div
-                          className="bg-primary h-1.5 rounded-full transition-all"
-                          style={{
-                            width: `${Math.min(
-                              (user.storage_used / user.storage_limit) * 100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    )}
+                    {user.storage_limit != null &&
+                      user.storage_used != null && (
+                        <div className="w-full bg-muted rounded-full h-1.5">
+                          <div
+                            className="bg-primary h-1.5 rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(
+                                (user.storage_used / user.storage_limit) * 100,
+                                100
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                      )}
                   </div>
                 </td>
                 <td className="p-4">

@@ -123,7 +123,7 @@ export function UserMobileCard({
           </div>
 
           {/* 存储使用进度条 */}
-          {user.storage_limit && user.storage_used && (
+          {user.storage_limit != null && user.storage_used != null && (
             <div className="space-y-3 p-4 bg-muted/20 rounded-lg">
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span className="font-medium">存储使用率</span>
