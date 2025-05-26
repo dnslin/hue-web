@@ -216,8 +216,8 @@ export function UserList({ initialData, isMobile = false }: UserListProps) {
       </Card>
 
       {/* 分页 */}
-      <Card>
-        <CardContent>
+      <Card className="py-2 mb-1">
+        <CardContent className="px-2">
           <UserPagination
             currentPage={pagination.page}
             totalPages={pagination.total_pages}
