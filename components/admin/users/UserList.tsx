@@ -217,7 +217,7 @@ export function UserList({ initialData, isMobile = false }: UserListProps) {
 
       {/* 分页 */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <UserPagination
             currentPage={pagination.page}
             totalPages={pagination.total_pages}
