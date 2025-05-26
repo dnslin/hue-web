@@ -33,10 +33,8 @@ export const useAdminStore = create<AdminState>()(
     (set) => ({
       // 初始状态
       sidebarCollapsed: false,
-      currentRoute: "/admin/dashboard",
-      breadcrumbs: [
-        { label: "控制台", href: "/admin/dashboard", icon: "dashboard" },
-      ],
+      currentRoute: "/dashboard",
+      breadcrumbs: [{ label: "控制台", href: "/dashboard", icon: "dashboard" }],
       showRightPanel: false,
       rightPanelWidth: 320,
 

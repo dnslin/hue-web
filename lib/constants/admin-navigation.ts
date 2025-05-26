@@ -39,7 +39,7 @@ export const adminNavigation: NavigationGroup[] = [
       {
         id: "dashboard",
         label: "控制台",
-        href: "/admin/dashboard",
+        href: "/dashboard",
         icon: LayoutDashboard,
         description: "系统概览和快捷操作",
       },
@@ -205,13 +205,13 @@ export const generateBreadcrumbs = (path: string) => {
   if (segments[0] === "admin") {
     breadcrumbs.push({
       label: "管理后台",
-      href: "/admin/dashboard",
+      href: "/dashboard",
       icon: "dashboard",
     });
 
     // 查找当前页面
     const currentItem = findNavigationItem(path);
-    if (currentItem && currentItem.href !== "/admin/dashboard") {
+    if (currentItem && currentItem.href !== "/dashboard") {
       breadcrumbs.push({
         label: currentItem.label,
         href: currentItem.href,
