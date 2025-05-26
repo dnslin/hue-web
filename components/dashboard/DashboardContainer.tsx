@@ -109,15 +109,17 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="p-4 rounded-lg border bg-card/50 hover:bg-card/80 transition-colors cursor-pointer"
+                        className="group p-4 rounded-lg border bg-card/50 hover:bg-gradient-to-br hover:from-card/80 hover:to-card/60 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10 hover:ring-1 hover:ring-primary/20 transition-all duration-300 ease-out cursor-pointer will-change-transform"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                            <action.icon className="h-4 w-4" />
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                            <action.icon className="h-4 w-4 group-hover:text-primary-foreground group-hover:scale-105 transition-all duration-300" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-medium">{action.title}</h4>
-                            <p className="text-sm text-muted-foreground">
+                            <h4 className="font-medium group-hover:text-foreground transition-colors duration-300">
+                              {action.title}
+                            </h4>
+                            <p className="text-sm text-muted-foreground group-hover:text-muted-foreground/80 transition-colors duration-300">
                               {action.description}
                             </p>
                           </div>
