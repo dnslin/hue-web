@@ -118,7 +118,6 @@ export async function assignPermissionsToRole(
     throw new Error(`角色不存在: ID ${roleId}`);
   }
 
-  const allPermissions = getMockPermissions();
   const currentPermissionIds = role.permissions.map((p) => p.id);
   const newPermissionIds = [
     ...new Set([...currentPermissionIds, ...permissionIds]),

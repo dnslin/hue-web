@@ -232,8 +232,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                           <DialogHeader>
                             <DialogTitle>删除角色</DialogTitle>
                             <DialogDescription>
-                              确定要删除角色 "{role.name}"
-                              吗？此操作不可撤销，已分配此角色的用户将失去相应权限。
+                              确定要删除角色 {role.name} 吗？
+                              此操作不可撤销，已分配此角色的用户将失去相应权限。
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>

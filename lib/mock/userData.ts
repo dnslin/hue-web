@@ -190,8 +190,8 @@ export function generateMockUserList(
   // 排序
   if (sortBy) {
     filteredUsers.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: Date | number;
+      let bValue: Date | number;
 
       switch (sortBy) {
         case "created_at":

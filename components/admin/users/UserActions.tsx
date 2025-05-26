@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   MoreHorizontal,
   Edit,
-  Trash2,
   Ban,
   CheckCircle,
   Key,
@@ -195,7 +194,7 @@ export function UserActions({
                 <DialogHeader>
                   <DialogTitle>重置密码</DialogTitle>
                   <DialogDescription>
-                    确定要重置用户 "{user.username}"
+                    确定要重置用户 &ldquo;{user.username}&rdquo;
                     的密码吗？系统将生成一个临时密码。
                   </DialogDescription>
                 </DialogHeader>
@@ -229,7 +228,7 @@ export function UserActions({
                 <DialogHeader>
                   <DialogTitle>删除用户</DialogTitle>
                   <DialogDescription>
-                    确定要删除用户 "{user.username}"
+                    确定要删除用户 &ldquo;{user.username}&rdquo;
                     吗？此操作不可撤销，用户的所有数据将被永久删除。
                   </DialogDescription>
                 </DialogHeader>

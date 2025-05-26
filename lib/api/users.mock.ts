@@ -6,6 +6,7 @@ import {
   UpdateUserRequest,
   UserStats,
   UserStatus,
+  UserRole,
 } from "@/lib/types/user";
 import {
   generateMockUserList,
@@ -60,7 +61,7 @@ export async function createUser(userData: CreateUserRequest): Promise<User> {
     nickname: userData.nickname,
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`,
     status: userData.status || UserStatus.ACTIVE,
-    role: userData.role || ("user" as any),
+    role: userData.role || UserRole.USER,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     last_login: undefined,

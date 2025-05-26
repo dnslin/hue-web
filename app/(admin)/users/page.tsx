@@ -1,6 +1,5 @@
 "use client";
 
-import { Metadata } from "next";
 import { useState, useEffect } from "react";
 import { PageContainer } from "@/components/layouts/PageContainer";
 import { UserList } from "@/components/admin/users/UserList";

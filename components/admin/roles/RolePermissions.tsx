@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Role, Permission, PermissionGroup } from "@/lib/types/user";
+import { Role, PermissionGroup } from "@/lib/types/user";
 import {
   getPermissionGroups,
   assignPermissionsToRole,
@@ -187,7 +187,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
               权限管理
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              为角色 "{role.name}" 分配权限
+              为角色 {role.name} 分配权限
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -224,7 +224,6 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
               );
               const allSelected =
                 selectedInGroup.length === groupPermissionIds.length;
-              const someSelected = selectedInGroup.length > 0 && !allSelected;
 
               return (
                 <div key={group.name} className="space-y-3">
