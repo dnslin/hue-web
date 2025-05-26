@@ -66,7 +66,7 @@ export function UserMobileCard({
       <CardContent className="p-3">
         <div className="space-y-3">
           {/* 用户基本信息 - 优化布局 */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
@@ -76,7 +76,7 @@ export function UserMobileCard({
             </Avatar>
             <div className="flex-1 min-w-0 pr-2">
               <div className="space-y-1">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col gap-2">
                   <h3
                     className="font-semibold text-sm leading-tight text-foreground truncate max-w-[300px]"
                     title={user.nickname || user.username}
@@ -85,10 +85,7 @@ export function UserMobileCard({
                   </h3>
                   {getRoleBadge(user.role)}
                 </div>
-                <p
-                  className="text-xs text-muted-foreground truncate max-w-[180px]"
-                  title={user.email}
-                >
+                <p className="text-xs text-muted-foreground" title={user.email}>
                   {user.email}
                 </p>
                 {user.nickname && (
@@ -101,7 +98,7 @@ export function UserMobileCard({
                 )}
               </div>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex flex-col items-end gap-2">
               <UserActions
                 user={user}
                 onUserUpdate={onUserUpdate}
