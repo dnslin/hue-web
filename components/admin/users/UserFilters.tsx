@@ -79,41 +79,61 @@ export function UserFilters({
   };
 
   return (
-    <div
-      className={isMobile ? "space-y-3 mobile-filter-container" : "space-y-4"}
-    >
-      {/* 搜索栏 - 修复图标重叠问题 */}
-      <div
-        className={isMobile ? "flex flex-col gap-2" : "flex items-center gap-4"}
-      >
-        <div
-          className={isMobile ? "relative w-full" : "relative flex-1 max-w-md"}
-        >
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-            <Search className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <Input
-            placeholder="搜索用户名、邮箱..."
-            value={filters.search || ""}
-            onChange={(e) => updateFilters({ search: e.target.value })}
-            className={`${isMobile ? "mobile-form-input h-10" : ""} pl-10 pr-4`}
-          />
+    <div className={isMobile ? "space-y-3 p-4" : "space-y-4"}>
+      {/* 搜索栏和筛选按钮 */}
+      <div className={isMobile ? "space-y-3" : "flex items-center gap-4"}>
+        {/* 搜索框 - 移动端优化 */}
+        <div className={isMobile ? "w-full" : "relative flex-1 max-w-md"}>
+          {isMobile ? (
+            // 移动端：搜索图标在右侧，避免重叠
+            <div className="relative">
+              <Input
+                placeholder="搜索用户名、邮箱..."
+                value={filters.search || ""}
+                onChange={(e) => updateFilters({ search: e.target.value })}
+                className="h-11 pr-10 text-base"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Search className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
+          ) : (
+            // 桌面端：保持原有布局
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <Input
+                placeholder="搜索用户名、邮箱..."
+                value={filters.search || ""}
+                onChange={(e) => updateFilters({ search: e.target.value })}
+                className="pl-10 pr-4"
+              />
+            </div>
+          )}
         </div>
 
-        <div className={isMobile ? "flex gap-2" : "flex gap-2"}>
+        {/* 筛选按钮区域 */}
+        <div
+          className={
+            isMobile ? "flex justify-between items-center" : "flex gap-2"
+          }
+        >
           <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                size={isMobile ? "sm" : "default"}
-                className="gap-2"
+                size={isMobile ? "default" : "default"}
+                className={
+                  isMobile ? "gap-2 h-11 flex-1 max-w-[120px]" : "gap-2"
+                }
               >
                 <Filter className="h-4 w-4" />
                 筛选
                 {hasActiveFilters && (
                   <Badge
                     variant="secondary"
-                    className="ml-1 h-4 w-4 rounded-full p-0 text-xs flex items-center justify-center"
+                    className="ml-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                   >
                     {
                       Object.keys(filters).filter(
@@ -128,7 +148,7 @@ export function UserFilters({
             </PopoverTrigger>
             <PopoverContent
               className={isMobile ? "w-[calc(100vw-2rem)] mx-4" : "w-80"}
-              align="end"
+              align={isMobile ? "center" : "end"}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -161,7 +181,7 @@ export function UserFilters({
                       })
                     }
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                       <SelectValue placeholder="选择状态" />
                     </SelectTrigger>
                     <SelectContent>
@@ -200,7 +220,7 @@ export function UserFilters({
                       updateFilters({ role: (value as UserRole) || undefined })
                     }
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                       <SelectValue placeholder="选择角色" />
                     </SelectTrigger>
                     <SelectContent>
@@ -218,7 +238,11 @@ export function UserFilters({
                     <Calendar className="h-4 w-4" />
                     排序方式
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div
+                    className={
+                      isMobile ? "space-y-2" : "grid grid-cols-2 gap-2"
+                    }
+                  >
                     <Select
                       value={filters.sort_by || ""}
                       onValueChange={(value: string) =>
@@ -228,7 +252,7 @@ export function UserFilters({
                         })
                       }
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                         <SelectValue placeholder="排序字段" />
                       </SelectTrigger>
                       <SelectContent>
@@ -247,7 +271,7 @@ export function UserFilters({
                         })
                       }
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                         <SelectValue placeholder="排序方向" />
                       </SelectTrigger>
                       <SelectContent>
@@ -264,46 +288,77 @@ export function UserFilters({
           {hasActiveFilters && (
             <Button
               variant="ghost"
-              size={isMobile ? "sm" : "sm"}
+              size={isMobile ? "default" : "sm"}
               onClick={clearFilters}
-              className="gap-1 px-2"
+              className={isMobile ? "gap-2 h-11 px-4" : "gap-1 px-2"}
             >
-              <X className="h-3 w-3" />
-              {!isMobile && "清除"}
+              <X className="h-4 w-4" />
+              清除
             </Button>
           )}
         </div>
       </div>
 
-      {/* 活跃筛选标签 */}
+      {/* 活跃筛选标签 - 移动端优化 */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-1.5">
+        <div
+          className={
+            isMobile ? "flex flex-wrap gap-2" : "flex flex-wrap gap-1.5"
+          }
+        >
           {filters.search && (
-            <Badge variant="secondary" className="gap-1 text-xs px-2 py-1">
+            <Badge
+              variant="secondary"
+              className={
+                isMobile
+                  ? "gap-2 text-sm px-3 py-1.5"
+                  : "gap-1 text-xs px-2 py-1"
+              }
+            >
               搜索:{" "}
-              {filters.search.length > 8
-                ? filters.search.slice(0, 8) + "..."
+              {filters.search.length > (isMobile ? 6 : 8)
+                ? filters.search.slice(0, isMobile ? 6 : 8) + "..."
                 : filters.search}
               <X
-                className="h-3 w-3 cursor-pointer hover:bg-muted-foreground/20 rounded-sm"
+                className={`${
+                  isMobile ? "h-4 w-4" : "h-3 w-3"
+                } cursor-pointer hover:bg-muted-foreground/20 rounded-sm`}
                 onClick={() => updateFilters({ search: undefined })}
               />
             </Badge>
           )}
           {filters.status !== undefined && (
-            <Badge variant="secondary" className="gap-1 text-xs px-2 py-1">
+            <Badge
+              variant="secondary"
+              className={
+                isMobile
+                  ? "gap-2 text-sm px-3 py-1.5"
+                  : "gap-1 text-xs px-2 py-1"
+              }
+            >
               状态: {getStatusLabel(filters.status)}
               <X
-                className="h-3 w-3 cursor-pointer hover:bg-muted-foreground/20 rounded-sm"
+                className={`${
+                  isMobile ? "h-4 w-4" : "h-3 w-3"
+                } cursor-pointer hover:bg-muted-foreground/20 rounded-sm`}
                 onClick={() => updateFilters({ status: undefined })}
               />
             </Badge>
           )}
           {filters.role && (
-            <Badge variant="secondary" className="gap-1 text-xs px-2 py-1">
+            <Badge
+              variant="secondary"
+              className={
+                isMobile
+                  ? "gap-2 text-sm px-3 py-1.5"
+                  : "gap-1 text-xs px-2 py-1"
+              }
+            >
               角色: {getRoleLabel(filters.role)}
               <X
-                className="h-3 w-3 cursor-pointer hover:bg-muted-foreground/20 rounded-sm"
+                className={`${
+                  isMobile ? "h-4 w-4" : "h-3 w-3"
+                } cursor-pointer hover:bg-muted-foreground/20 rounded-sm`}
                 onClick={() => updateFilters({ role: undefined })}
               />
             </Badge>
@@ -312,7 +367,11 @@ export function UserFilters({
       )}
 
       {/* 统计信息 */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div
+        className={`flex items-center justify-between ${
+          isMobile ? "text-sm" : "text-xs"
+        } text-muted-foreground`}
+      >
         <div>
           {hasActiveFilters ? (
             <>
