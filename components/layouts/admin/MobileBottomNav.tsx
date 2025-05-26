@@ -36,7 +36,7 @@ const bottomNavItems: BottomNavItem[] = [
   {
     id: "users",
     label: "用户",
-    href: "/admin/users",
+    href: "/users",
     icon: Users,
   },
   {

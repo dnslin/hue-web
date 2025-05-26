@@ -6,14 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserFilters } from "./UserFilters";
 import { UserTable } from "./UserTable";
+import { UserMobileList } from "./UserMobileList";
+import { UserPagination } from "./UserPagination";
 import { User, UserListParams, UserListResponse } from "@/lib/types/user";
 import { getUserList, exportUsers } from "@/lib/api";
 
 interface UserListProps {
   initialData?: UserListResponse;
+  isMobile?: boolean;
 }
 
-export function UserList({ initialData }: UserListProps) {
+export function UserList({ initialData, isMobile = false }: UserListProps) {
   const [users, setUsers] = useState<User[]>(initialData?.data || []);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState<UserListParams>({
@@ -89,6 +92,16 @@ export function UserList({ initialData }: UserListProps) {
     [filters, fetchUsers]
   );
 
+  // 处理每页显示数量变化
+  const handlePageSizeChange = useCallback(
+    (pageSize: number) => {
+      const updatedFilters = { ...filters, limit: pageSize, page: 1 };
+      setFilters(updatedFilters);
+      fetchUsers(updatedFilters);
+    },
+    [filters, fetchUsers]
+  );
+
   // 处理用户更新
   const handleUserUpdate = useCallback((updatedUser: User) => {
     setUsers((prevUsers) =>
@@ -133,21 +146,29 @@ export function UserList({ initialData }: UserListProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6" />
-          <h1 className="text-2xl font-semibold">用户管理</h1>
+          <h1
+            className={
+              isMobile ? "text-xl font-semibold" : "text-2xl font-semibold"
+            }
+          >
+            用户管理
+          </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            导出数据
-          </Button>
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              导出数据
+            </Button>
+          )}
           <Button size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
-            添加用户
+            {isMobile ? "添加" : "添加用户"}
           </Button>
         </div>
       </div>
@@ -159,11 +180,12 @@ export function UserList({ initialData }: UserListProps) {
             onFiltersChange={handleFiltersChange}
             totalCount={pagination.total}
             filteredCount={users.length}
+            isMobile={isMobile}
           />
         </CardContent>
       </Card>
 
-      {/* 用户表格 */}
+      {/* 用户列表 */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -174,85 +196,40 @@ export function UserList({ initialData }: UserListProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <UserTable
-            users={users}
-            loading={loading}
-            onSort={handleSort}
-            onUserUpdate={handleUserUpdate}
-            onUserDelete={handleUserDelete}
-          />
+          {isMobile ? (
+            <UserMobileList
+              users={users}
+              loading={loading}
+              onUserUpdate={handleUserUpdate}
+              onUserDelete={handleUserDelete}
+            />
+          ) : (
+            <UserTable
+              users={users}
+              loading={loading}
+              onSort={handleSort}
+              onUserUpdate={handleUserUpdate}
+              onUserDelete={handleUserDelete}
+            />
+          )}
         </CardContent>
       </Card>
 
       {/* 分页 */}
-      {pagination.total_pages > 1 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                显示第 {(pagination.page - 1) * pagination.limit + 1} -{" "}
-                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
-                条，共 {pagination.total} 条
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                  disabled={pagination.page <= 1 || loading}
-                >
-                  上一页
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from(
-                    { length: Math.min(5, pagination.total_pages) },
-                    (_, i) => {
-                      let pageNum;
-                      if (pagination.total_pages <= 5) {
-                        pageNum = i + 1;
-                      } else if (pagination.page <= 3) {
-                        pageNum = i + 1;
-                      } else if (
-                        pagination.page >=
-                        pagination.total_pages - 2
-                      ) {
-                        pageNum = pagination.total_pages - 4 + i;
-                      } else {
-                        pageNum = pagination.page - 2 + i;
-                      }
-
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={
-                            pageNum === pagination.page ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => handlePageChange(pageNum)}
-                          disabled={loading}
-                          className="w-8 h-8 p-0"
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    }
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={
-                    pagination.page >= pagination.total_pages || loading
-                  }
-                >
-                  下一页
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardContent className="pt-6">
+          <UserPagination
+            currentPage={pagination.page}
+            totalPages={pagination.total_pages}
+            totalItems={pagination.total}
+            pageSize={pagination.limit}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            loading={loading}
+            isMobile={isMobile}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -82,7 +82,7 @@ const mockDashboardData: DashboardData = {
       title: "用户管理",
       description: "管理系统用户",
       icon: Users,
-      href: "/admin/users",
+      href: "/users",
       variant: "default",
     },
     {

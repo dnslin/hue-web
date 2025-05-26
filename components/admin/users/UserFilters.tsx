@@ -23,12 +23,14 @@ interface UserFiltersProps {
   onFiltersChange: (filters: UserListParams) => void;
   totalCount?: number;
   filteredCount?: number;
+  isMobile?: boolean;
 }
 
 export function UserFilters({
   onFiltersChange,
   totalCount = 0,
   filteredCount = 0,
+  isMobile = false,
 }: UserFiltersProps) {
   const [filters, setFilters] = useState<UserListParams>({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -77,22 +79,31 @@ export function UserFilters({
   };
 
   return (
-    <div className="space-y-4">
+    <div
+      className={isMobile ? "space-y-4 mobile-filter-container" : "space-y-4"}
+    >
       {/* 搜索栏 */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div
+        className={isMobile ? "flex flex-col gap-3" : "flex items-center gap-4"}
+      >
+        <div
+          className={isMobile ? "relative w-full" : "relative flex-1 max-w-md"}
+        >
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="搜索用户名、邮箱或昵称..."
             value={filters.search || ""}
             onChange={(e) => updateFilters({ search: e.target.value })}
-            className="pl-10"
+            className={isMobile ? "pl-10 mobile-form-input" : "pl-10"}
           />
         </div>
 
         <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="gap-2">
+            <Button
+              variant="outline"
+              className={isMobile ? "gap-2 mobile-filter-button" : "gap-2"}
+            >
               <Filter className="h-4 w-4" />
               筛选
               {hasActiveFilters && (
@@ -111,7 +122,10 @@ export function UserFilters({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80" align="end">
+          <PopoverContent
+            className={isMobile ? "w-screen mx-4" : "w-80"}
+            align="end"
+          >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">筛选条件</h4>

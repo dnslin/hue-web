@@ -58,7 +58,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* 页面内容 */}
         <main
           className={cn(
-            "flex-1 overflow-hidden bg-background",
+            "flex-1 overflow-y-auto overflow-x-hidden bg-background custom-scrollbar",
             isMobile && "admin-main-content-mobile",
             className
           )}
@@ -67,7 +67,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="h-full"
+            className="min-h-full"
           >
             {children}
           </motion.div>

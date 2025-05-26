@@ -1,16 +1,32 @@
+"use client";
+
 import { Metadata } from "next";
+import { useState, useEffect } from "react";
 import { PageContainer } from "@/components/layouts/PageContainer";
 import { UserList } from "@/components/admin/users/UserList";
 
-export const metadata: Metadata = {
-  title: "用户管理 - Lsky Pro",
-  description: "管理系统用户，包括用户信息、权限设置等功能",
-};
+// export const metadata: Metadata = {
+//   title: "用户管理 - Lsky Pro",
+//   description: "管理系统用户，包括用户信息、权限设置等功能",
+// };
 
 export default function UsersPage() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测移动端设备
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <PageContainer>
-      <UserList />
+      <UserList isMobile={isMobile} />
     </PageContainer>
   );
 }
