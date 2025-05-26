@@ -49,7 +49,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       {/* 主内容区域 */}
       <div
         className={cn(
-          "flex flex-col flex-1 h-screen transition-all duration-300 ease-in-out"
+          "flex flex-col flex-1 h-screen transition-all duration-300 ease-in-out w-full"
         )}
       >
         {/* 顶部工具栏 */}
