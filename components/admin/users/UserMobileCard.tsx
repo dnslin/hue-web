@@ -35,105 +35,120 @@ export function UserMobileCard({
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
       case UserRole.ADMIN:
-        return <Badge variant="destructive">管理员</Badge>;
+        return (
+          <Badge variant="destructive" className="text-xs px-2 py-0.5">
+            管理员
+          </Badge>
+        );
       case UserRole.MODERATOR:
-        return <Badge variant="secondary">版主</Badge>;
+        return (
+          <Badge variant="secondary" className="text-xs px-2 py-0.5">
+            版主
+          </Badge>
+        );
       case UserRole.USER:
-        return <Badge variant="outline">普通用户</Badge>;
+        return (
+          <Badge variant="outline" className="text-xs px-2 py-0.5">
+            普通用户
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">未知</Badge>;
+        return (
+          <Badge variant="outline" className="text-xs px-2 py-0.5">
+            未知
+          </Badge>
+        );
     }
   };
 
   return (
-    <Card className="admin-card mobile-user-card">
-      <CardContent className="p-5">
-        <div className="space-y-5">
-          {/* 用户基本信息 */}
-          <div className="flex items-start gap-4">
-            <Avatar className="h-14 w-14 flex-shrink-0">
+    <Card className="admin-card mobile-user-card border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+      <CardContent className="p-3">
+        <div className="space-y-3">
+          {/* 用户基本信息 - 优化布局 */}
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
               <AvatarImage src={user.avatar} alt={user.username} />
-              <AvatarFallback className="text-base font-medium">
+              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
                 {user.nickname?.charAt(0) ||
                   user.username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-base truncate leading-tight">
+            <div className="flex-1 min-w-0 pr-2">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h3
+                    className="font-semibold text-sm leading-tight text-foreground truncate max-w-[300px]"
+                    title={user.nickname || user.username}
+                  >
                     {user.nickname || user.username}
                   </h3>
-                  <p className="text-sm text-muted-foreground truncate mt-1">
-                    {user.email}
+                  {getRoleBadge(user.role)}
+                </div>
+                <p
+                  className="text-xs text-muted-foreground truncate max-w-[180px]"
+                  title={user.email}
+                >
+                  {user.email}
+                </p>
+                {user.nickname && (
+                  <p
+                    className="text-xs text-muted-foreground/70 truncate max-w-[140px]"
+                    title={`@${user.username}`}
+                  >
+                    @{user.username}
                   </p>
-                  {user.nickname && (
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      @{user.username}
-                    </p>
-                  )}
-                </div>
-                <div className="flex-shrink-0 ml-3">
-                  <UserActions
-                    user={user}
-                    onUserUpdate={onUserUpdate}
-                    onUserDelete={onUserDelete}
-                  />
-                </div>
+                )}
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <UserActions
+                user={user}
+                onUserUpdate={onUserUpdate}
+                onUserDelete={onUserDelete}
+              />
+            </div>
+          </div>
+
+          {/* 简化的详细信息网格 */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="space-y-1 p-2 bg-muted/20 rounded-md border border-border/50">
+              <div className="text-muted-foreground font-medium">注册时间</div>
+              <div className="font-semibold text-foreground text-xs">
+                {formatDate(user.created_at)}
+              </div>
+            </div>
+            <div className="space-y-1 p-2 bg-muted/20 rounded-md border border-border/50">
+              <div className="text-muted-foreground font-medium">最后登录</div>
+              <div className="font-semibold text-foreground text-xs">
+                {user.last_login ? formatDate(user.last_login) : "从未"}
               </div>
             </div>
           </div>
 
-          {/* 角色和状态 */}
-          <div className="flex items-center gap-2">
-            {getRoleBadge(user.role)}
-          </div>
-
-          {/* 详细信息网格 */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-              <div className="text-muted-foreground text-xs font-medium">
-                注册时间
-              </div>
-              <div className="font-semibold">{formatDate(user.created_at)}</div>
-            </div>
-            <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-              <div className="text-muted-foreground text-xs font-medium">
-                最后登录
-              </div>
-              <div className="font-semibold">
-                {user.last_login ? formatDate(user.last_login) : "从未登录"}
-              </div>
-            </div>
-            <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-              <div className="text-muted-foreground text-xs font-medium">
-                上传数量
-              </div>
-              <div className="font-semibold">{user.upload_count || 0}</div>
-            </div>
-            <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-              <div className="text-muted-foreground text-xs font-medium">
-                存储使用
-              </div>
-              <div className="font-semibold">
-                {formatFileSize(user.storage_used)} /{" "}
-                {formatFileSize(user.storage_limit)}
-              </div>
-            </div>
-          </div>
-
-          {/* 存储使用进度条 */}
-          {user.storage_limit != null && user.storage_used != null && (
-            <div className="space-y-3 p-4 bg-muted/20 rounded-lg">
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span className="font-medium">存储使用率</span>
-                <span className="font-semibold">
-                  {Math.round((user.storage_used / user.storage_limit) * 100)}%
+          {/* 存储信息和进度条 */}
+          <div className="space-y-2 p-2 bg-gradient-to-r from-muted/10 to-muted/20 rounded-md border border-border/30">
+            <div className="flex justify-between items-center text-xs">
+              <div className="flex items-center gap-3">
+                <span className="text-muted-foreground font-medium">
+                  上传: {user.upload_count || 0}
+                </span>
+                <span className="text-muted-foreground font-medium">
+                  存储: {formatFileSize(user.storage_used)} /{" "}
+                  {formatFileSize(user.storage_limit)}
                 </span>
               </div>
-              <div className="w-full bg-muted rounded-full h-3">
+              <span className="font-bold text-primary text-xs">
+                {user.storage_limit && user.storage_used
+                  ? Math.round((user.storage_used / user.storage_limit) * 100)
+                  : 0}
+                %
+              </span>
+            </div>
+            {user.storage_limit != null && user.storage_used != null && (
+              <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-primary h-3 rounded-full transition-all duration-300 ease-in-out"
+                  className="bg-gradient-to-r from-primary to-primary/80 h-1.5 rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${Math.min(
                       (user.storage_used / user.storage_limit) * 100,
@@ -142,8 +157,8 @@ export function UserMobileCard({
                   }}
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
