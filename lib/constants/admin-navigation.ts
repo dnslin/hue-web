@@ -23,6 +23,7 @@ export interface NavigationItem {
   children?: NavigationItem[];
   permission?: string;
   description?: string;
+  defaultHref?: string; // 折叠状态下的默认跳转路径
 }
 
 export interface NavigationGroup {
@@ -50,6 +51,7 @@ export const adminNavigation: NavigationGroup[] = [
         icon: Images,
         badge: "new",
         description: "图片上传、分类和管理",
+        defaultHref: "/admin/images/list", // 折叠状态下跳转到图片列表
         children: [
           {
             id: "images-list",
@@ -77,6 +79,7 @@ export const adminNavigation: NavigationGroup[] = [
         href: "/users",
         icon: Users,
         description: "用户账户和权限管理",
+        defaultHref: "/users", // 折叠状态下跳转到用户列表
         children: [
           {
             id: "users-list",
@@ -145,6 +148,7 @@ export const adminNavigation: NavigationGroup[] = [
         href: "/admin/settings",
         icon: Settings,
         description: "基础配置和参数设置",
+        defaultHref: "/admin/settings/general", // 折叠状态下跳转到基础设置
         children: [
           {
             id: "settings-general",

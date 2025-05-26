@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
   level = 0,
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const { setCurrentRoute } = useAdminStore();
 
@@ -40,17 +41,24 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
   const isChildActive =
     hasChildren && item.children?.some((child) => pathname === child.href);
 
-  // 特殊处理：如果是父级菜单且有子菜单，当子菜单激活时父级不应该显示为激活状态
-  const shouldShowAsActive = hasChildren
-    ? isActive && !isChildActive
-    : isActive;
+  // 修正激活状态逻辑：父级菜单在自身或子菜单激活时都应该显示为激活状态
+  const shouldShowAsActive = hasChildren ? isActive || isChildActive : isActive;
 
   const handleClick = () => {
     if (hasChildren) {
-      setIsExpanded(!isExpanded);
+      if (isCollapsed) {
+        // 折叠状态：跳转到默认页面
+        const targetHref =
+          item.defaultHref || item.children?.[0]?.href || item.href;
+        router.push(targetHref);
+        setCurrentRoute(targetHref);
+      } else {
+        // 展开状态：切换子菜单展开状态
+        setIsExpanded(!isExpanded);
+      }
     } else {
+      // 无子菜单：直接跳转
       setCurrentRoute(item.href);
-      // 这里可以添加面包屑生成逻辑
     }
   };
 
@@ -62,8 +70,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
         level > 0 && "ml-6 pl-6 border-l border-border/50",
         isCollapsed && level === 0 && "justify-center px-0",
         shouldShowAsActive && "bg-primary text-primary-foreground shadow-sm",
-        !shouldShowAsActive && "hover:bg-accent hover:text-accent-foreground",
-        isChildActive && !isActive && "bg-accent/50"
+        !shouldShowAsActive && "hover:bg-accent hover:text-accent-foreground"
       )}
     >
       {/* 悬停效果背景 */}
@@ -134,7 +141,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
         <button
           onClick={handleClick}
           className="w-full text-left"
-          aria-expanded={isExpanded}
+          aria-expanded={isCollapsed ? false : isExpanded}
         >
           {itemContent}
         </button>
