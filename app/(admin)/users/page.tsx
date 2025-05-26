@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
+import { PageContainer } from "@/components/layouts/PageContainer";
 import { UserList } from "@/components/admin/users/UserList";
 
 export const metadata: Metadata = {
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function UsersPage() {
   return (
-    <DashboardContainer>
+    <PageContainer>
       <UserList />
-    </DashboardContainer>
+    </PageContainer>
   );
 }

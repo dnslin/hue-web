@@ -27,11 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { User, UserStatus } from "@/lib/types/user";
-import {
-  toggleUserStatus,
-  deleteUser,
-  resetUserPassword,
-} from "@/lib/api/users";
+import { toggleUserStatus, deleteUser, resetUserPassword } from "@/lib/api";
 
 interface UserActionsProps {
   user: User;

@@ -107,7 +107,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 </div>
                 <div>
                   <h1 className="font-semibold text-lg">Lsky Pro</h1>
-                  <p className="text-xs text-muted-foreground">管理后台</p>
                 </div>
               </motion.div>
             ) : (

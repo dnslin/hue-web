@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
+import { PageContainer } from "@/components/layouts/PageContainer";
 import { RoleList } from "@/components/admin/roles/RoleList";
 
 export const metadata: Metadata = {
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function RolesPage() {
   return (
-    <DashboardContainer>
+    <PageContainer>
       <RoleList />
-    </DashboardContainer>
+    </PageContainer>
   );
 }

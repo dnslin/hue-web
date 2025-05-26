@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserFilters } from "./UserFilters";
 import { UserTable } from "./UserTable";
 import { User, UserListParams, UserListResponse } from "@/lib/types/user";
-import { getUserList, exportUsers } from "@/lib/api/users";
+import { getUserList, exportUsers } from "@/lib/api";
 
 interface UserListProps {
   initialData?: UserListResponse;

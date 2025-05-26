@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/popover";
 import { RolePermissions } from "./RolePermissions";
 import { Role } from "@/lib/types/user";
-import { getRoleList, deleteRole, duplicateRole } from "@/lib/api/roles";
+import { getRoleList, deleteRole, duplicateRole } from "@/lib/api";
 
 interface RoleListProps {
   onRoleSelect?: (role: Role) => void;

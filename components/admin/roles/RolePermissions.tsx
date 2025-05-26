@@ -21,7 +21,7 @@ import {
   getPermissionGroups,
   assignPermissionsToRole,
   removePermissionsFromRole,
-} from "@/lib/api/roles";
+} from "@/lib/api";
 
 interface RolePermissionsProps {
   role: Role;

@@ -40,6 +40,11 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
   const isChildActive =
     hasChildren && item.children?.some((child) => pathname === child.href);
 
+  // 特殊处理：如果是父级菜单且有子菜单，当子菜单激活时父级不应该显示为激活状态
+  const shouldShowAsActive = hasChildren
+    ? isActive && !isChildActive
+    : isActive;
+
   const handleClick = () => {
     if (hasChildren) {
       setIsExpanded(!isExpanded);
@@ -56,8 +61,8 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
         "group relative overflow-hidden",
         level > 0 && "ml-6 pl-6 border-l border-border/50",
         isCollapsed && level === 0 && "justify-center px-0",
-        isActive && "bg-primary text-primary-foreground shadow-sm",
-        !isActive && "hover:bg-accent hover:text-accent-foreground",
+        shouldShowAsActive && "bg-primary text-primary-foreground shadow-sm",
+        !shouldShowAsActive && "hover:bg-accent hover:text-accent-foreground",
         isChildActive && !isActive && "bg-accent/50"
       )}
     >
@@ -80,7 +85,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
         <item.icon
           className={cn(
             "h-5 w-5 transition-colors",
-            isActive
+            shouldShowAsActive
               ? "text-primary-foreground"
               : "text-muted-foreground group-hover:text-foreground"
           )}
@@ -93,7 +98,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
           <span
             className={cn(
               "font-medium truncate transition-colors",
-              isActive ? "text-primary-foreground" : "text-foreground"
+              shouldShowAsActive ? "text-primary-foreground" : "text-foreground"
             )}
           >
             {item.label}
@@ -102,7 +107,7 @@ const NavigationItemComponent: React.FC<NavigationItemProps> = ({
           <div className="flex items-center gap-2">
             {item.badge && (
               <Badge
-                variant={isActive ? "secondary" : "outline"}
+                variant={shouldShowAsActive ? "secondary" : "outline"}
                 className="text-xs"
               >
                 {item.badge}
