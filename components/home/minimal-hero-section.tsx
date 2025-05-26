@@ -69,7 +69,7 @@ const FloatingElement = ({
 
 export function MinimalHeroSection() {
   return (
-    <section className="relative overflow-hidden py-20 md:py-28">
+    <section className="relative overflow-hidden py-10 md:py-14">
       {/* 背景效果 - 增强版 */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
 
