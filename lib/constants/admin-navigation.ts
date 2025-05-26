@@ -74,20 +74,20 @@ export const adminNavigation: NavigationGroup[] = [
       {
         id: "users",
         label: "用户管理",
-        href: "/admin/users",
+        href: "/users",
         icon: Users,
         description: "用户账户和权限管理",
         children: [
           {
             id: "users-list",
             label: "用户列表",
-            href: "/admin/users/list",
+            href: "/users",
             icon: Users,
           },
           {
             id: "users-roles",
             label: "角色权限",
-            href: "/admin/users/roles",
+            href: "/users/roles",
             icon: Shield,
           },
         ],
