@@ -41,14 +41,12 @@ interface UserAvatarProps {
   user: UserInfo;
   size?: keyof typeof sizeConfig;
   className?: string;
-  showTooltip?: boolean;
 }
 
 export const UserAvatar: React.FC<UserAvatarProps> = ({
   user,
   size = "md",
   className,
-  showTooltip = false,
 }) => {
   const [avatarSrc, setAvatarSrc] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -114,7 +112,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     }
   };
 
-  const avatarElement = (
+  return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -168,26 +166,4 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       {/* <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full" /> */}
     </motion.div>
   );
-
-  // 如果需要显示 tooltip
-  if (showTooltip) {
-    return (
-      <div className="group relative">
-        {avatarElement}
-        <div
-          className={cn(
-            "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2",
-            "px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg",
-            "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
-            "pointer-events-none whitespace-nowrap z-50"
-          )}
-        >
-          {user.username}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-        </div>
-      </div>
-    );
-  }
-
-  return avatarElement;
 };

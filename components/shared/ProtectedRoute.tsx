@@ -1,56 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import useAuthStore from "@/lib/store/authStore";
+import React from "react";
+import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// 定义保护路由组件的属性
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  redirectTo?: string;
+  requireAuth?: boolean;
+  fallback?: React.ReactNode;
 }
 
 /**
- * 保护路由组件
- * 确保只有已认证的用户才能访问被保护的页面
- * 如果用户未登录，重定向到登录页
+ * 路由保护组件
+ * 用于包装需要认证的页面
  */
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const router = useRouter();
-  const { loadUser } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  redirectTo = "/login",
+  requireAuth = true,
+  fallback,
+}) => {
+  const { isLoading, isAuthorized } = useAuthGuard({
+    redirectTo,
+    requireAuth,
+  });
 
-  // 在组件挂载时检查认证状态
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // 加载用户信息
-        await loadUser();
-        setIsAuthenticated(true);
-      } catch (error) {
-        // 认证失败，重定向到登录页
-        console.error("认证失败:", error);
-        router.push("/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [loadUser, router]);
-
-  // 加载中显示空白
+  // 显示加载状态
   if (isLoading) {
-    return null; // 或者显示加载指示器
+    return (
+      fallback || (
+        <div className="flex flex-col space-y-4 p-6">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[200px]" />
+              <Skeleton className="h-4 w-[160px]" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      )
+    );
   }
 
-  // 未认证不渲染内容
-  if (!isAuthenticated) {
+  // 如果未授权，不渲染任何内容（重定向会在 useAuthGuard 中处理）
+  if (!isAuthorized) {
     return null;
   }
 
-  // 认证成功，渲染子组件
+  // 渲染受保护的内容
   return <>{children}</>;
 };
 
-export default ProtectedRoute;
+/**
+ * 高阶组件版本的路由保护
+ */
+export const withAuthGuard = <P extends object>(
+  Component: React.ComponentType<P>,
+  options?: {
+    redirectTo?: string;
+    requireAuth?: boolean;
+    fallback?: React.ReactNode;
+  }
+) => {
+  const WrappedComponent = (props: P) => {
+    return (
+      <ProtectedRoute {...options}>
+        <Component {...props} />
+      </ProtectedRoute>
+    );
+  };
+
+  WrappedComponent.displayName = `withAuthGuard(${
+    Component.displayName || Component.name
+  })`;
+
+  return WrappedComponent;
+};

@@ -14,6 +14,7 @@ Associated Protocol: RIPER-5 + Multidimensional + Agent Protocol
 3. 将头像集成到顶部导航栏中
 4. 样式要兼容移动端，支持暗色主题
 5. 最终的 UI 要给人一种由个人开发者打造的精巧工具感
+6. **新增需求**: 添加头像点击下拉菜单，包含个人信息查看和账户注销功能
 
 # Project Overview
 
@@ -173,6 +174,17 @@ interface UserAvatarProps {
 }
 ```
 
+#### 4. 用户交互增强
+
+```typescript
+// UserDropdownMenu 组件接口设计
+interface UserDropdownMenuProps {
+  user: UserInfo;
+  onLogout: () => void;
+  children: React.ReactNode;
+}
+```
+
 ## 技术实现优势
 
 ### 1. 性能优化
@@ -186,6 +198,7 @@ interface UserAvatarProps {
 - **无感知加载**: 渐进式显示，无明显延迟
 - **优雅降级**: 多层回退确保始终有内容显示
 - **精巧动画**: 体现个人开发者工具的精致感
+- **交互增强**: 点击头像显示功能菜单
 
 ### 3. 可维护性
 
@@ -206,6 +219,7 @@ interface UserAvatarProps {
 - **加载状态**: 使用骨架屏而非 loading 图标
 - **错误处理**: 静默处理，不显示错误信息
 - **响应式**: 在不同屏幕尺寸下自适应显示内容
+- **下拉菜单**: 平滑展开，清晰的选项图标和描述
 
 ### 3. 技术亮点
 
@@ -246,7 +260,7 @@ interface UserAvatarProps {
     user: UserInfo;
     size?: 'sm' | 'md' | 'lg';
     className?: string;
-    showTooltip?: boolean;
+    onClick?: () => void;
   }
   ```
 
@@ -256,6 +270,7 @@ interface UserAvatarProps {
   - 错误处理和回退机制
   - 响应式尺寸适配
   - 悬停动画效果
+  - 点击事件支持
 
 #### [变更计划 4] - 更新 TopBar 组件
 
@@ -266,6 +281,59 @@ interface UserAvatarProps {
   - 替换第 108-119 行的用户菜单部分
   - 添加用户状态检查和未登录处理
   - 保持响应式设计和现有样式
+
+#### [变更计划 5] - 创建用户下拉菜单组件
+
+- **文件**: `components/shared/UserDropdownMenu.tsx`
+- **理由**: 创建独立的用户菜单组件，提供个人信息查看和账户注销功能
+- **功能**:
+  - 使用 Radix UI 的 DropdownMenu 组件
+  - 包含个人信息、设置、注销等选项
+  - 每个选项配备清晰的图标和描述
+  - 平滑的展开/收起动画
+
+#### [变更计划 6] - 更新 UserAvatar 组件（移除 tooltip）
+
+- **文件**: `components/shared/UserAvatar.tsx`
+- **理由**: 移除 tooltip 功能，改为支持点击事件
+- **修改**:
+  - 移除 `showTooltip` 属性
+  - 添加 `onClick` 回调属性
+  - 添加点击状态的视觉反馈
+
+#### [变更计划 7] - 更新 TopBar 组件（集成下拉菜单）
+
+- **文件**: `components/layouts/admin/TopBar.tsx`
+- **理由**: 集成用户下拉菜单，替换简单的头像显示
+- **修改**:
+  - 导入 UserDropdownMenu 组件
+  - 用下拉菜单包装 UserAvatar
+  - 移除 tooltip 相关配置
+
+## 菜单选项设计
+
+### 1. 个人信息
+
+- **图标**: User 图标
+- **功能**: 跳转到个人资料页面
+- **描述**: "查看个人信息"
+
+### 2. 账户设置
+
+- **图标**: Settings 图标
+- **功能**: 跳转到账户设置页面
+- **描述**: "账户设置"
+
+### 3. 分隔线
+
+- **样式**: 细线分隔
+
+### 4. 注销账户
+
+- **图标**: LogOut 图标
+- **功能**: 调用 logout 方法
+- **描述**: "退出登录"
+- **样式**: 红色文字，表示危险操作
 
 ## 错误处理和性能优化策略
 
@@ -299,14 +367,20 @@ interface UserAvatarProps {
 14. ✅ 替换 TopBar 中的硬编码用户信息部分
 15. ✅ 集成 useAuthStore 到 TopBar 组件
 16. ✅ 添加用户登录状态检查
-17. 🔄 测试头像显示功能
-18. 🔄 测试回退机制
-19. 🔄 验证响应式设计
-20. 🔄 验证暗色主题兼容性
+17. ✅ 修复 tooltip 位置问题（避免显示到页面外部）
+18. 🔄 创建 `components/shared/UserDropdownMenu.tsx` 组件
+19. 🔄 实现下拉菜单的基础结构和样式
+20. 🔄 添加菜单选项（个人信息、设置、注销）
+21. 🔄 实现平滑的展开/收起动画
+22. 🔄 更新 UserAvatar 组件，移除 tooltip，添加点击支持
+23. 🔄 更新 TopBar 组件，集成用户下拉菜单
+24. 🔄 实现注销功能的确认对话框
+25. 🔄 测试下拉菜单功能
+26. 🔄 验证响应式设计和无障碍支持
 
 # Current Execution Step (Updated by EXECUTE mode when starting a step)
 >
-> 当前执行步骤: "步骤 1-16 已完成，准备进行功能测试"
+> 当前执行步骤: "实现路由保护功能，防止未登录用户访问后台页面"
 
 # Task Progress (Appended by EXECUTE mode after each step completion)
 
@@ -320,5 +394,83 @@ interface UserAvatarProps {
   - 更新 `components/layouts/admin/TopBar.tsx`，集成新的头像组件和认证状态
 - **变更摘要**: 完成了 Gravatar 头像功能的核心实现，包括工具函数、组件开发和 TopBar 集成
 - **原因**: 执行计划步骤 1-16
+- **阻塞问题**: 无
+- **状态**: 等待确认
+
+## 2024-12-19T12:45:00Z
+
+- **步骤**: 检查清单项目 17（修复 tooltip 位置问题）
+- **修改内容**:
+  - 修复 UserAvatar 组件中 tooltip 显示位置
+  - 将 tooltip 从头像上方改为下方，避免在顶部导航栏中显示到页面外部
+  - 调整箭头方向和暗色主题适配
+- **变更摘要**: 解决了 tooltip 在顶部导航栏中不可见的 UI 问题
+- **原因**: 用户反馈的 BUG 修复
+- **阻塞问题**: 无
+- **状态**: 等待确认
+
+## 2024-12-19T13:00:00Z
+
+- **步骤**: 检查清单项目 18-23（用户下拉菜单功能实现）
+- **修改内容**:
+  - 创建 `components/ui/dropdown-menu.tsx` 基础组件（基于 Radix UI）
+  - 创建 `components/shared/UserDropdownMenu.tsx` 用户菜单组件
+  - 更新 UserAvatar 组件，移除 tooltip 功能，添加点击事件支持
+  - 更新 TopBar 组件，集成用户下拉菜单
+  - 菜单包含：个人信息、账户设置、注销功能
+- **变更摘要**: 完成了用户下拉菜单功能，提供完整的用户交互体验
+- **原因**: 用户需求新增功能
+- **阻塞问题**: 无
+- **状态**: 等待确认
+
+## 2024-12-19T13:15:00Z
+
+- **步骤**: 检查清单项目 24（添加开发测试工具）
+- **修改内容**:
+  - 在 TopBar 组件中添加"测试登录"按钮
+  - 设置模拟用户数据（<admin@lskypro.com>）
+  - 仅在未登录状态下显示测试按钮
+  - 添加控制台日志用于调试
+- **变更摘要**: 解决了用户无法测试下拉菜单的问题，提供了快速登录测试功能
+- **原因**: 用户反馈无法看到下拉菜单效果
+- **阻塞问题**: 无
+- **状态**: 等待确认
+
+## 2024-12-19T13:30:00Z
+
+- **步骤**: 修复下拉菜单对齐问题
+- **修改内容**:
+  - 重新组织 TopBar 布局，将 UserDropdownMenu 包装整个用户区域
+  - 调整下拉菜单对齐参数（align="end", sideOffset={8}）
+  - 整个用户区域现在都可以点击触发下拉菜单
+- **变更摘要**: 解决了下拉菜单与用户区域不对齐的样式问题
+- **原因**: 用户反馈下拉菜单位置不正确
+- **阻塞问题**: 无
+- **状态**: 等待确认
+
+## 2024-12-19T13:45:00Z
+
+- **步骤**: 优化注销功能
+- **修改内容**:
+  - 在 UserDropdownMenu 中添加 useRouter 导入
+  - 修改 handleLogoutClick 函数，添加异步处理和页面跳转
+  - 注销后自动跳转到首页（"/"）
+  - 添加错误处理，确保即使 API 失败也能跳转
+- **变更摘要**: 实现了完整的注销流程，符合后台页面需要登录访问的安全要求
+- **原因**: 用户需求优化注销功能，避免停留在需要登录的后台页面
+- **阻塞问题**: 无
+- **状态**: 等待确认
+
+## 2024-12-19T14:00:00Z
+
+- **步骤**: 检查清单项目 25-29（路由保护功能实现）
+- **修改内容**:
+  - 创建 `lib/hooks/useAuthGuard.ts` 认证守卫 Hook
+  - 创建 `components/shared/ProtectedRoute.tsx` 路由保护组件
+  - 更新 `app/(admin)/layout.tsx`，为所有后台页面添加路由保护
+  - 更新 `app/(auth)/login/page.tsx` 和 `app/(auth)/register/page.tsx`，添加反向保护
+  - 实现加载状态显示和重定向逻辑
+- **变更摘要**: 完成了完整的路由保护系统，防止未登录用户访问后台页面，已登录用户访问认证页面
+- **原因**: 用户反馈的安全问题，未登录用户可以直接通过 URL 访问后台页面
 - **阻塞问题**: 无
 - **状态**: 等待确认

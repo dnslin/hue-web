@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAdminStore } from "@/lib/store/admin-store";
 import { useAuthStore } from "@/lib/store/authStore";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { UserDropdownMenu } from "@/components/shared/UserDropdownMenu";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -26,7 +27,7 @@ interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({ className }) => {
   const { toggleSidebar, breadcrumbs } = useAdminStore();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
 
   return (
     <header
@@ -111,19 +112,15 @@ export const TopBar: React.FC<TopBarProps> = ({ className }) => {
 
           {/* 用户菜单 */}
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-2 pl-2 border-l border-border">
-              <UserAvatar
-                user={user}
-                size="md"
-                showTooltip={true}
-                className="cursor-pointer"
-              />
-
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium">{user.username}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+            <UserDropdownMenu user={user} onLogout={logout}>
+              <div className="flex items-center gap-2 pl-2 border-l border-border cursor-pointer">
+                <UserAvatar user={user} size="md" />
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium">{user.username}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
               </div>
-            </div>
+            </UserDropdownMenu>
           ) : (
             <div className="flex items-center gap-2 pl-2 border-l border-border">
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
