@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import { useAuthStore, UserInfo } from "@/lib/store/authStore";
 
 // API 类型定义，基于Swagger API模式
 export interface LoginRequest {
@@ -31,9 +32,10 @@ export interface AuthResponse {
   code: number;
   message: string;
   data: {
-    user: User;
+    user: UserInfo;
     token: string;
   };
+  redirect?: string;
 }
 
 /**
@@ -50,6 +52,13 @@ const authService = {
   login: async (data: LoginRequest) => {
     // 通过Next.js API路由发送请求
     const response = await apiClient.post<AuthResponse>("/auth/login", data);
+
+    // 如果登录成功，缓存用户信息到store
+    if (response.data && response.data.data?.user) {
+      const { setAuth } = useAuthStore.getState();
+      setAuth(response.data.data.user);
+    }
+
     return response.data;
   },
 
@@ -61,6 +70,13 @@ const authService = {
   register: async (data: RegisterRequest) => {
     // 通过Next.js API路由发送请求
     const response = await apiClient.post<AuthResponse>("/auth/register", data);
+
+    // 如果注册成功且返回用户信息，缓存到store（自动登录）
+    if (response.data && response.data.data?.user) {
+      const { setAuth } = useAuthStore.getState();
+      setAuth(response.data.data.user);
+    }
+
     return response.data;
   },
 
@@ -78,8 +94,13 @@ const authService = {
    * 用户登出
    */
   logout: async () => {
+    // 清除本地用户状态
+    const { clearAuth } = useAuthStore.getState();
+    clearAuth();
+
     // 通过Next.js API路由发送请求
     await apiClient.post("/auth/logout");
+
     // 重定向到登录页
     window.location.href = "/login";
   },

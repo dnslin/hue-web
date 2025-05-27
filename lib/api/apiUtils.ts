@@ -3,7 +3,7 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 // API 基础URL，从环境变量获取或使用默认值
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080/api/v1";
 
 /**
  * 统一的API请求处理工具，用于Next.js API路由
@@ -24,9 +24,13 @@ export const apiUtils = {
     try {
       // 获取请求方法
       const method = request.method.toLowerCase();
+      console.log(`🔄 转发API请求: ${method.toUpperCase()} ${endpoint}`);
 
       // 从cookie获取认证令牌
       const token = request.cookies.get("auth_token")?.value;
+      if (token) {
+        console.log("🔑 使用认证令牌");
+      }
 
       // 准备请求头
       const headers: Record<string, string> = {
@@ -45,6 +49,7 @@ export const apiUtils = {
           ...headers,
           ...config?.headers,
         },
+        timeout: 10000, // 10秒超时
       };
 
       let requestData;
@@ -54,24 +59,34 @@ export const apiUtils = {
 
         if (contentType.includes("application/json")) {
           requestData = await request.json().catch(() => ({}));
+          console.log("📝 请求数据:", JSON.stringify(requestData, null, 2));
         } else if (contentType.includes("multipart/form-data")) {
           requestData = await request.formData().catch(() => ({}));
           // 对于multipart/form-data，不需要设置Content-Type，axios会自动设置
           delete requestConfig.headers!["Content-Type"];
+          console.log("📎 文件上传请求");
         }
       }
+
+      const fullUrl = `${API_BASE_URL}${endpoint}`;
+      console.log(`🌐 请求URL: ${fullUrl}`);
 
       // 根据请求方法发送请求
       const response = await axios({
         method,
-        url: `${API_BASE_URL}${endpoint}`,
+        url: fullUrl,
         data: requestData,
         ...requestConfig,
       });
 
+      console.log(`✅ API请求成功: ${response.status} ${response.statusText}`);
       return response.data;
     } catch (error) {
-      console.error(`API请求转发错误: ${(error as Error).message}`);
+      console.error(`❌ API请求转发错误: ${(error as Error).message}`);
+      if (error instanceof AxiosError) {
+        console.error(`状态码: ${error.response?.status}`);
+        console.error(`响应数据:`, error.response?.data);
+      }
       return this.handleError(error as AxiosError);
     }
   },

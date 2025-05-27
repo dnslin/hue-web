@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
 import AuthLayout from "@/components/layouts/AuthLayout";
-import useAuthStore from "@/lib/store/authStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
 // 登录表单验证模式
@@ -26,10 +26,10 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading, error, clearError } =
     useAuthStore();
 
-  // 如果已登录，重定向到首页
+  // 如果已登录，重定向到后台
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/images");
+      router.push("/dashboard");
     }
   }, [isAuthenticated, router]);
 
@@ -47,7 +47,7 @@ export default function LoginPage() {
     clearError();
     const success = await login(data.username_or_email, data.password);
     if (success) {
-      router.push("/images");
+      router.push("/dashboard");
     }
   };
 

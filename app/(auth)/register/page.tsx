@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
 import AuthLayout from "@/components/layouts/AuthLayout";
-import useAuthStore from "@/lib/store/authStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
 // 注册表单验证模式
@@ -55,12 +55,19 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/");
+      router.push("/dashboard");
     }
   }, [isAuthenticated, router]);
 
   const onSubmit = async (data: RegisterFormValues) => {
-    await registerUser(data.username, data.email, data.password);
+    const success = await registerUser(
+      data.username,
+      data.email,
+      data.password
+    );
+    if (success) {
+      router.push("/dashboard");
+    }
   };
 
   return (
