@@ -46,11 +46,32 @@ export const useAuthGuard = (options?: {
     console.log("✅ 路由访问权限验证通过:", pathname);
   }, [isAuthenticated, isLoading, pathname, router, redirectTo, requireAuth]);
 
+  // 计算是否应该显示内容
+  const shouldShowContent = () => {
+    // 如果正在加载，不显示内容
+    if (isLoading) {
+      return false;
+    }
+
+    // 如果需要认证且用户已认证，显示内容
+    if (requireAuth && isAuthenticated) {
+      return true;
+    }
+
+    // 如果不需要认证且用户未认证，显示内容
+    if (!requireAuth && !isAuthenticated) {
+      return true;
+    }
+
+    // 其他情况（需要重定向）不显示内容
+    return false;
+  };
+
   return {
     isAuthenticated,
     user,
     isLoading,
-    isAuthorized: requireAuth ? isAuthenticated : true,
+    isAuthorized: shouldShowContent(),
   };
 };
 
