@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
             });
             return false;
           }
-        } catch (error) {
+        } catch {
           set({
             isLoading: false,
             error: "登录失败，请稍后重试",
@@ -146,7 +146,7 @@ export const useAuthStore = create<AuthState>()(
             });
             return false;
           }
-        } catch (error) {
+        } catch {
           set({
             isLoading: false,
             error: "注册失败，请稍后重试",
@@ -170,7 +170,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
-        } catch (error) {
+        } catch {
           // 即使API失败也清除本地状态
           set({
             user: null,

@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // 注意：某些后端可能不需要登出接口，因为JWT是无状态的
     try {
       await apiUtils.forwardRequest(request, "/auth/logout");
-    } catch (error) {
+    } catch {
       // 即使后端登出失败，也要清除前端cookie
       console.log("后端登出请求失败，但继续清除前端认证状态");
     }

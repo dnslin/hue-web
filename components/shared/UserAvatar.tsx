@@ -88,7 +88,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
           setHasError(true);
         };
         img.src = gravatarUrl;
-      } catch (error) {
+      } catch {
         // 发生错误，使用 DiceBear 回退
         setAvatarSrc(getDiceBearUrl(user.username));
         setIsLoading(false);
