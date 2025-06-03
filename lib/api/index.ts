@@ -1,96 +1,103 @@
 // API调用的统一入口
-// 根据环境变量选择使用mock或真实API
+// 直接使用真实的管理员API
 
-const USE_MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
+// 用户API - 使用管理员API
+export const userApi = import("./adminUsers");
 
-// 调试信息
-if (typeof window !== "undefined") {
-  console.log("🔧 API配置:", {
-    NEXT_PUBLIC_USE_MOCK_API: process.env.NEXT_PUBLIC_USE_MOCK_API,
-    USE_MOCK_API,
-    mode: USE_MOCK_API ? "Mock API" : "Real API",
-  });
-}
+// 角色API - 使用真实API
+export const roleApi = import("./roles");
 
-// 用户API
-export const userApi = USE_MOCK_API
-  ? import("./users.mock")
-  : import("./users");
-
-// 角色API
-export const roleApi = USE_MOCK_API
-  ? import("./roles.mock")
-  : import("./roles");
-
-// 导出用户API函数
+// 导出用户API函数 - 映射到管理员API
 export async function getUserList(
-  ...args: Parameters<typeof import("./users").getUserList>
+  ...args: Parameters<typeof import("./adminUsers").getAdminUserList>
 ) {
   const api = await userApi;
-  return api.getUserList(...args);
-}
-
-export async function getUserById(
-  ...args: Parameters<typeof import("./users").getUserById>
-) {
-  const api = await userApi;
-  return api.getUserById(...args);
+  return api.getAdminUserList(...args);
 }
 
 export async function createUser(
-  ...args: Parameters<typeof import("./users").createUser>
+  ...args: Parameters<typeof import("./adminUsers").createAdminUser>
 ) {
   const api = await userApi;
-  return api.createUser(...args);
+  return api.createAdminUser(...args);
 }
 
 export async function updateUser(
-  ...args: Parameters<typeof import("./users").updateUser>
+  ...args: Parameters<typeof import("./adminUsers").updateAdminUser>
 ) {
   const api = await userApi;
-  return api.updateUser(...args);
+  return api.updateAdminUser(...args);
 }
 
 export async function deleteUser(
-  ...args: Parameters<typeof import("./users").deleteUser>
+  ...args: Parameters<typeof import("./adminUsers").deleteAdminUser>
 ) {
   const api = await userApi;
-  return api.deleteUser(...args);
+  return api.deleteAdminUser(...args);
 }
 
-export async function batchDeleteUsers(
-  ...args: Parameters<typeof import("./users").batchDeleteUsers>
+export async function changeUserStatus(
+  ...args: Parameters<typeof import("./adminUsers").changeUserStatus>
 ) {
   const api = await userApi;
-  return api.batchDeleteUsers(...args);
-}
-
-export async function toggleUserStatus(
-  ...args: Parameters<typeof import("./users").toggleUserStatus>
-) {
-  const api = await userApi;
-  return api.toggleUserStatus(...args);
-}
-
-export async function resetUserPassword(
-  ...args: Parameters<typeof import("./users").resetUserPassword>
-) {
-  const api = await userApi;
-  return api.resetUserPassword(...args);
-}
-
-export async function getUserStats(
-  ...args: Parameters<typeof import("./users").getUserStats>
-) {
-  const api = await userApi;
-  return api.getUserStats(...args);
+  return api.changeUserStatus(...args);
 }
 
 export async function exportUsers(
-  ...args: Parameters<typeof import("./users").exportUsers>
+  ...args: Parameters<typeof import("./adminUsers").exportAdminUsers>
 ) {
   const api = await userApi;
-  return api.exportUsers(...args);
+  return api.exportAdminUsers(...args);
+}
+
+// 批量操作函数
+export async function batchApproveUsers(
+  ...args: Parameters<typeof import("./adminUsers").batchApproveUsers>
+) {
+  const api = await userApi;
+  return api.batchApproveUsers(...args);
+}
+
+export async function batchRejectUsers(
+  ...args: Parameters<typeof import("./adminUsers").batchRejectUsers>
+) {
+  const api = await userApi;
+  return api.batchRejectUsers(...args);
+}
+
+export async function batchBanUsers(
+  ...args: Parameters<typeof import("./adminUsers").batchBanUsers>
+) {
+  const api = await userApi;
+  return api.batchBanUsers(...args);
+}
+
+export async function batchUnbanUsers(
+  ...args: Parameters<typeof import("./adminUsers").batchUnbanUsers>
+) {
+  const api = await userApi;
+  return api.batchUnbanUsers(...args);
+}
+
+// 兼容性函数 - 映射到新的API
+export async function toggleUserStatus(userId: number, status: number) {
+  const api = await userApi;
+  // 根据状态选择合适的API调用
+  if (status === 0) {
+    // 激活用户 - 可能是从禁用状态恢复
+    return api.unbanUser(userId);
+  } else if (status === 1) {
+    // 禁用用户
+    return api.banUser(userId);
+  } else {
+    throw new Error(`不支持的状态值: ${status}`);
+  }
+}
+
+// 重置密码功能 - 暂时不支持，返回错误
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function resetUserPassword(_userId: number, _newPassword: string) {
+  throw new Error("重置密码功能暂未实现，请联系系统管理员");
 }
 
 // 导出角色API函数

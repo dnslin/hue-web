@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { Plus, Download, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,117 +8,57 @@ import { UserFilters } from "./UserFilters";
 import { UserTable } from "./UserTable";
 import { UserMobileList } from "./UserMobileList";
 import { UserPagination } from "./UserPagination";
-import { User, UserListParams, UserListResponse } from "@/lib/types/user";
-import { getUserList, exportUsers } from "@/lib/api";
+import { UserListParams } from "@/lib/types/user";
+import { 
+  useUserStore,
+  useUserList,
+  useUserPagination,
+  useUserFilters,
+  useUserLoading,
+  useUserError
+} from "@/lib/store/userStore";
+import { exportAdminUsers } from "@/lib/api/adminUsers";
 
 interface UserListProps {
-  initialData?: UserListResponse;
   isMobile?: boolean;
 }
 
-export function UserList({ initialData, isMobile = false }: UserListProps) {
-  const [users, setUsers] = useState<User[]>(initialData?.data || []);
-  const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState<UserListParams>({
-    page: 1,
-    limit: 20,
-  });
-  const [pagination, setPagination] = useState({
-    total: initialData?.total || 0,
-    page: initialData?.page || 1,
-    limit: initialData?.limit || 20,
-    total_pages: initialData?.total_pages || 0,
-  });
-
-  // 获取用户列表
-  const fetchUsers = useCallback(async (params: UserListParams) => {
-    setLoading(true);
-    try {
-      const response = await getUserList(params);
-      setUsers(response.data);
-      setPagination({
-        total: response.total,
-        page: response.page,
-        limit: response.limit,
-        total_pages: response.total_pages,
-      });
-    } catch (error) {
-      console.error("获取用户列表失败:", error);
-      setUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+export function UserList({ isMobile = false }: UserListProps) {
+  // 使用store状态
+  const users = useUserList();
+  const pagination = useUserPagination();
+  const filters = useUserFilters();
+  const loading = useUserLoading();
+  const error = useUserError();
+  
+  // 使用store方法
+  const { 
+    fetchUsers, 
+    setFilters, 
+    setPage, 
+    setPageSize,
+    clearError 
+  } = useUserStore();
 
   // 处理筛选变化
-  const handleFiltersChange = useCallback(
-    (newFilters: UserListParams) => {
-      const updatedFilters = {
-        ...filters,
-        ...newFilters,
-        page: 1, // 重置到第一页
-      };
-      setFilters(updatedFilters);
-      fetchUsers(updatedFilters);
-    },
-    [filters, fetchUsers]
-  );
-
-  // 处理排序
-  const handleSort = useCallback(
-    (
-      sortBy: UserListParams["sort_by"],
-      sortOrder: UserListParams["sort_order"]
-    ) => {
-      const updatedFilters = {
-        ...filters,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        page: 1,
-      };
-      setFilters(updatedFilters);
-      fetchUsers(updatedFilters);
-    },
-    [filters, fetchUsers]
-  );
+  const handleFiltersChange = (newFilters: UserListParams) => {
+    setFilters(newFilters);
+  };
 
   // 处理分页
-  const handlePageChange = useCallback(
-    (page: number) => {
-      const updatedFilters = { ...filters, page };
-      setFilters(updatedFilters);
-      fetchUsers(updatedFilters);
-    },
-    [filters, fetchUsers]
-  );
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
 
   // 处理每页显示数量变化
-  const handlePageSizeChange = useCallback(
-    (pageSize: number) => {
-      const updatedFilters = { ...filters, limit: pageSize, page: 1 };
-      setFilters(updatedFilters);
-      fetchUsers(updatedFilters);
-    },
-    [filters, fetchUsers]
-  );
-
-  // 处理用户更新
-  const handleUserUpdate = useCallback((updatedUser: User) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-    );
-  }, []);
-
-  // 处理用户删除
-  const handleUserDelete = useCallback((userId: number) => {
-    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-    setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-  }, []);
+  const handlePageSizeChange = (pageSize: number) => {
+    setPageSize(pageSize);
+  };
 
   // 导出用户数据
   const handleExport = async () => {
     try {
-      const blob = await exportUsers(filters);
+      const blob = await exportAdminUsers(filters);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = "none";
@@ -133,12 +73,20 @@ export function UserList({ initialData, isMobile = false }: UserListProps) {
     }
   };
 
-  // 初始化时如果没有数据则获取
+  // 初始化数据
   useEffect(() => {
-    if (!initialData) {
-      fetchUsers(filters);
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // 清除错误
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        clearError();
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [initialData, filters, fetchUsers]);
+  }, [error, clearError]);
 
   return (
     <div className="space-y-6">
@@ -199,17 +147,19 @@ export function UserList({ initialData, isMobile = false }: UserListProps) {
           {isMobile ? (
             <UserMobileList
               users={users}
-              loading={loading}
-              onUserUpdate={handleUserUpdate}
-              onUserDelete={handleUserDelete}
+              loading={loading.list}
+              onUserUpdate={() => {}} // TODO: 实现用户更新
+              onUserDelete={() => {}} // TODO: 实现用户删除
             />
           ) : (
             <UserTable
               users={users}
-              loading={loading}
-              onSort={handleSort}
-              onUserUpdate={handleUserUpdate}
-              onUserDelete={handleUserDelete}
+              loading={loading.list}
+              onSort={(sortBy, sortOrder) => {
+                setFilters({ sort_by: sortBy, sort_order: sortOrder });
+              }}
+              onUserUpdate={() => {}} // TODO: 实现用户更新
+              onUserDelete={() => {}} // TODO: 实现用户删除
             />
           )}
         </CardContent>
@@ -220,12 +170,12 @@ export function UserList({ initialData, isMobile = false }: UserListProps) {
         <CardContent className="px-2">
           <UserPagination
             currentPage={pagination.page}
-            totalPages={pagination.total_pages}
+            totalPages={Math.ceil(pagination.total / pagination.page_size)}
             totalItems={pagination.total}
-            pageSize={pagination.limit}
+            pageSize={pagination.page_size}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            loading={loading}
+            loading={loading.list}
             isMobile={isMobile}
           />
         </CardContent>

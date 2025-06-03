@@ -11,16 +11,16 @@ import {
   UserUpdateRequest,
 } from "@/lib/types/user";
 import {
-  getUserList,
+  getAdminUserList,
   changeUserStatus,
-  batchApprove,
-  batchReject,
-  batchBan,
-  batchUnban,
-  deleteUser,
-  createUser,
-  updateUser,
-} from "@/lib/api/userAdapter";
+  batchApproveUsers,
+  batchRejectUsers,
+  batchBanUsers,
+  batchUnbanUsers,
+  deleteAdminUser,
+  createAdminUser,
+  updateAdminUser,
+} from "@/lib/api/adminUsers";
 import { cacheManager, cacheUtils } from "@/lib/utils/cacheManager";
 
 // 加载状态类型
@@ -220,7 +220,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await getUserList(mergedParams);
+            const response = await getAdminUserList(mergedParams);
 
             // 缓存响应数据
             cacheManager.set(cacheKey, response, {
@@ -280,7 +280,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await createUser(userData);
+            const response = await createAdminUser(userData);
 
             // 清理缓存并刷新列表
             cacheUtils.clearUserCache();
@@ -309,7 +309,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await updateUser(id, userData);
+            const response = await updateAdminUser(id, userData);
 
             // 清理缓存并更新本地状态
             cacheUtils.clearUserCache();
@@ -339,7 +339,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            await deleteUser(id);
+            await deleteAdminUser(id);
 
             // 清理缓存并从本地状态移除
             cacheUtils.clearUserCache();
@@ -411,7 +411,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchApprove(userIds);
+            const response = await batchApproveUsers(userIds);
 
             // 清理缓存并刷新列表
             cacheUtils.clearUserCache();
@@ -445,7 +445,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchReject(userIds, reason);
+            const response = await batchRejectUsers(userIds, reason);
 
             // 清理缓存并刷新列表
             cacheUtils.clearUserCache();
@@ -479,7 +479,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchBan(userIds);
+            const response = await batchBanUsers(userIds);
 
             // 清理缓存并刷新列表
             cacheUtils.clearUserCache();
@@ -513,7 +513,7 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchUnban(userIds);
+            const response = await batchUnbanUsers(userIds);
 
             // 清理缓存并刷新列表
             cacheUtils.clearUserCache();

@@ -46,8 +46,12 @@ export function UserActions({
   const handleStatusToggle = async (newStatus: UserStatus) => {
     setIsLoading(true);
     try {
-      const updatedUser = await toggleUserStatus(user.id, newStatus);
-      onUserUpdate(updatedUser);
+      const response = await toggleUserStatus(user.id, newStatus);
+      // 处理API响应，提取用户数据
+      const updatedUser = 'data' in response ? response.data : response;
+      if (updatedUser) {
+        onUserUpdate(updatedUser as User);
+      }
     } catch (error) {
       console.error("更新用户状态失败:", error);
     } finally {
@@ -85,7 +89,7 @@ export function UserActions({
 
   const getStatusBadge = (status: UserStatus) => {
     switch (status) {
-      case UserStatus.ACTIVE:
+      case UserStatus.NORMAL:
         return (
           <Badge
             variant="default"
@@ -94,17 +98,28 @@ export function UserActions({
             正常
           </Badge>
         );
-      case UserStatus.INACTIVE:
+      case UserStatus.PENDING:
         return (
           <Badge
             variant="secondary"
             className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
           >
-            未激活
+            待审核
           </Badge>
         );
-      case UserStatus.BANNED:
-        return <Badge variant="destructive">已封禁</Badge>;
+      case UserStatus.DISABLED:
+        return <Badge variant="destructive">已禁用</Badge>;
+      case UserStatus.REJECTED:
+        return (
+          <Badge
+            variant="destructive"
+            className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+          >
+            审核拒绝
+          </Badge>
+        );
+      case UserStatus.DELETED:
+        return <Badge variant="outline">已删除</Badge>;
       default:
         return <Badge variant="outline">未知</Badge>;
     }
@@ -140,34 +155,45 @@ export function UserActions({
             </Button>
 
             {/* 状态切换 */}
-            {user.status === UserStatus.ACTIVE ? (
+            {user.status === UserStatus.NORMAL ? (
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-yellow-600 hover:text-yellow-700"
-                onClick={() => handleStatusToggle(UserStatus.BANNED)}
+                onClick={() => handleStatusToggle(UserStatus.DISABLED)}
                 disabled={isLoading}
               >
                 <Ban className="h-4 w-4" />
-                封禁用户
+                禁用用户
               </Button>
-            ) : user.status === UserStatus.BANNED ? (
+            ) : user.status === UserStatus.DISABLED ? (
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
-                onClick={() => handleStatusToggle(UserStatus.ACTIVE)}
+                onClick={() => handleStatusToggle(UserStatus.NORMAL)}
                 disabled={isLoading}
               >
                 <CheckCircle className="h-4 w-4" />
-                解除封禁
+                启用用户
+              </Button>
+            ) : user.status === UserStatus.PENDING ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
+                onClick={() => handleStatusToggle(UserStatus.NORMAL)}
+                disabled={isLoading}
+              >
+                <CheckCircle className="h-4 w-4" />
+                批准用户
               </Button>
             ) : (
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
-                onClick={() => handleStatusToggle(UserStatus.ACTIVE)}
+                onClick={() => handleStatusToggle(UserStatus.NORMAL)}
                 disabled={isLoading}
               >
                 <CheckCircle className="h-4 w-4" />

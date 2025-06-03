@@ -3,7 +3,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, UserRole } from "@/lib/types/user";
+import { User, UserRole, getUserDisplayName } from "@/lib/types/user";
+import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { UserActions } from "./UserActions";
 
 interface UserMobileCardProps {
@@ -68,10 +69,9 @@ export function UserMobileCard({
           {/* 用户基本信息 - 优化布局 */}
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
-              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarImage src={user.avatar || getGravatarUrl(user.email)} alt={user.username} />
               <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-                {user.nickname?.charAt(0) ||
-                  user.username.charAt(0).toUpperCase()}
+                {getUserInitials(getUserDisplayName(user))}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0 pr-2">
@@ -79,9 +79,9 @@ export function UserMobileCard({
                 <div className="flex flex-col gap-2">
                   <h3
                     className="font-semibold text-sm leading-tight text-foreground truncate max-w-[300px]"
-                    title={user.nickname || user.username}
+                    title={getUserDisplayName(user)}
                   >
-                    {user.nickname || user.username}
+                    {getUserDisplayName(user)}
                   </h3>
                   {getRoleBadge(user.role)}
                 </div>

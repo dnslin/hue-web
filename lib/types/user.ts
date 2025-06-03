@@ -43,7 +43,7 @@ export interface User {
   username: string;
   email: string;
   nickname?: string;
-  avatar?: string;
+  avatar?: string; // 后端可能不提供，前端使用Gravatar生成
   status: UserStatus;
   role: UserRole;
   roleID: number;
@@ -291,4 +291,9 @@ export function getStatusTransitionEndpoint(
     (t) => t.from === from && t.to === to
   );
   return transition?.endpoint || null;
+}
+
+// 工具函数：获取用户显示名称
+export function getUserDisplayName(user: User): string {
+  return user.nickname || user.username;
 }

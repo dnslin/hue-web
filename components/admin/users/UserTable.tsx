@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { User, UserListParams, UserRole } from "@/lib/types/user";
+import { User, UserListParams, UserRole, getUserDisplayName } from "@/lib/types/user";
+import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { UserActions } from "./UserActions";
 
 interface UserTableProps {
@@ -180,15 +181,14 @@ export function UserTable({
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarImage src={user.avatar || getGravatarUrl(user.email)} alt={user.username} />
                       <AvatarFallback>
-                        {user.nickname?.charAt(0) ||
-                          user.username.charAt(0).toUpperCase()}
+                        {getUserInitials(getUserDisplayName(user))}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">
-                        {user.nickname || user.username}
+                        {getUserDisplayName(user)}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {user.email}
