@@ -245,9 +245,9 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       // 水合完成后的回调
-      onRehydrateStorage: (state) => {
+      onRehydrateStorage: () => {
         console.log("💧 认证状态开始水合");
-        return (state, error) => {
+        return (_, error) => {
           if (error) {
             console.error("❌ 认证状态水合失败:", error);
             // 水合失败时也要设置为已水合，避免无限等待

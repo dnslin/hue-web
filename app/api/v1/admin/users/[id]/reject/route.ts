@@ -1,0 +1,33 @@
+import { NextRequest } from "next/server";
+import { apiUtils } from "@/lib/api/apiUtils";
+
+/**
+ * 拒绝用户
+ * POST /api/v1/admin/users/[id]/reject
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const data = await apiUtils.forwardRequest(
+      request,
+      `/admin/users/${id}/reject`
+    );
+
+    if (data.error) {
+      return apiUtils.createResponse(data, { status: data.code || 400 });
+    }
+
+    return apiUtils.createResponse(data);
+  } catch (error) {
+    console.error("拒绝用户失败:", error);
+    return apiUtils.createResponse({
+      error: true,
+      message: "拒绝用户失败",
+      code: 500,
+    });
+  }
+}
+

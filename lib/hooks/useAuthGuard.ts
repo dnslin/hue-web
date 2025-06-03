@@ -14,8 +14,7 @@ export const useAuthGuard = (options?: {
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, isLoading, isHydrated, initializeAuth } =
-    useAuthStore();
+  const { isAuthenticated, user, isLoading, isHydrated } = useAuthStore();
 
   const { redirectTo = "/login", requireAuth = true } = options || {};
 
