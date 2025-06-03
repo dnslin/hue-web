@@ -29,7 +29,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   };
 
   const transition = {
-    duration: 0.2,
+    duration: 0.15,
     ease: "easeInOut",
   };
 
@@ -46,7 +46,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
             animate="animate"
             exit="exit"
             transition={transition}
-            className="h-full"
+            className="h-screen overflow-hidden"
           >
             {children}
           </motion.div>
@@ -58,7 +58,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   // 前台路由：使用 MainLayout 包装
   return (
     <Suspense fallback={<MainLayoutFallback />}>
-      <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait">
         <motion.div
           key="main-layout"
           variants={layoutVariants}
@@ -66,7 +66,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
           animate="animate"
           exit="exit"
           transition={transition}
-          className="h-full"
+          className="h-screen overflow-hidden"
         >
           <MainLayout>{children}</MainLayout>
         </motion.div>

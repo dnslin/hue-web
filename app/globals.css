@@ -189,6 +189,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* 防止页面切换时的滚动条闪烁 */
+    overflow-x: hidden;
+  }
+
+  /* 确保根元素高度一致 */
+  html,
+  body {
+    height: 100%;
   }
 }
 
@@ -200,34 +208,38 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   .overflow-y-auto {
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* 移动端视口高度优化 */
   .mobile-viewport-height {
-    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    height: calc(
+      100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
   }
-  
+
   .mobile-content-height {
-    height: calc(100vh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    height: calc(
+      100vh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
   }
-  
+
   /* 自定义滚动条 */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: hsl(var(--muted-foreground) / 0.3);
     border-radius: 3px;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.5);
   }

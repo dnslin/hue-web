@@ -117,6 +117,12 @@
   flex-direction: column;
 }
 
+/* 防止布局切换时的滚动条闪烁 */
+.admin-layout-transition {
+  overflow: hidden;
+  height: 100vh;
+}
+
 /* 滚动条样式 */
 .admin-scrollbar::-webkit-scrollbar {
   width: 6px;
