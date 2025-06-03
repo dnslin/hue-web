@@ -3,6 +3,7 @@ import { devtools, persist } from "zustand/middleware";
 import {
   User,
   UserListParams,
+  UserListResponse,
   UserStatus,
   PaginationMeta,
   BatchOperationResult,
@@ -10,13 +11,17 @@ import {
   UserUpdateRequest,
 } from "@/lib/types/user";
 import {
-  getAdminUserList,
+  getUserList,
   changeUserStatus,
-  batchChangeUserStatus,
-  deleteAdminUser,
-  createAdminUser,
-  updateAdminUser,
-} from "@/lib/api/adminUsers";
+  batchApprove,
+  batchReject,
+  batchBan,
+  batchUnban,
+  deleteUser,
+  createUser,
+  updateUser,
+} from "@/lib/api/userAdapter";
+import { cacheManager, cacheUtils } from "@/lib/utils/cacheManager";
 
 // 加载状态类型
 interface LoadingState {
@@ -168,15 +173,45 @@ export const useUserStore = create<UserStoreState>()(
         fetchUsers: async (params = {}, forceRefresh = false) => {
           const state = get();
           const now = Date.now();
+          const mergedParams = { ...state.filters, ...params };
+          const cacheKey = cacheUtils.getUsersListKey(mergedParams);
 
           // 检查缓存是否有效
-          if (
-            !forceRefresh &&
-            state.cache.lastFetch > 0 &&
-            now - state.cache.lastFetch < CACHE_EXPIRY &&
-            !state.cache.isStale
-          ) {
-            return;
+          if (!forceRefresh) {
+            // 先检查内存缓存
+            const cachedData = cacheManager.get<UserListResponse>(cacheKey);
+            if (cachedData) {
+              set((state) => ({
+                users: cachedData.data,
+                pagination: cachedData.meta,
+                filters: {
+                  ...state.filters,
+                  ...mergedParams,
+                  hasActiveFilters: Object.keys(mergedParams).some(
+                    (key) =>
+                      mergedParams[key as keyof UserListParams] !== undefined &&
+                      mergedParams[key as keyof UserListParams] !== "" &&
+                      key !== "page" &&
+                      key !== "pageSize"
+                  ),
+                },
+                cache: {
+                  ...state.cache,
+                  lastFetch: now,
+                  isStale: false,
+                },
+              }));
+              return;
+            }
+
+            // 检查store内部缓存
+            if (
+              state.cache.lastFetch > 0 &&
+              now - state.cache.lastFetch < CACHE_EXPIRY &&
+              !state.cache.isStale
+            ) {
+              return;
+            }
           }
 
           set((state) => ({
@@ -185,8 +220,14 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const mergedParams = { ...state.filters, ...params };
-            const response = await getAdminUserList(mergedParams);
+            const response = await getUserList(mergedParams);
+
+            // 缓存响应数据
+            cacheManager.set(cacheKey, response, {
+              ttl: CACHE_EXPIRY,
+              storage: "memory",
+              version: state.cache.version.toString(),
+            });
 
             set((state) => ({
               users: response.data,
@@ -239,9 +280,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await createAdminUser(userData);
+            const response = await createUser(userData);
 
-            // 刷新列表
+            // 清理缓存并刷新列表
+            cacheUtils.clearUserCache();
             await get().refreshUsers();
 
             set((state) => ({
@@ -267,9 +309,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await updateAdminUser(id, userData);
+            const response = await updateUser(id, userData);
 
-            // 更新本地状态
+            // 清理缓存并更新本地状态
+            cacheUtils.clearUserCache();
             set((state) => ({
               users: state.users.map((user) =>
                 user.id === id ? { ...user, ...response.data } : user
@@ -296,9 +339,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            await deleteAdminUser(id);
+            await deleteUser(id);
 
-            // 从本地状态移除
+            // 清理缓存并从本地状态移除
+            cacheUtils.clearUserCache();
             set((state) => ({
               users: state.users.filter((user) => user.id !== id),
               loading: { ...state.loading, delete: false },
@@ -338,7 +382,8 @@ export const useUserStore = create<UserStoreState>()(
               reason
             );
 
-            // 更新本地状态
+            // 清理缓存并更新本地状态
+            cacheUtils.clearUserCache();
             set((state) => ({
               users: state.users.map((user) =>
                 user.id === userId ? { ...user, ...response.data } : user
@@ -366,9 +411,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchChangeUserStatus(userIds, "approve");
+            const response = await batchApprove(userIds);
 
-            // 刷新列表
+            // 清理缓存并刷新列表
+            cacheUtils.clearUserCache();
             await get().refreshUsers();
 
             set((state) => ({
@@ -399,13 +445,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchChangeUserStatus(
-              userIds,
-              "reject",
-              reason
-            );
+            const response = await batchReject(userIds, reason);
 
-            // 刷新列表
+            // 清理缓存并刷新列表
+            cacheUtils.clearUserCache();
             await get().refreshUsers();
 
             set((state) => ({
@@ -436,9 +479,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchChangeUserStatus(userIds, "ban");
+            const response = await batchBan(userIds);
 
-            // 刷新列表
+            // 清理缓存并刷新列表
+            cacheUtils.clearUserCache();
             await get().refreshUsers();
 
             set((state) => ({
@@ -469,9 +513,10 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await batchChangeUserStatus(userIds, "unban");
+            const response = await batchUnban(userIds);
 
-            // 刷新列表
+            // 清理缓存并刷新列表
+            cacheUtils.clearUserCache();
             await get().refreshUsers();
 
             set((state) => ({
@@ -679,6 +724,7 @@ export const useUserStore = create<UserStoreState>()(
 
         // 使缓存失效
         invalidateCache: () => {
+          cacheUtils.clearUserCache();
           set((state) => ({
             cache: { ...state.cache, isStale: true },
           }));
@@ -689,6 +735,7 @@ export const useUserStore = create<UserStoreState>()(
           set((state) => ({
             cache: { ...state.cache, version: state.cache.version + 1 },
           }));
+          cacheUtils.clearUserCache();
         },
 
         // 设置错误
