@@ -4,6 +4,7 @@ import React from "react";
 
 interface AuthLoadingScreenProps {
   message?: string;
+  type?: "auth" | "hydration" | "loading";
 }
 
 /**
@@ -11,8 +12,17 @@ interface AuthLoadingScreenProps {
  * 用于在认证状态检查期间显示
  */
 export const AuthLoadingScreen: React.FC<AuthLoadingScreenProps> = ({
-  message = "正在验证身份...",
+  message,
+  type = "auth",
 }) => {
+  // 根据类型设置默认消息
+  const defaultMessage = {
+    auth: "正在验证身份...",
+    hydration: "正在恢复用户状态...",
+    loading: "正在加载...",
+  }[type];
+
+  const displayMessage = message || defaultMessage;
   return (
     <div className="min-h-screen flex items-center justify-center bg-background w-full">
       <div className="flex flex-col items-center space-y-4">
@@ -24,7 +34,7 @@ export const AuthLoadingScreen: React.FC<AuthLoadingScreenProps> = ({
 
         {/* 加载文字 */}
         <div className="text-center space-y-2">
-          <p className="text-sm font-medium text-foreground">{message}</p>
+          <p className="text-sm font-medium text-foreground">{displayMessage}</p>
           <p className="text-xs text-muted-foreground">请稍候...</p>
         </div>
       </div>
