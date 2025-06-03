@@ -165,7 +165,7 @@ export interface Permission {
   id: number;
   name: string;
   description: string;
-  group_name: string;
+  groupName: string; // 统一为 camelCase 以匹配 swagger.yaml models.Permission.groupName
   created_at: string;
   updated_at: string;
 }

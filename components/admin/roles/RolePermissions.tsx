@@ -239,7 +239,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {group.permissions.map((permission) => { // permission.id is number
-                      const Icon = getPermissionIcon(permission.group_name); // Use group_name or a more specific field if available for icon
+                      const Icon = getPermissionIcon(permission.groupName); // 更新: group_name -> groupName
                       const isSelected = selectedPermissionIds.has(permission.id);
 
                       return (
@@ -282,9 +282,9 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                               </p>
                               <div className="flex items-center gap-1 mt-2">
                                 {/* Assuming permission object has resource and action, or adjust as per actual Permission type */}
-                                {/* For now, using group_name as a placeholder if resource/action not directly on permission */}
+                                {/* For now, using groupName as a placeholder if resource/action not directly on permission */}
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.group_name || 'N/A'}
+                                  {permission.groupName || 'N/A'}
                                 </Badge>
                                 <Badge variant="outline" className="text-xs">
                                   {permission.name} {/* Display permission name as action-like identifier */}
@@ -317,7 +317,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                 {permissions // Iterate over all fetched permissions
                   .filter((p) => selectedPermissionIds.has(p.id)) // Filter by selected IDs
                   .map((permission) => {
-                    const Icon = getPermissionIcon(permission.group_name); // Use group_name or a more specific field
+                    const Icon = getPermissionIcon(permission.groupName); // 更新: group_name -> groupName
 
                     return (
                       <div
@@ -348,7 +348,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                             </p>
                             <div className="flex items-center gap-1 mt-2">
                                <Badge variant="outline" className="text-xs">
-                                {permission.group_name || 'N/A'}
+                                {permission.groupName || 'N/A'}
                               </Badge>
                               <Badge variant="outline" className="text-xs">
                                 {permission.name}

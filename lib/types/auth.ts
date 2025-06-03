@@ -6,7 +6,7 @@ import type { User } from "./user";
  */
 export interface LoginRequest {
   username_or_email: string;
-  password?: string; // 密码在某些OAuth流程中可能不是必需的，但这里基于传统登录
+  password: string; // 根据 swagger.yaml controllers.LoginRequest，密码是必填的
 }
 
 /**
@@ -15,7 +15,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   username: string;
   email: string;
-  password?: string; // 密码在某些OAuth流程中可能不是必需的
+  password: string; // 根据 swagger.yaml controllers.RegisterRequest，密码是必填的
 }
 
 /**

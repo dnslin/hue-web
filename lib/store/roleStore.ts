@@ -90,14 +90,16 @@ const initialState = {
 const groupPermissions = (permissions: Permission[]): PermissionGroupFE[] => {
   const groups: Record<string, PermissionGroupFE> = {};
   permissions.forEach((permission) => {
-    if (!groups[permission.group_name]) {
-      groups[permission.group_name] = {
-        name: permission.group_name,
+    if (!groups[permission.groupName]) {
+      // 更新: group_name -> groupName
+      groups[permission.groupName] = {
+        // 更新: group_name -> groupName
+        name: permission.groupName, // 更新: group_name -> groupName
         description: permission.description, // Or a predefined description for the group
         permissions: [],
       };
     }
-    groups[permission.group_name].permissions.push(permission);
+    groups[permission.groupName].permissions.push(permission); // 更新: group_name -> groupName
   });
   return Object.values(groups);
 };
