@@ -54,12 +54,16 @@ export function UserFilters({
 
   const getStatusLabel = (status: UserStatus) => {
     switch (status) {
-      case UserStatus.ACTIVE:
+      case UserStatus.NORMAL:
         return "正常";
-      case UserStatus.INACTIVE:
-        return "未激活";
-      case UserStatus.BANNED:
-        return "已封禁";
+      case UserStatus.DISABLED:
+        return "禁用";
+      case UserStatus.PENDING:
+        return "待审核";
+      case UserStatus.REJECTED:
+        return "审核拒绝";
+      case UserStatus.DELETED:
+        return "已删除";
       default:
         return "未知";
     }
@@ -186,22 +190,28 @@ export function UserFilters({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">全部状态</SelectItem>
-                      <SelectItem value={UserStatus.ACTIVE.toString()}>
+                      <SelectItem value={UserStatus.NORMAL.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-green-500" />
                           正常
                         </div>
                       </SelectItem>
-                      <SelectItem value={UserStatus.INACTIVE.toString()}>
+                      <SelectItem value={UserStatus.DISABLED.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                          未激活
+                          禁用
                         </div>
                       </SelectItem>
-                      <SelectItem value={UserStatus.BANNED.toString()}>
+                      <SelectItem value={UserStatus.PENDING.toString()}>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-blue-500" />
+                          待审核
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={UserStatus.REJECTED.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-red-500" />
-                          已封禁
+                          审核拒绝
                         </div>
                       </SelectItem>
                     </SelectContent>
