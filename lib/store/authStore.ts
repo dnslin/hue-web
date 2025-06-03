@@ -1,30 +1,32 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-/**
- * 用户信息接口
- */
-export interface UserInfo {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
-}
+import {
+  loginAction,
+  registerAction,
+  logoutAction,
+  getCurrentUserAction,
+} from "@/lib/actions/auth/auth.actions";
+import type { User } from "@/lib/types/user";
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponseData,
+} from "@/lib/types/auth";
 
 /**
  * 认证状态接口
  */
 interface AuthState {
-  user: UserInfo | null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isHydrated: boolean; // 新增：标识状态是否已从持久化存储中恢复
   error: string | null;
 
   // 操作方法
-  setAuth: (user: UserInfo) => void;
+  setAuth: (user: User) => void;
   clearAuth: () => void;
-  updateUser: (user: Partial<UserInfo>) => void;
+  updateUser: (user: Partial<User>) => void;
   login: (username_or_email: string, password: string) => Promise<boolean>;
   register: (
     username: string,
@@ -57,8 +59,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // 设置认证信息（token通过HTTP-only cookie管理）
-      setAuth: (user: UserInfo) => {
-        console.log("🔐 设置用户认证信息:", user);
+      setAuth: (user: User) => {
+        console.log("🔐 设置用户认证信息:", user); // 中文注释：设置用户认证信息
         set({
           user,
           isAuthenticated: true,
@@ -68,7 +70,7 @@ export const useAuthStore = create<AuthState>()(
 
       // 清除认证信息
       clearAuth: () => {
-        console.log("🚪 清除用户认证信息");
+        console.log("🚪 清除用户认证信息"); // 中文注释：清除用户认证信息
         set({
           user: null,
           isAuthenticated: false,
@@ -77,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // 更新用户信息
-      updateUser: (userData: Partial<UserInfo>) => {
+      updateUser: (userData: Partial<User>) => {
         const currentUser = get().user;
         if (currentUser) {
           set({
@@ -87,79 +89,90 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // 用户登录
-      login: async (username_or_email: string, password: string) => {
+      login: async (
+        username_or_email: string,
+        password: string
+      ): Promise<boolean> => {
+        set({ isLoading: true, error: null });
         try {
-          set({ isLoading: true, error: null });
+          const credentials: LoginRequest = { username_or_email, password };
+          const response = await loginAction(credentials);
 
-          const response = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username_or_email, password }),
-          });
-
-          const data = await response.json();
-
-          if (data && !data.error && data.data?.user) {
+          if (response.success && response.data?.user) {
+            console.log("✅ 登录成功:", response.data.user); // 中文注释：登录成功
             set({
-              user: data.data.user,
+              user: response.data.user,
               isAuthenticated: true,
               isLoading: false,
               error: null,
             });
             return true;
           } else {
+            console.error("❌ 登录失败:", response.message); // 中文注释：登录失败
             set({
               isLoading: false,
-              error: data.message || "登录失败",
+              error: response.message || "登录失败，请检查您的凭据。",
             });
             return false;
           }
-        } catch {
+        } catch (err: any) {
+          console.error("❌ 登录时发生意外错误:", err); // 中文注释：登录时发生意外错误
           set({
             isLoading: false,
-            error: "登录失败，请稍后重试",
+            error: err.message || "登录失败，请稍后重试。",
           });
           return false;
         }
       },
 
       // 用户注册
-      register: async (username: string, email: string, password: string) => {
+      register: async (
+        username: string,
+        email: string,
+        password: string
+      ): Promise<boolean> => {
+        set({ isLoading: true, error: null });
         try {
-          set({ isLoading: true, error: null });
+          const userData: RegisterRequest = { username, email, password };
+          const response = await registerAction(userData);
 
-          const response = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, email, password }),
-          });
-
-          const data = await response.json();
-
-          if (data && !data.error) {
-            // 如果注册成功且返回用户信息，自动登录
-            if (data.data?.user) {
+          if (response.success) {
+            // 注册成功，后端可能返回用户信息（自动登录）或仅返回消息（如需邮箱验证）
+            const responseData = response.data as
+              | AuthResponseData
+              | { message: string };
+            if ("user" in responseData && responseData.user) {
+              console.log("✅ 注册成功并自动登录:", responseData.user); // 中文注释：注册成功并自动登录
               set({
-                user: data.data.user,
+                user: responseData.user,
                 isAuthenticated: true,
                 isLoading: false,
                 error: null,
               });
             } else {
+              // 注册成功但未自动登录 (例如需要邮箱验证)
+              console.log(
+                "📝 注册请求成功:",
+                response.message ||
+                  (responseData as { message: string }).message
+              ); // 中文注释：注册请求成功
               set({ isLoading: false, error: null });
+              // 可以在这里设置一个临时消息给UI提示用户检查邮箱等
             }
-            return true;
+            return true; // Action本身是成功的
           } else {
+            console.error("❌ 注册失败:", response.message); // 中文注释：注册失败
             set({
               isLoading: false,
-              error: data.message || "注册失败",
+              error: response.message || "注册失败，请检查输入信息。",
             });
             return false;
           }
-        } catch {
+        } catch (err: any) {
+          console.error("❌ 注册时发生意外错误:", err); // 中文注释：注册时发生意外错误
           set({
             isLoading: false,
-            error: "注册失败，请稍后重试",
+            error: err.message || "注册失败，请稍后重试。",
           });
           return false;
         }
@@ -167,26 +180,27 @@ export const useAuthStore = create<AuthState>()(
 
       // 用户登出
       logout: async () => {
+        set({ isLoading: true });
         try {
-          set({ isLoading: true });
-
-          await fetch("/api/auth/logout", {
-            method: "POST",
-          });
-
+          const response = await logoutAction();
+          if (response.success) {
+            console.log("🚪 用户已成功登出"); // 中文注释：用户已成功登出
+          } else {
+            console.warn(
+              "⚠️ 登出操作在服务端可能未完全成功:",
+              response.message
+            ); // 中文注释：登出操作在服务端可能未完全成功
+            // 即使服务端失败，客户端也应清除状态
+          }
+        } catch (err: any) {
+          console.error("❌ 登出时发生意外错误:", err); // 中文注释：登出时发生意外错误
+          // 即使捕获到错误，也应清除客户端状态
+        } finally {
           set({
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: null,
-          });
-        } catch {
-          // 即使API失败也清除本地状态
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null,
+            error: null, // 清除登出相关的错误，避免影响下次操作
           });
         }
       },
@@ -198,42 +212,36 @@ export const useAuthStore = create<AuthState>()(
 
       // 初始化认证状态 - 验证服务端状态
       initializeAuth: async () => {
+        console.log("🔄 开始初始化认证状态"); // 中文注释：开始初始化认证状态
+        set({ isLoading: true });
         try {
-          console.log("🔄 开始初始化认证状态");
-          set({ isLoading: true });
-
-          const response = await fetch("/api/auth/me", {
-            method: "GET",
-            credentials: "include", // 包含 HTTP-only cookies
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data && !data.error && data.data?.user) {
-              console.log("✅ 服务端认证状态验证成功:", data.data.user);
-              set({
-                user: data.data.user,
-                isAuthenticated: true,
-                isLoading: false,
-                error: null,
-              });
-            } else {
-              console.log("❌ 服务端认证状态无效，清除本地状态");
-              set({
-                user: null,
-                isAuthenticated: false,
-                isLoading: false,
-                error: null,
-              });
-            }
+          const currentUser = await getCurrentUserAction();
+          if (currentUser) {
+            console.log("✅ 服务端认证状态验证成功:", currentUser); // 中文注释：服务端认证状态验证成功
+            set({
+              user: currentUser,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
           } else {
-            console.log("⚠️ 服务端认证验证失败，保持本地状态");
-            set({ isLoading: false });
+            console.log("❌ 服务端认证状态无效或未登录，清除本地状态"); // 中文注释：服务端认证状态无效或未登录，清除本地状态
+            set({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null,
+            });
           }
-        } catch (error) {
-          console.error("❌ 认证状态初始化失败:", error);
-          // 网络错误时保持本地状态，只更新加载状态
-          set({ isLoading: false });
+        } catch (error: any) {
+          console.error("❌ 认证状态初始化失败:", error); // 中文注释：认证状态初始化失败
+          // 网络错误或其他错误时，也清除本地状态以保持一致性
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: "认证状态初始化失败，请稍后重试。",
+          });
         }
       },
     }),

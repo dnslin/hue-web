@@ -5,7 +5,7 @@
 **源计划文件:** [plan.md](../../../plan.md)
 
 ## 目标
-
+注意当前项目是在window11 终端是 powershell 运行的。
 根据 [plan.md (章节 4.1)](../../../plan.md#41-移除旧的api路由和相关工具文件) 的指导，在确认所有相关功能已通过Server Actions和新的 `apiService` 实现后，清理项目中不再使用的旧API相关文件和目录。
 
 ## 关键信息

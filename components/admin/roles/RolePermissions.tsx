@@ -16,43 +16,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Role, PermissionGroup } from "@/lib/types/user";
-import {
-  getPermissionGroups,
-  assignPermissionsToRole,
-  removePermissionsFromRole,
-} from "@/lib/api";
-
+import { Role, Permission, PermissionGroup as PermissionGroupTypeFromUserTypes } from "@/lib/types/user"; // Renamed to avoid conflict
+import { useRoleStore, PermissionGroupFE } from "@/lib/store/roleStore"; // Use PermissionGroupFE from store
 interface RolePermissionsProps {
   role: Role;
   onRoleUpdate: (role: Role) => void;
 }
 
 export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
-  const [permissionGroups, setPermissionGroups] = useState<PermissionGroup[]>(
-    []
-  );
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
+  const {
+    permissions, // All permissions
+    permissionGroups: storePermissionGroups, // Grouped by FE logic in store
+    isLoadingPermissions,
+    isSubmitting,
+    error,
+    fetchPermissions,
+    syncPermissions, // Use syncPermissions for a more robust update
+    // assignPermission, // Individual assignment might not be needed if using sync
+    // removePermission, // Individual removal might not be needed if using sync
+  } = useRoleStore();
+
+  // Local state for managing UI selections
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<number>>( // Store permission IDs as numbers
     new Set(role.permissions.map((p) => p.id))
   );
 
-  // 获取权限分组
+  // 获取权限分组和所有权限
   useEffect(() => {
-    const fetchPermissionGroups = async () => {
-      try {
-        const groups = await getPermissionGroups();
-        setPermissionGroups(groups);
-      } catch (error) {
-        console.error("获取权限分组失败:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPermissionGroups();
-  }, []);
+    fetchPermissions(); // Fetches all permissions and groups them in the store
+  }, [fetchPermissions]);
+  
+  // Update local selection when the role prop changes (e.g., when a different role is selected in RoleList)
+  useEffect(() => {
+    setSelectedPermissionIds(new Set(role.permissions.map((p) => p.id)));
+  }, [role]);
 
   // 获取权限图标
   const getPermissionIcon = (resource: string) => {
@@ -78,19 +75,19 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   };
 
   // 切换权限选择
-  const togglePermission = (permissionId: string) => {
-    const newSelected = new Set(selectedPermissions);
+  const togglePermission = (permissionId: number) => { // ID is number
+    const newSelected = new Set(selectedPermissionIds);
     if (newSelected.has(permissionId)) {
       newSelected.delete(permissionId);
     } else {
       newSelected.add(permissionId);
     }
-    setSelectedPermissions(newSelected);
+    setSelectedPermissionIds(newSelected);
   };
 
   // 切换分组所有权限
-  const toggleGroupPermissions = (group: PermissionGroup, checked: boolean) => {
-    const newSelected = new Set(selectedPermissions);
+  const toggleGroupPermissions = (group: PermissionGroupFE, checked: boolean) => {
+    const newSelected = new Set(selectedPermissionIds);
     group.permissions.forEach((permission) => {
       if (checked) {
         newSelected.add(permission.id);
@@ -98,62 +95,42 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
         newSelected.delete(permission.id);
       }
     });
-    setSelectedPermissions(newSelected);
+    setSelectedPermissionIds(newSelected);
   };
 
   // 保存权限变更
   const savePermissions = async () => {
-    setUpdating(true);
-    try {
-      const currentPermissionIds = new Set(role.permissions.map((p) => p.id));
-      const toAdd = Array.from(selectedPermissions).filter(
-        (id) => !currentPermissionIds.has(id)
-      );
-      const toRemove = Array.from(currentPermissionIds).filter(
-        (id) => !selectedPermissions.has(id)
-      );
-
-      // 添加权限
-      if (toAdd.length > 0) {
-        await assignPermissionsToRole(role.id, toAdd);
-      }
-
-      // 移除权限
-      if (toRemove.length > 0) {
-        await removePermissionsFromRole(role.id, toRemove);
-      }
-
-      // 更新角色数据
-      const allPermissions = permissionGroups.flatMap((g) => g.permissions);
-      const updatedPermissions = allPermissions.filter((p) =>
-        selectedPermissions.has(p.id)
-      );
-      const updatedRole = { ...role, permissions: updatedPermissions };
-      onRoleUpdate(updatedRole);
-    } catch (error) {
-      console.error("保存权限失败:", error);
-    } finally {
-      setUpdating(false);
+    // No need to set local updating state, use isSubmitting from store
+    const updatedRole = await syncPermissions(role.id, Array.from(selectedPermissionIds));
+    if (updatedRole) {
+      onRoleUpdate(updatedRole); // Notify parent component
+      // Optionally, show a success message
+    } else {
+      // Error is handled in the store, can show a generic error message here or rely on store's error state
+      console.error("保存权限失败 (RolePermissions):", error);
     }
   };
 
   // 重置权限选择
   const resetPermissions = () => {
-    setSelectedPermissions(new Set(role.permissions.map((p) => p.id)));
+    setSelectedPermissionIds(new Set(role.permissions.map((p) => p.id)));
   };
 
   // 检查是否有变更
   const hasChanges = () => {
-    const currentPermissionIds = new Set(role.permissions.map((p) => p.id));
-    return (
-      selectedPermissions.size !== currentPermissionIds.size ||
-      Array.from(selectedPermissions).some(
-        (id) => !currentPermissionIds.has(id)
-      )
-    );
+    const currentPermissionIds = new Set(role.permissions.map((p) => p.id)); // These are numbers
+    if (selectedPermissionIds.size !== currentPermissionIds.size) {
+      return true;
+    }
+    for (const id of selectedPermissionIds) {
+      if (!currentPermissionIds.has(id)) {
+        return true;
+      }
+    }
+    return false;
   };
 
-  if (loading) {
+  if (isLoadingPermissions && storePermissionGroups.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -197,12 +174,12 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                   variant="outline"
                   size="sm"
                   onClick={resetPermissions}
-                  disabled={updating}
+                  disabled={isSubmitting}
                 >
                   重置
                 </Button>
-                <Button size="sm" onClick={savePermissions} disabled={updating}>
-                  {updating ? "保存中..." : "保存变更"}
+                <Button size="sm" onClick={savePermissions} disabled={isSubmitting}>
+                  {isSubmitting ? "保存中..." : "保存变更"}
                 </Button>
               </>
             )}
@@ -217,13 +194,13 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
           </TabsList>
 
           <TabsContent value="by-group" className="space-y-6">
-            {permissionGroups.map((group) => {
-              const groupPermissionIds = group.permissions.map((p) => p.id);
-              const selectedInGroup = groupPermissionIds.filter((id) =>
-                selectedPermissions.has(id)
-              );
-              const allSelected =
-                selectedInGroup.length === groupPermissionIds.length;
+            {storePermissionGroups.map((group) => { // Use storePermissionGroups
+              const groupPermissionIds = group.permissions.map((p) => p.id); // These are numbers
+              const selectedInGroupCount = groupPermissionIds.filter((id) =>
+                selectedPermissionIds.has(id)
+              ).length;
+              const allSelectedInGroup =
+                selectedInGroupCount === groupPermissionIds.length && groupPermissionIds.length > 0;
 
               return (
                 <div key={group.name} className="space-y-3">
@@ -231,18 +208,18 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium">{group.name}</h3>
                       <Badge variant="outline">
-                        {selectedInGroup.length}/{groupPermissionIds.length}
+                        {selectedInGroupCount}/{groupPermissionIds.length}
                       </Badge>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        toggleGroupPermissions(group, !allSelected)
+                        toggleGroupPermissions(group, !allSelectedInGroup)
                       }
                       className="gap-2"
                     >
-                      {allSelected ? (
+                      {allSelectedInGroup ? (
                         <>
                           <X className="h-4 w-4" />
                           取消全选
@@ -261,13 +238,13 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {group.permissions.map((permission) => {
-                      const Icon = getPermissionIcon(permission.resource);
-                      const isSelected = selectedPermissions.has(permission.id);
+                    {group.permissions.map((permission) => { // permission.id is number
+                      const Icon = getPermissionIcon(permission.group_name); // Use group_name or a more specific field if available for icon
+                      const isSelected = selectedPermissionIds.has(permission.id);
 
                       return (
                         <div
-                          key={permission.id}
+                          key={permission.id} // ID is number
                           className={`
                             p-4 rounded-lg border cursor-pointer transition-all
                             ${
@@ -304,11 +281,13 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                                 {permission.description}
                               </p>
                               <div className="flex items-center gap-1 mt-2">
+                                {/* Assuming permission object has resource and action, or adjust as per actual Permission type */}
+                                {/* For now, using group_name as a placeholder if resource/action not directly on permission */}
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.resource}
+                                  {permission.group_name || 'N/A'}
                                 </Badge>
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.action}
+                                  {permission.name} {/* Display permission name as action-like identifier */}
                                 </Badge>
                               </div>
                             </div>
@@ -325,28 +304,24 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
           <TabsContent value="selected" className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-medium">已选择的权限</h3>
-              <Badge variant="outline">{selectedPermissions.size} 个权限</Badge>
+              <Badge variant="outline">{selectedPermissionIds.size} 个权限</Badge>
             </div>
 
-            {selectedPermissions.size === 0 ? (
+            {selectedPermissionIds.size === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>暂未选择任何权限</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {permissionGroups
-                  .flatMap((group) =>
-                    group.permissions.filter((p) =>
-                      selectedPermissions.has(p.id)
-                    )
-                  )
+                {permissions // Iterate over all fetched permissions
+                  .filter((p) => selectedPermissionIds.has(p.id)) // Filter by selected IDs
                   .map((permission) => {
-                    const Icon = getPermissionIcon(permission.resource);
+                    const Icon = getPermissionIcon(permission.group_name); // Use group_name or a more specific field
 
                     return (
                       <div
-                        key={permission.id}
+                        key={permission.id} // ID is number
                         className="p-4 rounded-lg border border-primary bg-primary/5 ring-1 ring-primary/20"
                       >
                         <div className="flex items-start gap-3">
@@ -354,28 +329,29 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                             <Icon className="h-4 w-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between">
                               <h4 className="font-medium text-sm">
                                 {permission.name}
                               </h4>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon" // Make it an icon button
                                 className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                                onClick={() => togglePermission(permission.id)}
+                                onClick={() => togglePermission(permission.id)} // ID is number
                               >
                                 <X className="h-3 w-3" />
+                                <span className="sr-only">取消选择</span>
                               </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-xs text-muted-foreground mt-1 truncate" title={permission.description}>
                               {permission.description}
                             </p>
                             <div className="flex items-center gap-1 mt-2">
-                              <Badge variant="outline" className="text-xs">
-                                {permission.resource}
+                               <Badge variant="outline" className="text-xs">
+                                {permission.group_name || 'N/A'}
                               </Badge>
                               <Badge variant="outline" className="text-xs">
-                                {permission.action}
+                                {permission.name}
                               </Badge>
                             </div>
                           </div>

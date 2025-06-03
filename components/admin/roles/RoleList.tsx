@@ -30,7 +30,8 @@ import {
 } from "@/components/ui/popover";
 import { RolePermissions } from "./RolePermissions";
 import { Role } from "@/lib/types/user";
-import { getRoleList, deleteRole, duplicateRole } from "@/lib/api";
+// import { getRoleList, deleteRole, duplicateRole } from "@/lib/api"; // 旧的API导入将被移除
+import { useRoleStore } from "@/lib/store/roleStore";
 
 interface RoleListProps {
   onRoleSelect?: (role: Role) => void;
@@ -38,74 +39,85 @@ interface RoleListProps {
 }
 
 export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [showPermissions, setShowPermissions] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
-  const [duplicating, setDuplicating] = useState<string | null>(null);
+  // 使用 RoleStore
+  const {
+    roles,
+    isLoadingRoles,
+    isSubmitting,
+    error,
+    fetchRoles,
+    deleteRole: storeDeleteRole,
+    duplicateRole: storeDuplicateRole,
+    setSelectedRole: storeSetSelectedRole, // 用于在对话框中显示的角色
+    selectedRole: storeSelectedRoleForDialog, // 从store获取，用于权限管理对话框
+  } = useRoleStore();
+
+  // 本地状态用于UI控制，例如对话框的显示
+  // selectedRoleForDisplay 用于UI高亮等，不直接用于数据操作
+  const [selectedRoleForDisplay, setSelectedRoleForDisplay] = useState<Role | null>(null);
+  const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<number | null>(null); // 使用 number 类型的 roleId
+  // duplicating 状态由 store 的 isSubmitting 替代一部分，但如果需要针对特定角色显示复制中，可以保留
 
   // 获取角色列表
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const roleList = await getRoleList();
-        setRoles(roleList);
-      } catch (error) {
-        console.error("获取角色列表失败:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchRoles(); // 默认获取第一页
+  }, [fetchRoles]);
 
-    fetchRoles();
-  }, []);
-
-  // 处理角色选择
+  // 处理角色选择 (用于UI高亮和外部回调)
   const handleRoleSelect = (role: Role) => {
-    setSelectedRole(role);
-    onRoleSelect?.(role);
+    setSelectedRoleForDisplay(role);
+    onRoleSelect?.(role); // 调用外部传入的回调
+    storeSetSelectedRole(role); // 同时更新store中的selectedRole，供权限弹窗使用
   };
 
-  // 处理权限管理
-  const handleManagePermissions = (role: Role) => {
-    setSelectedRole(role);
-    setShowPermissions(true);
+  // 处理权限管理按钮点击
+  const handleManagePermissionsClick = (role: Role) => {
+    storeSetSelectedRole(role); // 确保store中的selectedRole是当前要管理权限的角色
+    setShowPermissionsDialog(true);
   };
 
-  // 处理角色更新
+  // 处理角色更新 (通常由 RolePermissions 组件回调)
   const handleRoleUpdate = (updatedRole: Role) => {
-    setRoles((prevRoles) =>
-      prevRoles.map((role) => (role.id === updatedRole.id ? updatedRole : role))
-    );
-    setSelectedRole(updatedRole);
+    // RoleStore 内部的 syncPermissions 等操作会自动更新 roles 列表和 selectedRole
+    // 这里可能只需要关闭权限对话框，并确保UI同步
+    if (storeSelectedRoleForDialog?.id === updatedRole.id) {
+      storeSetSelectedRole(updatedRole); // 更新对话框中使用的角色信息
+    }
+    // 如果 selectedRoleForDisplay 也需要更新
+    if (selectedRoleForDisplay?.id === updatedRole.id) {
+        setSelectedRoleForDisplay(updatedRole);
+    }
+    // fetchRoles(); // 可选：强制刷新列表，但store内部通常会处理
   };
 
   // 处理角色删除
-  const handleDeleteRole = async (roleId: string) => {
-    try {
-      await deleteRole(roleId);
-      setRoles((prevRoles) => prevRoles.filter((role) => role.id !== roleId));
+  const handleDeleteRole = async (roleId: number) => {
+    const success = await storeDeleteRole(roleId);
+    if (success) {
       setShowDeleteDialog(null);
-      if (selectedRole?.id === roleId) {
-        setSelectedRole(null);
+      if (selectedRoleForDisplay?.id === roleId) {
+        setSelectedRoleForDisplay(null);
+        storeSetSelectedRole(null); // 如果删除的是当前选中的角色，也清空store中的
       }
-    } catch (error) {
-      console.error("删除角色失败:", error);
+      // 列表刷新已在 storeDeleteRole 内部处理
+    } else {
+      // 错误已在store中处理并可通过 error state 访问
+      console.error("删除角色失败 (RoleList):", error);
+      // 可以在此添加UI提示，例如toast
     }
   };
 
   // 处理角色复制
   const handleDuplicateRole = async (role: Role) => {
-    setDuplicating(role.id);
-    try {
-      const newRoleName = `${role.name} (副本)`;
-      const duplicatedRole = await duplicateRole(role.id, newRoleName);
-      setRoles((prevRoles) => [...prevRoles, duplicatedRole]);
-    } catch (error) {
-      console.error("复制角色失败:", error);
-    } finally {
-      setDuplicating(null);
+    // newNameSuffix 可以是固定的，或者允许用户输入
+    const duplicatedRole = await storeDuplicateRole(role.id);
+    if (duplicatedRole) {
+      // 列表刷新已在 storeDuplicateRole 内部处理
+      console.log("角色复制成功:", duplicatedRole);
+    } else {
+      console.error("复制角色失败 (RoleList):", error);
+      // 可以在此添加UI提示
     }
   };
 
@@ -120,13 +132,14 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       case "user":
       case "普通用户":
+      case "default": // 假设 "default" 也是普通用户的一种表示
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
-  if (loading) {
+  if (isLoadingRoles && roles.length === 0) { // 初始加载时显示骨架屏
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -162,10 +175,10 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
           <Card
             key={role.id}
             className={`
-              cursor-pointer transition-all hover:shadow-md
-              ${selectedRoleId === role.id ? "ring-2 ring-primary" : ""}
-            `}
-            onClick={() => handleRoleSelect(role)}
+            cursor-pointer transition-all hover:shadow-md
+            ${selectedRoleForDisplay?.id === role.id ? "ring-2 ring-primary" : ""}
+          `}
+          onClick={() => handleRoleSelect(role)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -192,7 +205,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                         className="w-full justify-start gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleManagePermissions(role);
+                          handleManagePermissionsClick(role);
                         }}
                       >
                         <Edit className="h-4 w-4" />
@@ -206,15 +219,15 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                           e.stopPropagation();
                           handleDuplicateRole(role);
                         }}
-                        disabled={duplicating === role.id}
+                        disabled={isSubmitting} // 使用 store 的 isSubmitting
                       >
                         <Copy className="h-4 w-4" />
-                        {duplicating === role.id ? "复制中..." : "复制角色"}
+                        {isSubmitting ? "处理中..." : "复制角色"}
                       </Button>
                       <Dialog
-                        open={showDeleteDialog === role.id}
+                        open={showDeleteDialog === role.id} // 比较 number
                         onOpenChange={(open) =>
-                          setShowDeleteDialog(open ? role.id : null)
+                          setShowDeleteDialog(open ? role.id : null) // 设置 number 或 null
                         }
                       >
                         <DialogTrigger asChild>
@@ -245,7 +258,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                             </Button>
                             <Button
                               variant="destructive"
-                              onClick={() => handleDeleteRole(role.id)}
+                              onClick={() => handleDeleteRole(role.id)} // 传递 number
+                              disabled={isSubmitting}
                             >
                               确认删除
                             </Button>
@@ -256,21 +270,22 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                   </PopoverContent>
                 </Popover>
               </div>
-              {role.description && (
+              {/* {role.description && ( // Role类型没有description属性，暂时移除
                 <p className="text-sm text-muted-foreground">
                   {role.description}
                 </p>
-              )}
+              )} */}
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {/* 用户数量 */}
+                {/* 用户数量 - Role类型没有user_count属性，暂时移除或后续通过其他方式获取
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     {role.user_count} 个用户
                   </span>
                 </div>
+                */}
 
                 {/* 权限数量 */}
                 <div className="flex items-center gap-2">
@@ -285,11 +300,11 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                   <Badge className={getRoleColor(role.name)}>{role.name}</Badge>
                   {role.permissions.slice(0, 3).map((permission) => (
                     <Badge
-                      key={permission.id}
+                      key={permission.id.toString()} // key 应该是 string 或 number
                       variant="outline"
                       className="text-xs"
                     >
-                      {permission.name}
+                      {permission.name} {/* 假设 Permission 类型有 name 字段 */}
                     </Badge>
                   ))}
                   {role.permissions.length > 3 && (
@@ -300,9 +315,14 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                 </div>
 
                 {/* 创建时间 */}
-                <div className="text-xs text-muted-foreground">
-                  创建于 {new Date(role.created_at).toLocaleDateString("zh-CN")}
+                <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
+                  创建于: {new Date(role.created_at).toLocaleDateString("zh-CN")}
                 </div>
+                {role.updated_at && role.updated_at !== role.created_at && (
+                   <div className="text-xs text-muted-foreground">
+                     更新于: {new Date(role.updated_at).toLocaleDateString("zh-CN")}
+                   </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -310,23 +330,25 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
       </div>
 
       {/* 权限管理对话框 */}
-      <Dialog open={showPermissions} onOpenChange={setShowPermissions}>
+      <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>权限管理</DialogTitle>
-            <DialogDescription>为角色分配和管理权限</DialogDescription>
+            <DialogDescription>
+              为角色 {storeSelectedRoleForDialog?.name ? `"${storeSelectedRoleForDialog.name}"` : ""} 分配和管理权限
+            </DialogDescription>
           </DialogHeader>
-          {selectedRole && (
+          {storeSelectedRoleForDialog && (
             <RolePermissions
-              role={selectedRole}
-              onRoleUpdate={handleRoleUpdate}
+              role={storeSelectedRoleForDialog}
+              onRoleUpdate={handleRoleUpdate} // RolePermissions 内部会调用这个来通知更新
             />
           )}
         </DialogContent>
       </Dialog>
 
-      {/* 空状态 */}
-      {roles.length === 0 && (
+      {/* 空状态 (当非加载状态且无数据时) */}
+      {!isLoadingRoles && roles.length === 0 && (
         <Card>
           <CardContent className="py-12">
             <div className="text-center">

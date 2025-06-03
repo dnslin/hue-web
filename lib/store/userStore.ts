@@ -11,17 +11,24 @@ import {
   UserUpdateRequest,
 } from "@/lib/types/user";
 import {
-  getAdminUserList,
-  changeUserStatus,
-  batchApproveUsers,
-  batchRejectUsers,
-  batchBanUsers,
-  batchUnbanUsers,
-  deleteAdminUser,
-  createAdminUser,
-  updateAdminUser,
-} from "@/lib/api/adminUsers";
+  getUsersAction,
+  approveUserAction, // 更正：没有统一的 changeUserStatusAction
+  rejectUserAction,
+  banUserAction,
+  unbanUserAction,
+  batchApproveUsersAction,
+  batchRejectUsersAction,
+  batchBanUsersAction,
+  batchUnbanUsersAction,
+  deleteAdminUserAction,
+  createAdminUserAction,
+  updateAdminUserAction,
+} from "@/lib/actions/users/user.actions";
 import { cacheManager, cacheUtils } from "@/lib/utils/cacheManager";
+import {
+  ErrorResponse as ApiErrorResponse,
+  SuccessResponse,
+} from "@/lib/types/user";
 
 // 加载状态类型
 interface LoadingState {
@@ -220,18 +227,40 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await getAdminUserList(mergedParams);
+            const actionResponse = await getUsersAction(mergedParams);
+
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              // 处理 ErrorResponse
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "获取用户列表失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, list: false },
+                error: errorResponse.message || "获取用户列表失败",
+              }));
+              return;
+            }
+
+            // 处理 UserListResponse (成功情况)
+            const successResponse = actionResponse as UserListResponse;
 
             // 缓存响应数据
-            cacheManager.set(cacheKey, response, {
+            cacheManager.set(cacheKey, successResponse, {
               ttl: CACHE_EXPIRY,
               storage: "memory",
               version: state.cache.version.toString(),
             });
 
             set((state) => ({
-              users: response.data,
-              pagination: response.meta,
+              users: successResponse.data,
+              pagination: successResponse.meta,
               filters: {
                 ...state.filters,
                 ...mergedParams,
@@ -257,11 +286,15 @@ export const useUserStore = create<UserStoreState>()(
               },
             }));
           } catch (error) {
-            console.error("获取用户列表失败:", error);
+            // 主要捕获 getUsersAction 内部未处理的意外错误
+            console.error("获取用户列表时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "获取用户列表时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, list: false },
-              error:
-                error instanceof Error ? error.message : "获取用户列表失败",
+              error: errorMessage,
             }));
           }
         },
@@ -280,22 +313,42 @@ export const useUserStore = create<UserStoreState>()(
           }));
 
           try {
-            const response = await createAdminUser(userData);
+            const actionResponse = await createAdminUserAction(userData);
 
-            // 清理缓存并刷新列表
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== 201 && // 201 for created
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "创建用户失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, create: false },
+                error: errorResponse.message || "创建用户失败",
+              }));
+              return null;
+            }
+            const successResponse = actionResponse as SuccessResponse<User>;
             cacheUtils.clearUserCache();
             await get().refreshUsers();
-
             set((state) => ({
               loading: { ...state.loading, create: false },
             }));
-
-            return response.data || null;
+            return successResponse.data || null;
           } catch (error) {
-            console.error("创建用户失败:", error);
+            console.error("创建用户时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "创建用户时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, create: false },
-              error: error instanceof Error ? error.message : "创建用户失败",
+              error: errorMessage,
             }));
             return null;
           }
@@ -307,25 +360,56 @@ export const useUserStore = create<UserStoreState>()(
             loading: { ...state.loading, update: true },
             error: null,
           }));
-
           try {
-            const response = await updateAdminUser(id, userData);
+            const actionResponse = await updateAdminUserAction(id, userData);
 
-            // 清理缓存并更新本地状态
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "更新用户失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, update: false },
+                error: errorResponse.message || "更新用户失败",
+              }));
+              return null;
+            }
+            const successResponse = actionResponse as SuccessResponse<User>;
             cacheUtils.clearUserCache();
-            set((state) => ({
-              users: state.users.map((user) =>
-                user.id === id ? { ...user, ...response.data } : user
-              ),
-              loading: { ...state.loading, update: false },
-            }));
-
-            return response.data || null;
+            // 刷新列表或仅更新本地用户
+            // 考虑到其他地方可能依赖最新列表，刷新更稳妥
+            // await get().refreshUsers();
+            // 或者，如果后端返回了完整的更新后的用户对象，可以直接更新本地状态
+            if (successResponse.data) {
+              set((state) => ({
+                users: state.users.map((user) =>
+                  user.id === id ? { ...user, ...successResponse.data } : user
+                ),
+                loading: { ...state.loading, update: false },
+              }));
+            } else {
+              // 如果没有返回data，则刷新列表
+              await get().refreshUsers();
+              set((state) => ({
+                loading: { ...state.loading, update: false },
+              }));
+            }
+            return successResponse.data || null;
           } catch (error) {
-            console.error("更新用户失败:", error);
+            console.error("更新用户时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "更新用户时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, update: false },
-              error: error instanceof Error ? error.message : "更新用户失败",
+              error: errorMessage,
             }));
             return null;
           }
@@ -337,11 +421,29 @@ export const useUserStore = create<UserStoreState>()(
             loading: { ...state.loading, delete: true },
             error: null,
           }));
-
           try {
-            await deleteAdminUser(id);
+            const actionResponse = await deleteAdminUserAction(id);
 
-            // 清理缓存并从本地状态移除
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              // 通常删除成功是 200 或 204 (No Content)
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "删除用户失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, delete: false },
+                error: errorResponse.message || "删除用户失败",
+              }));
+              return false;
+            }
+
+            // SuccessResponse (可能无 data)
             cacheUtils.clearUserCache();
             set((state) => ({
               users: state.users.filter((user) => user.id !== id),
@@ -355,49 +457,124 @@ export const useUserStore = create<UserStoreState>()(
                 ),
               },
             }));
-
+            // 刷新列表确保数据一致性，因为分页等信息可能改变
+            await get().refreshUsers();
             return true;
           } catch (error) {
-            console.error("删除用户失败:", error);
+            console.error("删除用户时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "删除用户时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, delete: false },
-              error: error instanceof Error ? error.message : "删除用户失败",
+              error: errorMessage,
             }));
             return false;
           }
         },
 
         // 更改用户状态
+        // 注意：原始 changeUserStatus API 比较复杂，涉及 fromStatus, toStatus。
+        // Server Actions (approveUserAction, banUserAction, etc.) 更直接。
+        // 这里需要根据 toStatus 调用不同的 Action。
         changeUserStatus: async (userId, fromStatus, toStatus, reason) => {
           set((state) => ({
             loading: { ...state.loading, statusChange: true },
             error: null,
           }));
 
+          let actionResponse: SuccessResponse<User> | ApiErrorResponse | null =
+            null;
+
           try {
-            const response = await changeUserStatus(
-              userId,
-              fromStatus,
-              toStatus,
-              reason
-            );
+            switch (toStatus) {
+              case UserStatus.NORMAL:
+                if (fromStatus === UserStatus.PENDING) {
+                  actionResponse = await approveUserAction(userId);
+                } else if (fromStatus === UserStatus.DISABLED) {
+                  actionResponse = await unbanUserAction(userId);
+                } else {
+                  console.warn(
+                    `Unsupported status transition from ${fromStatus} to ${toStatus}`
+                  );
+                  set((state) => ({
+                    loading: { ...state.loading, statusChange: false },
+                    error: "不支持的状态变更",
+                  }));
+                  return null;
+                }
+                break;
+              case UserStatus.DISABLED:
+                actionResponse = await banUserAction(userId);
+                break;
+              case UserStatus.REJECTED:
+                actionResponse = await rejectUserAction(userId, reason);
+                break;
+              default:
+                console.warn(`Unsupported target status: ${toStatus}`);
+                set((state) => ({
+                  loading: { ...state.loading, statusChange: false },
+                  error: "不支持的目标状态",
+                }));
+                return null;
+            }
 
-            // 清理缓存并更新本地状态
+            if (!actionResponse) {
+              set((state) => ({
+                loading: { ...state.loading, statusChange: false },
+                error: "状态变更操作未执行",
+              }));
+              return null;
+            }
+
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                `更改用户状态至 ${toStatus} 失败 (Action Error):`,
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, statusChange: false },
+                error:
+                  errorResponse.message || `更改用户状态至 ${toStatus} 失败`,
+              }));
+              return null;
+            }
+
+            const successResponse = actionResponse as SuccessResponse<User>;
             cacheUtils.clearUserCache();
-            set((state) => ({
-              users: state.users.map((user) =>
-                user.id === userId ? { ...user, ...response.data } : user
-              ),
-              loading: { ...state.loading, statusChange: false },
-            }));
 
-            return response.data || null;
+            if (successResponse.data) {
+              set((state) => ({
+                users: state.users.map((user) =>
+                  user.id === userId
+                    ? { ...user, ...successResponse.data }
+                    : user
+                ),
+                loading: { ...state.loading, statusChange: false },
+              }));
+            } else {
+              await get().refreshUsers();
+              set((state) => ({
+                loading: { ...state.loading, statusChange: false },
+              }));
+            }
+            return successResponse.data || null;
           } catch (error) {
-            console.error("更改用户状态失败:", error);
+            console.error(`更改用户状态至 ${toStatus} 时发生意外错误:`, error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : `更改用户状态至 ${toStatus} 时发生未知网络或客户端错误`;
             set((state) => ({
               loading: { ...state.loading, statusChange: false },
-              error:
-                error instanceof Error ? error.message : "更改用户状态失败",
+              error: errorMessage,
             }));
             return null;
           }
@@ -409,14 +586,29 @@ export const useUserStore = create<UserStoreState>()(
             loading: { ...state.loading, batchOperation: true },
             error: null,
           }));
-
           try {
-            const response = await batchApproveUsers(userIds);
-
-            // 清理缓存并刷新列表
+            const actionResponse = await batchApproveUsersAction(userIds);
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "批量批准失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, batchOperation: false },
+                error: errorResponse.message || "批量批准失败",
+              }));
+              return null;
+            }
+            const successResponse =
+              actionResponse as SuccessResponse<BatchOperationResult>;
             cacheUtils.clearUserCache();
             await get().refreshUsers();
-
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
               selection: {
@@ -425,13 +617,16 @@ export const useUserStore = create<UserStoreState>()(
                 isIndeterminate: false,
               },
             }));
-
-            return response.data || null;
+            return successResponse.data || null;
           } catch (error) {
-            console.error("批量批准失败:", error);
+            console.error("批量批准时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "批量批准时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
-              error: error instanceof Error ? error.message : "批量批准失败",
+              error: errorMessage,
             }));
             return null;
           }
@@ -443,14 +638,32 @@ export const useUserStore = create<UserStoreState>()(
             loading: { ...state.loading, batchOperation: true },
             error: null,
           }));
-
           try {
-            const response = await batchRejectUsers(userIds, reason);
-
-            // 清理缓存并刷新列表
+            const actionResponse = await batchRejectUsersAction(
+              userIds,
+              reason
+            );
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "批量拒绝失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, batchOperation: false },
+                error: errorResponse.message || "批量拒绝失败",
+              }));
+              return null;
+            }
+            const successResponse =
+              actionResponse as SuccessResponse<BatchOperationResult>;
             cacheUtils.clearUserCache();
             await get().refreshUsers();
-
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
               selection: {
@@ -459,13 +672,16 @@ export const useUserStore = create<UserStoreState>()(
                 isIndeterminate: false,
               },
             }));
-
-            return response.data || null;
+            return successResponse.data || null;
           } catch (error) {
-            console.error("批量拒绝失败:", error);
+            console.error("批量拒绝时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "批量拒绝时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
-              error: error instanceof Error ? error.message : "批量拒绝失败",
+              error: errorMessage,
             }));
             return null;
           }
@@ -477,14 +693,29 @@ export const useUserStore = create<UserStoreState>()(
             loading: { ...state.loading, batchOperation: true },
             error: null,
           }));
-
           try {
-            const response = await batchBanUsers(userIds);
-
-            // 清理缓存并刷新列表
+            const actionResponse = await batchBanUsersAction(userIds);
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "批量封禁失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, batchOperation: false },
+                error: errorResponse.message || "批量封禁失败",
+              }));
+              return null;
+            }
+            const successResponse =
+              actionResponse as SuccessResponse<BatchOperationResult>;
             cacheUtils.clearUserCache();
             await get().refreshUsers();
-
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
               selection: {
@@ -493,13 +724,16 @@ export const useUserStore = create<UserStoreState>()(
                 isIndeterminate: false,
               },
             }));
-
-            return response.data || null;
+            return successResponse.data || null;
           } catch (error) {
-            console.error("批量封禁失败:", error);
+            console.error("批量封禁时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "批量封禁时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
-              error: error instanceof Error ? error.message : "批量封禁失败",
+              error: errorMessage,
             }));
             return null;
           }
@@ -511,14 +745,29 @@ export const useUserStore = create<UserStoreState>()(
             loading: { ...state.loading, batchOperation: true },
             error: null,
           }));
-
           try {
-            const response = await batchUnbanUsers(userIds);
-
-            // 清理缓存并刷新列表
+            const actionResponse = await batchUnbanUsersAction(userIds);
+            if (
+              "code" in actionResponse &&
+              actionResponse.code !== 200 &&
+              actionResponse.code !== undefined
+            ) {
+              const errorResponse = actionResponse as ApiErrorResponse;
+              console.error(
+                "批量解封失败 (Action Error):",
+                errorResponse.message,
+                errorResponse.error
+              );
+              set((state) => ({
+                loading: { ...state.loading, batchOperation: false },
+                error: errorResponse.message || "批量解封失败",
+              }));
+              return null;
+            }
+            const successResponse =
+              actionResponse as SuccessResponse<BatchOperationResult>;
             cacheUtils.clearUserCache();
             await get().refreshUsers();
-
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
               selection: {
@@ -527,13 +776,16 @@ export const useUserStore = create<UserStoreState>()(
                 isIndeterminate: false,
               },
             }));
-
-            return response.data || null;
+            return successResponse.data || null;
           } catch (error) {
-            console.error("批量解封失败:", error);
+            console.error("批量解封时发生意外错误:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "批量解封时发生未知网络或客户端错误";
             set((state) => ({
               loading: { ...state.loading, batchOperation: false },
-              error: error instanceof Error ? error.message : "批量解封失败",
+              error: errorMessage,
             }));
             return null;
           }

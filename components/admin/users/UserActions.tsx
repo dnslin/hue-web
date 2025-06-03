@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { User, UserStatus } from "@/lib/types/user";
-import { toggleUserStatus, deleteUser, resetUserPassword } from "@/lib/api";
+import { useUserStore } from "@/lib/store/userStore";
 
 interface UserActionsProps {
   user: User;
@@ -39,52 +39,59 @@ export function UserActions({
   onUserUpdate,
   onUserDelete,
 }: UserActionsProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 更通用的加载状态
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
 
+  const { changeUserStatus, deleteUser: storeDeleteUser, updateUser: storeUpdateUser, error, clearError } = useUserStore();
+
   const handleStatusToggle = async (newStatus: UserStatus) => {
-    setIsLoading(true);
-    try {
-      const response = await toggleUserStatus(user.id, newStatus);
-      // 处理API响应，提取用户数据
-      const updatedUser = 'data' in response ? response.data : response;
-      if (updatedUser) {
-        onUserUpdate(updatedUser as User);
-      }
-    } catch (error) {
-      console.error("更新用户状态失败:", error);
-    } finally {
-      setIsLoading(false);
+    setIsSubmitting(true);
+    clearError(); // 清除之前的错误状态
+    // 注意：userStore.changeUserStatus 接受 fromStatus 和 toStatus
+    // 我们需要从 user prop 获取当前的 fromStatus
+    const updatedUser = await changeUserStatus(user.id, user.status, newStatus);
+    if (updatedUser) {
+      onUserUpdate(updatedUser); // 回调给父组件，父组件通常会刷新列表或更新单个用户
+    } else {
+      // 错误处理已在 store 中完成，这里可以根据需要添加额外的UI提示
+      // 例如，使用 toast 通知用户
+      console.error("更新用户状态失败 (UserActions):", error);
     }
+    setIsSubmitting(false);
   };
 
   const handleDelete = async () => {
-    setIsLoading(true);
-    try {
-      await deleteUser(user.id);
-      onUserDelete(user.id);
+    setIsSubmitting(true);
+    clearError();
+    const success = await storeDeleteUser(user.id);
+    if (success) {
+      onUserDelete(user.id); // 回调通知父组件
       setShowDeleteDialog(false);
-    } catch (error) {
-      console.error("删除用户失败:", error);
-    } finally {
-      setIsLoading(false);
+    } else {
+      console.error("删除用户失败 (UserActions):", error);
+      // 可以在此显示错误提示给用户, 例如使用 toast
+      alert(`删除用户 ${user.username} 失败: ${error || '未知错误'}`);
     }
+    setIsSubmitting(false);
   };
 
   const handleResetPassword = async () => {
-    setIsLoading(true);
-    try {
-      // 生成临时密码
-      const tempPassword = Math.random().toString(36).slice(-8);
-      await resetUserPassword(user.id, tempPassword);
-      alert(`密码已重置为: ${tempPassword}`);
+    setIsSubmitting(true);
+    clearError();
+    const tempPassword = Math.random().toString(36).slice(-8); // 生成一个8位随机密码
+    // 使用 storeUpdateUser 来更新密码，UserUpdateRequest 支持 password 字段
+    const updatedUser = await storeUpdateUser(user.id, { password: tempPassword });
+    if (updatedUser) {
+      alert(`用户 ${user.username} 的密码已成功重置为: ${tempPassword}\n请用户使用此临时密码登录后立即修改。`);
       setShowResetPasswordDialog(false);
-    } catch (error) {
-      console.error("重置密码失败:", error);
-    } finally {
-      setIsLoading(false);
+      // 可选: 如果 storeUpdateUser 返回了更新后的用户对象，可以调用 onUserUpdate
+      // onUserUpdate(updatedUser);
+    } else {
+      console.error("重置密码失败 (UserActions):", error);
+      alert(`重置用户 ${user.username} 的密码失败: ${error || '未知错误'}`);
     }
+    setIsSubmitting(false);
   };
 
   const getStatusBadge = (status: UserStatus) => {
@@ -161,7 +168,7 @@ export function UserActions({
                 size="sm"
                 className="w-full justify-start gap-2 text-yellow-600 hover:text-yellow-700"
                 onClick={() => handleStatusToggle(UserStatus.DISABLED)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 <Ban className="h-4 w-4" />
                 禁用用户
@@ -172,7 +179,7 @@ export function UserActions({
                 size="sm"
                 className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
                 onClick={() => handleStatusToggle(UserStatus.NORMAL)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 <CheckCircle className="h-4 w-4" />
                 启用用户
@@ -183,7 +190,7 @@ export function UserActions({
                 size="sm"
                 className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
                 onClick={() => handleStatusToggle(UserStatus.NORMAL)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 <CheckCircle className="h-4 w-4" />
                 批准用户
@@ -194,7 +201,7 @@ export function UserActions({
                 size="sm"
                 className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
                 onClick={() => handleStatusToggle(UserStatus.NORMAL)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 <CheckCircle className="h-4 w-4" />
                 激活用户
@@ -231,8 +238,8 @@ export function UserActions({
                   >
                     取消
                   </Button>
-                  <Button onClick={handleResetPassword} disabled={isLoading}>
-                    {isLoading ? "重置中..." : "确认重置"}
+                  <Button onClick={handleResetPassword} disabled={isSubmitting}>
+                    {isSubmitting ? "重置中..." : "确认重置"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -268,9 +275,9 @@ export function UserActions({
                   <Button
                     variant="destructive"
                     onClick={handleDelete}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
-                    {isLoading ? "删除中..." : "确认删除"}
+                    {isSubmitting ? "删除中..." : "确认删除"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
