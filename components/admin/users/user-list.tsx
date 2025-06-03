@@ -4,10 +4,10 @@ import { useEffect } from "react";
 import { Plus, Download, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserFilters } from "./UserFilters";
-import { UserTable } from "./UserTable";
-import { UserMobileList } from "./UserMobileList";
-import { UserPagination } from "./UserPagination";
+import { UserFilters } from "./user-filters";
+import { UserTable } from "./user-table";
+import { UserMobileList } from "./user-mobile-list";
+import { UserPagination } from "./user-pagination";
 import { UserListParams } from "@/lib/types/user";
 import { 
   useUserStore,
@@ -16,7 +16,7 @@ import {
   useUserFilters,
   useUserLoading,
   useUserError
-} from "@/lib/store/userStore";
+} from "@/lib/store/user-store";
 import { getAllUsersForExportAction } from "@/lib/actions/users/user.actions";
 import { User } from "@/lib/types/user"; 
 

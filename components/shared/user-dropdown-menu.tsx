@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserInfo } from "@/lib/store/authStore";
+import { UserInfo } from "@/lib/store/auth-store";
 import { cn } from "@/lib/utils";
 
 interface UserDropdownMenuProps {

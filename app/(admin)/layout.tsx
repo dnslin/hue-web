@@ -1,5 +1,5 @@
-import { AdminLayout } from "@/components/layouts/AdminLayout";
-import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
+import { AdminLayout } from "@/components/layouts/admin-layout";
+import { ProtectedRoute } from "@/components/shared/protected-route";
 import "@/styles/admin.css";
 
 export default function AdminLayoutPage({

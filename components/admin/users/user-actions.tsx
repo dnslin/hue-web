@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { User, UserStatus } from "@/lib/types/user";
-import { useUserStore } from "@/lib/store/userStore";
+import { useUserStore } from "@/lib/store/user-store";
 
 interface UserActionsProps {
   user: User;

@@ -9,10 +9,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
-import AuthLayout from "@/components/layouts/AuthLayout";
-import { useAuthStore } from "@/lib/store/authStore";
+import AuthLayout from "@/components/layouts/auth-layout";
+import { useAuthStore } from "@/lib/store/auth-store";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
-import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
+import { ProtectedRoute } from "@/components/shared/protected-route";
 
 // 注册表单验证模式
 const registerSchema = z

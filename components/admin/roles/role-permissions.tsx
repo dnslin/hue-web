@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Role, Permission, PermissionGroup as PermissionGroupTypeFromUserTypes } from "@/lib/types/user"; // Renamed to avoid conflict
-import { useRoleStore, PermissionGroupFE } from "@/lib/store/roleStore"; // Use PermissionGroupFE from store
+import { useRoleStore, PermissionGroupFE } from "@/lib/store/role-store"; // Use PermissionGroupFE from store
 interface RolePermissionsProps {
   role: Role;
   onRoleUpdate: (role: Role) => void;

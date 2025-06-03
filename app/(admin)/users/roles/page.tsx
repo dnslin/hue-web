@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { PageContainer } from "@/components/layouts/PageContainer";
-import { RoleList } from "@/components/admin/roles/RoleList";
+import { PageContainer } from "@/components/layouts/page-container";
+import { RoleList } from "@/components/admin/roles/role-list";
 
 export const metadata: Metadata = {
   title: "角色权限管理 - Lsky Pro",

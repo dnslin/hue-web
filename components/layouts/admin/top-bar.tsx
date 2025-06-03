@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { Menu, Search, Bell, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminStore } from "@/lib/store/admin-store";
-import { useAuthStore } from "@/lib/store/authStore";
-import { UserAvatar } from "@/components/shared/UserAvatar";
-import { UserDropdownMenu } from "@/components/shared/UserDropdownMenu";
+import { useAuthStore } from "@/lib/store/auth-store";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserDropdownMenu } from "@/components/shared/user-dropdown-menu";
 import {
   Breadcrumb,
   BreadcrumbList,

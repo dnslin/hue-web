@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, UserListParams, UserRole, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
-import { UserActions } from "./UserActions";
+import { UserActions } from "./user-actions";
 
 interface UserTableProps {
   users: User[];

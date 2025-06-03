@@ -28,10 +28,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RolePermissions } from "./RolePermissions";
+import { RolePermissions } from "./role-permissions";
 import { Role } from "@/lib/types/user";
-// import { getRoleList, deleteRole, duplicateRole } from "@/lib/api"; // 旧的API导入将被移除
-import { useRoleStore } from "@/lib/store/roleStore";
+import { useRoleStore } from "@/lib/store/role-store";
 
 interface RoleListProps {
   onRoleSelect?: (role: Role) => void;

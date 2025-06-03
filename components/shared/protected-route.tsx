@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
-import { AuthLoadingScreen } from "@/components/shared/AuthLoadingScreen";
+import { useAuthGuard } from "@/lib/hooks/use-auth-guard";
+import { AuthLoadingScreen } from "@/components/shared/auth-loading-screen";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

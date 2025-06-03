@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { UserInfo } from "@/lib/store/authStore";
+import { UserInfo } from "@/lib/store/auth-store";
 import {
   getGravatarUrl,
   getUserInitials,

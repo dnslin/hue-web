@@ -14,7 +14,7 @@ import {
   updateMockRole,
   deleteMockRole,
   duplicateMockRole,
-} from "@/lib/mock/roleData";
+} from "@/lib/mock/role-data";
 
 // 模拟网络延迟
 const delay = (ms: number = 300) =>

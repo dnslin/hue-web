@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminStore } from "@/lib/store/admin-store";
-import { AdminNavigation } from "./AdminNavigation";
+import { AdminNavigation } from "./admin-navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BorderBeam } from "@/components/magicui/border-beam";

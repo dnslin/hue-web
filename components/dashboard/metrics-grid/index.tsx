@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Users, Images, HardDrive, Activity } from "lucide-react";
-import { MetricCard } from "./MetricCard";
+import { MetricCard } from "./metric-card";
 import { DashboardMetrics } from "@/lib/types/dashboard";
 import { containerVariants, itemVariants } from "@/lib/dashboard/animations";
 

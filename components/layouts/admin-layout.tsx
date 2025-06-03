@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAdminStore } from "@/lib/store/admin-store";
 import { generateBreadcrumbs } from "@/lib/constants/admin-navigation";
-import { Sidebar } from "./admin/Sidebar";
-import { TopBar } from "./admin/TopBar";
-import { MobileBottomNav } from "./admin/MobileBottomNav";
+import { Sidebar } from "./admin/sider-bar";
+import { TopBar } from "./admin/top-bar";
+import { MobileBottomNav } from "./admin/mobile-bottom-nav";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
