@@ -12,8 +12,8 @@ import {
 } from "@/lib/types/user";
 import apiClient from "./apiClient";
 
-// API基础路径
-const ADMIN_USERS_BASE = "/api/v1/admin/users";
+// API基础路径 - 注意：apiClient已经设置了baseURL为'/api'
+const ADMIN_USERS_BASE = "/v1/admin/users";
 
 /**
  * 管理员获取用户列表（支持筛选和排序）
