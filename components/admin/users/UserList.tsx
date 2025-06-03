@@ -17,7 +17,8 @@ import {
   useUserLoading,
   useUserError
 } from "@/lib/store/userStore";
-import { exportAdminUsers } from "@/lib/api/adminUsers";
+import { getAllUsersForExportAction } from "@/lib/actions/users/user.actions";
+import { User } from "@/lib/types/user"; 
 
 interface UserListProps {
   isMobile?: boolean;
@@ -58,18 +59,56 @@ export function UserList({ isMobile = false }: UserListProps) {
   // 导出用户数据
   const handleExport = async () => {
     try {
-      const blob = await exportAdminUsers(filters);
+      // 1. Fetch all users based on current filters
+      const usersOrError = await getAllUsersForExportAction(filters);
+
+      if (!Array.isArray(usersOrError)) { // Check if it's an ErrorResponse
+        console.error("导出用户数据失败 (获取数据时):", usersOrError.message);
+        alert(`导出失败: ${usersOrError.message}`);
+        return;
+      }
+
+      const usersToExport: User[] = usersOrError;
+
+      if (usersToExport.length === 0) {
+        alert("没有可导出的用户数据。");
+        return;
+      }
+
+      // 2. Convert users array to CSV string
+      const headers = ["ID", "用户名", "昵称", "邮箱", "角色", "状态", "注册时间", "最后登录时间", "上传数量", "已用存储(MB)", "存储上限(MB)"];
+      const csvRows = [
+        headers.join(','),
+        ...usersToExport.map(user => [
+          user.id,
+          `"${user.username.replace(/"/g, '""')}"`, // Handle quotes in username
+          `"${(user.nickname || '').replace(/"/g, '""')}"`,
+          user.email,
+          user.role,
+          user.status,
+          user.created_at ? new Date(user.created_at).toLocaleString('zh-CN') : '',
+          user.last_login ? new Date(user.last_login).toLocaleString('zh-CN') : '',
+          user.upload_count || 0,
+          user.storage_used ? (user.storage_used / (1024 * 1024)).toFixed(2) : 0,
+          user.storage_limit ? (user.storage_limit / (1024 * 1024)).toFixed(2) : '无限制',
+        ].join(','))
+      ];
+      const csvString = csvRows.join('\n');
+
+      // 3. Create Blob and trigger download
+      const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' }); // Add BOM for Excel compatibility
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = url;
-      a.download = `users_${new Date().toISOString().split("T")[0]}.csv`;
+      a.download = `users_export_${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("导出用户数据失败:", error);
+      console.error("导出用户数据时发生意外错误:", error);
+      alert("导出用户数据时发生意外错误。");
     }
   };
 
