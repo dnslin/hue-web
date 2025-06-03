@@ -24,7 +24,12 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore();
+  
+  // 添加调试信息
+  React.useEffect(() => {
+    console.log("🔍 登录页面状态:", { isAuthenticated, isLoading });
+  }, [isAuthenticated, isLoading]);
 
   // 设置表单
   const {
@@ -40,7 +45,17 @@ export default function LoginPage() {
     clearError();
     const success = await login(data.username_or_email, data.password);
     if (success) {
-      router.push("/dashboard");
+      // 检查是否有 returnUrl 参数
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnUrl = urlParams.get('returnUrl');
+      
+      if (returnUrl) {
+        console.log("🔄 登录成功，重定向到 returnUrl:", decodeURIComponent(returnUrl));
+        router.push(decodeURIComponent(returnUrl));
+      } else {
+        console.log("🔄 登录成功，重定向到默认页面");
+        router.push("/dashboard");
+      }
     }
   };
 

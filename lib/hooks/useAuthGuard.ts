@@ -14,11 +14,27 @@ export const useAuthGuard = (options?: {
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, isLoading } = useAuthStore();
+  const { isAuthenticated, user, isLoading, isHydrated, initializeAuth } =
+    useAuthStore();
 
   const { redirectTo = "/login", requireAuth = true } = options || {};
 
+  // 暂时移除自动服务端验证，避免复杂的状态同步问题
+  // 后续可以在特定场景下手动调用 initializeAuth
+  // useEffect(() => {
+  //   if (isHydrated && !isLoading && requireAuth && isAuthenticated && isProtectedRoute(pathname)) {
+  //     console.log("🔄 水合完成，验证服务端认证状态");
+  //     initializeAuth();
+  //   }
+  // }, [isHydrated, initializeAuth, isLoading, requireAuth, isAuthenticated, pathname]);
+
   useEffect(() => {
+    // 如果状态还未水合完成，先初始化认证状态
+    if (!isHydrated) {
+      console.log("⏳ 等待认证状态水合完成...");
+      return;
+    }
+
     // 如果正在加载认证状态，不做任何操作
     if (isLoading) {
       return;
@@ -39,15 +55,41 @@ export const useAuthGuard = (options?: {
     // 如果不需要认证但用户已登录（例如登录页面）
     if (!requireAuth && isAuthenticated) {
       console.log("✅ 已登录用户访问公开页面，重定向到后台");
-      router.replace("/dashboard");
+
+      // 检查是否有 returnUrl 参数
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnUrl = urlParams.get("returnUrl");
+
+      if (returnUrl) {
+        console.log(
+          "🔄 检测到 returnUrl，重定向到:",
+          decodeURIComponent(returnUrl)
+        );
+        router.replace(decodeURIComponent(returnUrl));
+      } else {
+        router.replace("/dashboard");
+      }
       return;
     }
 
     console.log("✅ 路由访问权限验证通过:", pathname);
-  }, [isAuthenticated, isLoading, pathname, router, redirectTo, requireAuth]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    isHydrated,
+    pathname,
+    router,
+    redirectTo,
+    requireAuth,
+  ]);
 
   // 计算是否应该显示内容
   const shouldShowContent = () => {
+    // 如果状态还未水合完成，不显示内容
+    if (!isHydrated) {
+      return false;
+    }
+
     // 如果正在加载，不显示内容
     if (isLoading) {
       return false;

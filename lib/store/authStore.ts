@@ -18,6 +18,7 @@ interface AuthState {
   user: UserInfo | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isHydrated: boolean; // 新增：标识状态是否已从持久化存储中恢复
   error: string | null;
 
   // 操作方法
@@ -32,6 +33,8 @@ interface AuthState {
   ) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
+  initializeAuth: () => Promise<void>; // 新增：初始化认证状态
+  setHydrated: () => void; // 新增：设置水合完成状态
 }
 
 /**
@@ -44,7 +47,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      isHydrated: false, // 初始状态为未水合
       error: null,
+
+      // 设置水合完成状态
+      setHydrated: () => {
+        console.log("💧 认证状态水合完成");
+        set({ isHydrated: true });
+      },
 
       // 设置认证信息（token通过HTTP-only cookie管理）
       setAuth: (user: UserInfo) => {
@@ -185,6 +195,47 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => {
         set({ error: null });
       },
+
+      // 初始化认证状态 - 验证服务端状态
+      initializeAuth: async () => {
+        try {
+          console.log("🔄 开始初始化认证状态");
+          set({ isLoading: true });
+
+          const response = await fetch("/api/auth/me", {
+            method: "GET",
+            credentials: "include", // 包含 HTTP-only cookies
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data && !data.error && data.data?.user) {
+              console.log("✅ 服务端认证状态验证成功:", data.data.user);
+              set({
+                user: data.data.user,
+                isAuthenticated: true,
+                isLoading: false,
+                error: null,
+              });
+            } else {
+              console.log("❌ 服务端认证状态无效，清除本地状态");
+              set({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: null,
+              });
+            }
+          } else {
+            console.log("⚠️ 服务端认证验证失败，保持本地状态");
+            set({ isLoading: false });
+          }
+        } catch (error) {
+          console.error("❌ 认证状态初始化失败:", error);
+          // 网络错误时保持本地状态，只更新加载状态
+          set({ isLoading: false });
+        }
+      },
     }),
     {
       name: "auth-storage", // localStorage中的key名称
@@ -193,6 +244,25 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      // 水合完成后的回调
+      onRehydrateStorage: (state) => {
+        console.log("💧 认证状态开始水合");
+        return (state, error) => {
+          if (error) {
+            console.error("❌ 认证状态水合失败:", error);
+            // 水合失败时也要设置为已水合，避免无限等待
+            setTimeout(() => {
+              useAuthStore.getState().setHydrated();
+            }, 0);
+          } else {
+            console.log("✅ 认证状态水合完成");
+            // 使用 setTimeout 确保状态更新在下一个事件循环中执行
+            setTimeout(() => {
+              useAuthStore.getState().setHydrated();
+            }, 0);
+          }
+        };
+      },
     }
   )
 );
