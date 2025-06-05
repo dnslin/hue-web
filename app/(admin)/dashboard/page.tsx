@@ -71,9 +71,9 @@ export default function DashboardPage() {
         className="inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
       />
 
-      {/* 主要内容 - 优化滚动架构 */}
-      <div className="relative z-10 h-full overflow-y-auto custom-scrollbar">
-        <div className="p-4 md:p-6 space-y-6 min-h-full pb-safe">
+      {/* 主要内容 - 修正滚动高度计算 */}
+      <div className="relative z-10 h-screen overflow-y-auto custom-scrollbar">
+        <div className="p-4 md:p-6 space-y-6 min-h-full">
           {/* 页面标题 */}
           <div className="space-y-4">
             <BoxReveal boxColor="#3b82f6" duration={0.5}>
