@@ -15,7 +15,8 @@ import {
   useUserPagination,
   useUserFilters,
   useUserLoading,
-  useUserError
+  useUserError,
+  useUserHydrated
 } from "@/lib/store/user-store";
 import { getAllUsersForExportAction } from "@/lib/actions/users/user.actions";
 import { User } from "@/lib/types/user"; 
@@ -26,11 +27,12 @@ interface UserListProps {
 
 export function UserList({ isMobile = false }: UserListProps) {
   // 使用store状态
-  const users = useUserList();
-  const pagination = useUserPagination();
-  const filters = useUserFilters();
-  const loading = useUserLoading();
+  const users = useUserList() || [];
+  const pagination = useUserPagination() || { page: 1, page_size: 20, total: 0 };
+  const filters = useUserFilters() || { page: 1, pageSize: 20, isFilterOpen: false, hasActiveFilters: false };
+  const loading = useUserLoading() || { list: false, create: false, update: false, delete: false, statusChange: false, batchOperation: false };
   const error = useUserError();
+  const isHydrated = useUserHydrated();
   
   // 使用store方法
   const { 
@@ -40,6 +42,19 @@ export function UserList({ isMobile = false }: UserListProps) {
     setPageSize,
     clearError 
   } = useUserStore();
+
+  // 如果状态未水合完成，显示加载状态
+  if (!isHydrated) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-48 mb-4"></div>
+          <div className="h-32 bg-muted rounded mb-4"></div>
+          <div className="h-64 bg-muted rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   // 处理筛选变化
   const handleFiltersChange = (newFilters: UserListParams) => {

@@ -176,20 +176,21 @@ export function UserFilters({
                     用户状态
                   </label>
                   <Select
-                    value={filters.status?.toString() || ""}
+                    value={filters.status?.toString() || "ALL_STATUS"}
                     onValueChange={(value: string) =>
                       updateFilters({
-                        status: value
-                          ? (parseInt(value) as UserStatus)
-                          : undefined,
+                        status:
+                          value === "ALL_STATUS"
+                            ? undefined
+                            : (parseInt(value) as UserStatus),
                       })
                     }
                   >
                     <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                       <SelectValue placeholder="选择状态" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">全部状态</SelectItem>
+                                          </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL_STATUS">全部状态</SelectItem>
                       <SelectItem value={UserStatus.NORMAL.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-green-500" />
@@ -225,16 +226,18 @@ export function UserFilters({
                     用户角色
                   </label>
                   <Select
-                    value={filters.role || ""}
+                    value={filters.role || "ALL_ROLES"}
                     onValueChange={(value: string) =>
-                      updateFilters({ role: (value as UserRole) || undefined })
+                      updateFilters({ 
+                        role: value === "ALL_ROLES" ? undefined : (value as UserRole) 
+                      })
                     }
                   >
                     <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                       <SelectValue placeholder="选择角色" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">全部角色</SelectItem>
+                      <SelectItem value="ALL_ROLES">全部角色</SelectItem>
                       <SelectItem value={UserRole.ADMIN}>管理员</SelectItem>
                       <SelectItem value={UserRole.MODERATOR}>版主</SelectItem>
                       <SelectItem value={UserRole.USER}>普通用户</SelectItem>
@@ -254,11 +257,13 @@ export function UserFilters({
                     }
                   >
                     <Select
-                      value={filters.sort_by || ""}
+                      value={filters.sort_by || "DEFAULT_SORT"}
                       onValueChange={(value: string) =>
                         updateFilters({
                           sort_by:
-                            (value as UserListParams["sort_by"]) || undefined,
+                            value === "DEFAULT_SORT" 
+                              ? undefined 
+                              : (value as UserListParams["sort_by"]),
                         })
                       }
                     >
@@ -266,7 +271,7 @@ export function UserFilters({
                         <SelectValue placeholder="排序字段" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">默认</SelectItem>
+                        <SelectItem value="DEFAULT_SORT">默认</SelectItem>
                         <SelectItem value="created_at">注册时间</SelectItem>
                         <SelectItem value="updated_at">更新时间</SelectItem>
                         <SelectItem value="last_login">最后登录</SelectItem>
@@ -274,10 +279,10 @@ export function UserFilters({
                       </SelectContent>
                     </Select>
                     <Select
-                      value={filters.sort_order || ""}
+                      value={filters.sort_order || "desc"}
                       onValueChange={(value: string) =>
                         updateFilters({
-                          sort_order: (value as "asc" | "desc") || undefined,
+                          sort_order: value as "asc" | "desc",
                         })
                       }
                     >

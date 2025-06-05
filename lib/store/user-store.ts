@@ -71,6 +71,8 @@ interface UserStoreState {
   loading: LoadingState;
   cache: CacheState;
   error: string | null;
+  // 新增：水合状态管理
+  isHydrated: boolean;
 
   // 操作方法
   // 数据获取
@@ -127,6 +129,9 @@ interface UserStoreState {
   setError: (error: string | null) => void;
   clearError: () => void;
 
+  // 水合状态管理
+  setHydrated: () => void;
+
   // 重置状态
   reset: () => void;
 }
@@ -164,6 +169,7 @@ const initialState = {
     isStale: false,
   },
   error: null,
+  isHydrated: false, // 新增：水合状态初始化
 };
 
 // 缓存过期时间（5分钟）
@@ -1000,6 +1006,11 @@ export const useUserStore = create<UserStoreState>()(
           set(() => ({ error: null }));
         },
 
+        // 水合状态管理
+        setHydrated: () => {
+          set(() => ({ isHydrated: true }));
+        },
+
         // 重置状态
         reset: () => {
           set(() => ({ ...initialState }));
@@ -1007,7 +1018,7 @@ export const useUserStore = create<UserStoreState>()(
       }),
       {
         name: "user-store",
-        // 只持久化筛选条件和分页设置
+        // 只持久化筛选条件和分页设置，确保不覆盖关键状态
         partialize: (state) => ({
           filters: {
             pageSize: state.filters.pageSize,
@@ -1015,6 +1026,42 @@ export const useUserStore = create<UserStoreState>()(
             order: state.filters.order,
           },
         }),
+        // 状态合并逻辑，确保持久化数据不覆盖初始状态
+        merge: (persistedState, currentState) => {
+          // 安全的状态合并，确保 persistedState 存在
+          const safePersistedState = persistedState || {};
+          return {
+            ...currentState,
+            ...safePersistedState,
+            // 确保关键状态不被持久化数据覆盖
+            users: currentState.users,
+            pagination: currentState.pagination,
+            loading: currentState.loading,
+            cache: currentState.cache,
+            selection: currentState.selection,
+            error: currentState.error,
+            isHydrated: false, // 水合过程中设为 false
+          };
+        },
+        // 水合完成回调
+        onRehydrateStorage: () => {
+          console.log("🔄 用户状态开始水合");
+          return (state, error) => {
+            if (error) {
+              console.error("❌ 用户状态水合失败:", error);
+              // 水合失败时设置为已水合，避免无限等待
+              setTimeout(() => {
+                useUserStore.getState().setHydrated();
+              }, 0);
+            } else {
+              console.log("✅ 用户状态水合完成");
+              // 设置水合完成状态
+              setTimeout(() => {
+                useUserStore.getState().setHydrated();
+              }, 0);
+            }
+          };
+        },
       }
     ),
     {
@@ -1023,7 +1070,29 @@ export const useUserStore = create<UserStoreState>()(
   )
 );
 
-// 选择器函数
+// 默认值常量，避免每次创建新对象
+const defaultPagination = { page: 1, page_size: 20, total: 0 };
+const defaultFilters = {
+  page: 1,
+  pageSize: 20,
+  isFilterOpen: false,
+  hasActiveFilters: false,
+};
+const defaultSelection = {
+  selectedIds: new Set(),
+  isAllSelected: false,
+  isIndeterminate: false,
+};
+const defaultLoading = {
+  list: false,
+  create: false,
+  update: false,
+  delete: false,
+  statusChange: false,
+  batchOperation: false,
+};
+
+// 选择器函数 - 使用缓存的默认值
 export const useUserList = () => useUserStore((state) => state.users);
 export const useUserPagination = () =>
   useUserStore((state) => state.pagination);
@@ -1031,6 +1100,7 @@ export const useUserFilters = () => useUserStore((state) => state.filters);
 export const useUserSelection = () => useUserStore((state) => state.selection);
 export const useUserLoading = () => useUserStore((state) => state.loading);
 export const useUserError = () => useUserStore((state) => state.error);
+export const useUserHydrated = () => useUserStore((state) => state.isHydrated);
 
 // 计算属性选择器
 export const useSelectedUsers = () =>
