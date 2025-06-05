@@ -12,7 +12,7 @@ import {
 } from "@/lib/types/user";
 import {
   getUsersAction,
-  approveUserAction, // 更正：没有统一的 changeUserStatusAction
+  approveUserAction,
   rejectUserAction,
   banUserAction,
   unbanUserAction,
@@ -1046,3 +1046,4 @@ export const useHasSelection = () =>
 
 export const useSelectionCount = () =>
   useUserStore((state) => state.selection.selectedIds.size);
+

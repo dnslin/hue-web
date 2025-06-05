@@ -120,6 +120,32 @@ definitions:
     - role_id
     - username
     type: object
+  dtos.AdminUserResponseDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nickname:
+        type: string
+      original_role_id:
+        description: omitempty 如果为0则不显示
+        type: integer
+      role:
+        allOf:
+        - $ref: '#/definitions/dtos.RoleResponseDTO'
+        description: 使用 RoleResponseDTO
+      role_id:
+        type: integer
+      status:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
   dtos.AssignPermissionDTO:
     properties:
       permission_id:
@@ -299,6 +325,19 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  dtos.RoleResponseDTO:
+    properties:
+      created_at:
+        description: 使用 string 避免时区问题，或根据需要使用 time.Time
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        description: 使用 string 避免时区问题，或根据需要使用 time.Time
+        type: string
     type: object
   dtos.RoleUpdateDTO:
     properties:
@@ -1205,7 +1244,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/models.User'
+                    $ref: '#/definitions/dtos.AdminUserResponseDTO'
                   type: array
               type: object
         "400":
@@ -2045,6 +2084,32 @@ paths:
             additionalProperties: true
             type: object
       summary: 用户登录
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      description: 用户登出，使其 JWT 失效
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登出成功
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 请求头中缺少 Authorization 或 Token 格式错误
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 用户登出
       tags:
       - Auth
   /auth/register:
