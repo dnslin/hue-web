@@ -4,6 +4,7 @@ import { StateCreator } from "zustand";
 import { shallow } from "zustand/shallow";
 import { User } from "@/lib/types/user";
 import { useUserFilterStore } from "./user-filter.store";
+import { getUsersAction } from "@/lib/actions/users/user.actions";
 // 假设的 Action 路径，后续需要根据实际情况调整
 // import {
 //   createUser as apiCreateUser,
@@ -116,24 +117,39 @@ export const createUserDataSlice: StateCreator<
   },
 
   fetchUsers: async () => {
+    console.log("[Debug] fetchUsers: 开始获取用户数据。");
     const { filters, pagination } = useUserFilterStore.getState();
     const params = {
       ...filters,
       page: pagination.page,
-      limit: pagination.pageSize,
+      page_size: pagination.pageSize,
     };
     set({ loading: true, error: null });
     try {
-      // [骨架] 模拟 API 调用
-      console.log("正在获取用户，参数:", params);
-      // 真实实现:
-      // const data = await apiFetchUsers(params);
-      // set({ users: data.users, total: data.total, loading: false });
-      await new Promise((resolve) => setTimeout(resolve, 500)); // 模拟网络延迟
-      set({ loading: false });
+      console.log("[Debug] fetchUsers: 调用 getUsersAction，参数:", params);
+      const response = await getUsersAction(params);
+
+      // 首先检查成功的响应结构
+      if ("data" in response && "meta" in response) {
+        console.log(
+          `[Debug] fetchUsers: 成功获取到 ${response.data.length} 个用户，总数 ${response.meta.total}。`
+        );
+        set({
+          users: response.data,
+          total: response.meta.total,
+          loading: false,
+        });
+      } else if ("error" in response) {
+        // 处理已知的 API 错误响应
+        throw new Error(response.message || "获取用户列表失败");
+      } else {
+        // 处理任何其他意外的响应格式
+        throw new Error("API响应格式不正确或未知");
+      }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "获取用户列表失败";
+        error instanceof Error ? error.message : "获取用户列表时发生未知错误";
+      console.error("[Debug] fetchUsers: 获取用户失败:", errorMessage);
       set({ loading: false, error: errorMessage });
     }
   },
@@ -238,16 +254,23 @@ export const createUserDataSlice: StateCreator<
 
         // 使用 shallow aompare 检查关心的状态是否发生变化
         if (!shallow(watchedState, prevWatchedState)) {
+          console.log(
+            "[Debug] initialize: 检测到筛选器或分页变化，重新获取数据。",
+            { from: prevWatchedState, to: watchedState }
+          );
           get().fetchUsers();
         }
       }
     );
 
     // 首次加载数据
+    console.log("[Debug] initialize: 首次加载用户数据。");
     get().fetchUsers();
 
     set({ isInitialized: true });
-    console.log("用户数据存储已初始化并订阅筛选器变更");
+    console.log(
+      "[Debug] initialize: 用户数据存储已初始化并成功订阅筛选器变更。"
+    );
   },
 });
 

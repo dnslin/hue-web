@@ -53,10 +53,9 @@ export function UserList({ isMobile = false }: UserListProps) {
   // 导出用户数据
   const handleExport = async () => {
     try {
-      // 1. Fetch all users based on current filters
       const usersOrError = await getAllUsersForExportAction(filters);
 
-      if (!Array.isArray(usersOrError)) { // Check if it's an ErrorResponse
+      if (!Array.isArray(usersOrError)) {
         console.error("导出用户数据失败 (获取数据时):", usersOrError.message);
         alert(`导出失败: ${usersOrError.message}`);
         return;

@@ -31,29 +31,17 @@ export async function getUsersAction(
 ): Promise<UserListResponse | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    // Explicitly access .data if the interceptor's type change isn't picked up
-    const response = await apiService.get<UserListResponse>(USER_API_BASE, {
+    const responseData = (await apiService.get(USER_API_BASE, {
       params,
-    });
-    return response.data; // Assuming interceptor correctly returns data as T
+    })) as UserListResponse;
+    return responseData;
   } catch (error: any) {
-    console.error("[Action Error] getUsersAction:", error.message, error);
-    if (error instanceof AuthenticationError) {
-      return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
-      };
-    }
-    return {
+    const errorResponse: ErrorResponse = {
       code: error.code || 500,
-      message: error.message || "Failed to fetch users",
-      error:
-        error.data?.message ||
-        error.data ||
-        error.message ||
-        "Unknown error details",
+      message: error.message || "获取用户列表时发生未知错误",
+      error: error.name || "UnknownError",
     };
+    return errorResponse;
   }
 }
 

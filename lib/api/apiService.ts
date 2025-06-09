@@ -76,11 +76,28 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
 };
 
 export const getAuthenticatedApiService = async () => {
-  // 根据 Next.js 15+，cookies() 返回 Promise，需要 await
-  const cookieStore = await cookies(); // 在Server Action中调用
-  const token = cookieStore.get("auth_token")?.value;
-  // console.log('[API Service] Auth Token from cookie:', token ? 'Token Found' : 'No Token'); // 中文注释：从cookie获取的Auth Token日志
-  return createApiService({ authToken: token });
+  try {
+    console.log("[Debug API] getAuthenticatedApiService: 开始执行。");
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    console.log(
+      `[Debug API] getAuthenticatedApiService: 获取到 token: ${
+        token ? "存在" : "不存在"
+      }`
+    );
+    return createApiService({ authToken: token });
+  } catch (error) {
+    console.error(
+      "[Debug API] getAuthenticatedApiService: 捕获到致命错误:",
+      error
+    );
+    // 抛出一个可被下游捕获的、结构化的错误
+    throw {
+      code: 500,
+      message: "在服务器端获取认证信息时失败",
+      name: "ApiServiceSetupError",
+    };
+  }
 };
 
 export const publicApiService = createApiService(); // 用于公开接口
