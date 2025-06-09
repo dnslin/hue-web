@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useStore } from "zustand";
 import { Plus, Download, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,40 +9,33 @@ import { UserFilters } from "./user-filters";
 import { UserTable } from "./user-table";
 import { UserMobileList } from "./user-mobile-list";
 import { UserPagination } from "./user-pagination";
-import { UserListParams } from "@/lib/types/user";
-import { 
-  useUserStore,
-  useUserList,
-  useUserPagination,
-  useUserFilters,
-  useUserLoading,
-  useUserError,
-  useUserHydrated
-} from "@/lib/store/user-store";
+import { UserListParams, User } from "@/lib/types/user";
+import { userDataStore } from "@/lib/store/user/user-data.store";
+import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
+import { useUserDataHydration } from "@/lib/store/user/user-hydration.store";
 import { getAllUsersForExportAction } from "@/lib/actions/users/user.actions";
-import { User } from "@/lib/types/user"; 
 
 interface UserListProps {
   isMobile?: boolean;
 }
 
 export function UserList({ isMobile = false }: UserListProps) {
-  // 使用store状态
-  const users = useUserList() || [];
-  const pagination = useUserPagination() || { page: 1, page_size: 20, total: 0 };
-  const filters = useUserFilters() || { page: 1, pageSize: 20, isFilterOpen: false, hasActiveFilters: false };
-  const loading = useUserLoading() || { list: false, create: false, update: false, delete: false, statusChange: false, batchOperation: false };
-  const error = useUserError();
-  const isHydrated = useUserHydrated();
-  
-  // 使用store方法
-  const { 
-    fetchUsers, 
-    setFilters, 
-    setPage, 
-    setPageSize,
-    clearError 
-  } = useUserStore();
+  // --- 从新的 stores 中获取状态和方法 ---
+  const { users, total, loading, error } = useStore(userDataStore);
+  const {
+    filters,
+    pagination,
+    setFilters,
+  } = useUserFilterStore();
+  const isHydrated = useUserDataHydration();
+
+  // 错误处理应该在所有 hooks 调用之后，但在任何可能提前返回的逻辑之前
+  useEffect(() => {
+    if (error) {
+      console.error("User list error:", error);
+      // 可以在这里调用 toast.error(error)
+    }
+  }, [error]);
 
   // 如果状态未水合完成，显示加载状态
   if (!isHydrated) {
@@ -55,21 +49,6 @@ export function UserList({ isMobile = false }: UserListProps) {
       </div>
     );
   }
-
-  // 处理筛选变化
-  const handleFiltersChange = (newFilters: UserListParams) => {
-    setFilters(newFilters);
-  };
-
-  // 处理分页
-  const handlePageChange = (page: number) => {
-    setPage(page);
-  };
-
-  // 处理每页显示数量变化
-  const handlePageSizeChange = (pageSize: number) => {
-    setPageSize(pageSize);
-  };
 
   // 导出用户数据
   const handleExport = async () => {
@@ -127,21 +106,6 @@ export function UserList({ isMobile = false }: UserListProps) {
     }
   };
 
-  // 初始化数据
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  // 清除错误
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        clearError();
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, clearError]);
-
   return (
     <div className="space-y-6">
       {/* 页面头部 */}
@@ -178,12 +142,7 @@ export function UserList({ isMobile = false }: UserListProps) {
       {/* 筛选器 */}
       <Card>
         <CardContent className="pt-6">
-          <UserFilters
-            onFiltersChange={handleFiltersChange}
-            totalCount={pagination.total}
-            filteredCount={users.length}
-            isMobile={isMobile}
-          />
+          <UserFilters isMobile={isMobile} />
         </CardContent>
       </Card>
 
@@ -193,7 +152,7 @@ export function UserList({ isMobile = false }: UserListProps) {
           <CardTitle className="flex items-center justify-between">
             <span>用户列表</span>
             <span className="text-sm font-normal text-muted-foreground">
-              共 {pagination.total} 个用户
+              共 {total} 个用户
             </span>
           </CardTitle>
         </CardHeader>
@@ -201,19 +160,15 @@ export function UserList({ isMobile = false }: UserListProps) {
           {isMobile ? (
             <UserMobileList
               users={users}
-              loading={loading.list}
-              onUserUpdate={() => {}} // TODO: 实现用户更新
-              onUserDelete={() => {}} // TODO: 实现用户删除
+              loading={loading}
             />
           ) : (
             <UserTable
               users={users}
-              loading={loading.list}
+              loading={loading}
               onSort={(sortBy, sortOrder) => {
                 setFilters({ sort_by: sortBy, sort_order: sortOrder });
               }}
-              onUserUpdate={() => {}} // TODO: 实现用户更新
-              onUserDelete={() => {}} // TODO: 实现用户删除
             />
           )}
         </CardContent>
@@ -222,16 +177,7 @@ export function UserList({ isMobile = false }: UserListProps) {
       {/* 分页 */}
       <Card className="py-2 mb-1">
         <CardContent className="px-2">
-          <UserPagination
-            currentPage={pagination.page}
-            totalPages={Math.ceil(pagination.total / pagination.page_size)}
-            totalItems={pagination.total}
-            pageSize={pagination.page_size}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            loading={loading.list}
-            isMobile={isMobile}
-          />
+          <UserPagination isMobile={isMobile} />
         </CardContent>
       </Card>
     </div>

@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User, UserListParams, UserRole, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
+import { useUserSelectionStore } from "@/lib/store/user/user-selection.store";
 import { UserActions } from "./user-actions";
 
 interface UserTableProps {
@@ -17,8 +19,6 @@ interface UserTableProps {
     sortBy: UserListParams["sort_by"],
     sortOrder: UserListParams["sort_order"]
   ) => void;
-  onUserUpdate: (user: User) => void;
-  onUserDelete: (userId: number) => void;
 }
 
 interface SortConfig {
@@ -30,10 +30,17 @@ export function UserTable({
   users,
   loading = false,
   onSort,
-  onUserUpdate,
-  onUserDelete,
 }: UserTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+  const {
+    selectedUserIds,
+    toggleUserSelection,
+    toggleAllUsersSelection,
+    isAllSelected,
+  } = useUserSelectionStore();
+
+  const allUserIdsOnPage = users.map((u) => u.id);
+  const isAllOnPageSelected = isAllSelected(allUserIdsOnPage);
 
   const handleSort = (key: UserListParams["sort_by"]) => {
     let direction: "asc" | "desc" = "desc";
@@ -133,6 +140,15 @@ export function UserTable({
         <table className="w-full">
           <thead>
             <tr className="border-b bg-muted/50">
+              <th className="p-4 w-12">
+                <Checkbox
+                  checked={isAllOnPageSelected}
+                  onCheckedChange={(checked: boolean | "indeterminate") =>
+                    toggleAllUsersSelection(allUserIdsOnPage, !!checked)
+                  }
+                  aria-label="Select all rows on this page"
+                />
+              </th>
               <th className="text-left p-4 font-medium">用户信息</th>
               <th className="text-left p-4 font-medium">角色</th>
               <th className="text-left p-4 font-medium">
@@ -179,9 +195,19 @@ export function UserTable({
                 className="border-b hover:bg-muted/25 transition-colors"
               >
                 <td className="p-4">
+                  <Checkbox
+                    checked={selectedUserIds.has(user.id)}
+                    onCheckedChange={() => toggleUserSelection(user.id)}
+                    aria-label={`Select row for user ${user.username}`}
+                  />
+                </td>
+                <td className="p-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatar || getGravatarUrl(user.email)} alt={user.username} />
+                      <AvatarImage
+                        src={user.avatar || getGravatarUrl(user.email)}
+                        alt={user.username}
+                      />
                       <AvatarFallback>
                         {getUserInitials(getUserDisplayName(user))}
                       </AvatarFallback>
@@ -237,8 +263,6 @@ export function UserTable({
                   <div className="flex justify-end">
                     <UserActions
                       user={user}
-                      onUserUpdate={onUserUpdate}
-                      onUserDelete={onUserDelete}
                     />
                   </div>
                 </td>

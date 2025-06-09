@@ -9,14 +9,10 @@ import { UserActions } from "./user-actions";
 
 interface UserMobileCardProps {
   user: User;
-  onUserUpdate: (user: User) => void;
-  onUserDelete: (userId: number) => void;
 }
 
 export function UserMobileCard({
   user,
-  onUserUpdate,
-  onUserDelete,
 }: UserMobileCardProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("zh-CN", {
@@ -101,8 +97,6 @@ export function UserMobileCard({
             <div className="flex flex-col items-end gap-2">
               <UserActions
                 user={user}
-                onUserUpdate={onUserUpdate}
-                onUserDelete={onUserDelete}
               />
             </div>
           </div>

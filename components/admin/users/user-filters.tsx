@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useStore } from "zustand";
 import { Search, Filter, X, Calendar, Users, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,39 +18,32 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { UserStatus, UserRole, UserListParams } from "@/lib/types/user";
+import { UserStatus, UserRole } from "@/lib/types/user";
+import {
+  useUserFilterStore,
+  UserFilters as UserFilterState,
+} from "@/lib/store/user/user-filter.store";
+import { userDataStore } from "@/lib/store/user/user-data.store";
 
 interface UserFiltersProps {
-  onFiltersChange: (filters: UserListParams) => void;
-  totalCount?: number;
-  filteredCount?: number;
   isMobile?: boolean;
 }
 
-export function UserFilters({
-  onFiltersChange,
-  totalCount = 0,
-  filteredCount = 0,
-  isMobile = false,
-}: UserFiltersProps) {
-  const [filters, setFilters] = useState<UserListParams>({});
+export function UserFilters({ isMobile = false }: UserFiltersProps) {
+  const { filters, setFilters, resetFilters } = useUserFilterStore();
+  const { total, users } = useStore(userDataStore);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const updateFilters = (newFilters: Partial<UserListParams>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
-    onFiltersChange(updatedFilters);
+  const updateFilters = (newFilters: Partial<UserFilterState>) => {
+    setFilters(newFilters);
   };
 
   const clearFilters = () => {
-    setFilters({});
-    onFiltersChange({});
+    resetFilters();
   };
 
-  const hasActiveFilters = Object.keys(filters).some(
-    (key) =>
-      filters[key as keyof UserListParams] !== undefined &&
-      filters[key as keyof UserListParams] !== ""
+  const hasActiveFilters = Object.values(filters).some(
+    (value) => value !== undefined && value !== ""
   );
 
   const getStatusLabel = (status: UserStatus) => {
@@ -140,10 +134,8 @@ export function UserFilters({
                     className="ml-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
                   >
                     {
-                      Object.keys(filters).filter(
-                        (key) =>
-                          filters[key as keyof UserListParams] !== undefined &&
-                          filters[key as keyof UserListParams] !== ""
+                      Object.values(filters).filter(
+                        (v) => v !== undefined && v !== ""
                       ).length
                     }
                   </Badge>
@@ -261,9 +253,9 @@ export function UserFilters({
                       onValueChange={(value: string) =>
                         updateFilters({
                           sort_by:
-                            value === "DEFAULT_SORT" 
-                              ? undefined 
-                              : (value as UserListParams["sort_by"]),
+                            value === "DEFAULT_SORT"
+                              ? undefined
+                              : (value as UserFilterState["sort_by"]),
                         })
                       }
                     >
@@ -351,7 +343,7 @@ export function UserFilters({
                   : "gap-1 text-xs px-2 py-1"
               }
             >
-              状态: {getStatusLabel(filters.status)}
+              状态: {getStatusLabel(filters.status as UserStatus)}
               <X
                 className={`${
                   isMobile ? "h-4 w-4" : "h-3 w-3"
@@ -369,7 +361,7 @@ export function UserFilters({
                   : "gap-1 text-xs px-2 py-1"
               }
             >
-              角色: {getRoleLabel(filters.role)}
+              角色: {getRoleLabel(filters.role as UserRole)}
               <X
                 className={`${
                   isMobile ? "h-4 w-4" : "h-3 w-3"
@@ -390,10 +382,10 @@ export function UserFilters({
         <div>
           {hasActiveFilters ? (
             <>
-              显示 {filteredCount} 个结果，共 {totalCount} 个用户
+              显示 {users.length} 个结果，共 {total} 个用户
             </>
           ) : (
-            <>共 {totalCount} 个用户</>
+            <>共 {total} 个用户</>
           )}
         </div>
       </div>

@@ -26,72 +26,60 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { User, UserStatus } from "@/lib/types/user";
-import { useUserStore } from "@/lib/store/user-store";
+import { useUserActionStore } from "@/lib/store/user/user-action.store";
 
 interface UserActionsProps {
   user: User;
-  onUserUpdate: (user: User) => void;
-  onUserDelete: (userId: number) => void;
 }
 
-export function UserActions({
-  user,
-  onUserUpdate,
-  onUserDelete,
-}: UserActionsProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false); // 更通用的加载状态
+export function UserActions({ user }: UserActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
 
-  const { changeUserStatus, deleteUser: storeDeleteUser, updateUser: storeUpdateUser, error, clearError } = useUserStore();
+  const {
+    loading,
+    error,
+    changeUserStatus,
+    deleteUser,
+    resetPassword,
+    clearError,
+  } = useUserActionStore();
+
+  const isSubmitting =
+    loading.isChangingStatus[user.id] ||
+    loading.isDeleting[user.id] ||
+    loading.isResettingPassword[user.id];
 
   const handleStatusToggle = async (newStatus: UserStatus) => {
-    setIsSubmitting(true);
-    clearError(); // 清除之前的错误状态
-    // 注意：userStore.changeUserStatus 接受 fromStatus 和 toStatus
-    // 我们需要从 user prop 获取当前的 fromStatus
-    const updatedUser = await changeUserStatus(user.id, user.status, newStatus);
-    if (updatedUser) {
-      onUserUpdate(updatedUser); // 回调给父组件，父组件通常会刷新列表或更新单个用户
-    } else {
-      // 错误处理已在 store 中完成，这里可以根据需要添加额外的UI提示
-      // 例如，使用 toast 通知用户
-      console.error("更新用户状态失败 (UserActions):", error);
+    clearError("statusChangeError", user.id);
+    const success = await changeUserStatus(user, newStatus);
+    if (!success) {
+      // 可以在此显示 toast 错误提示
+      alert(`更新用户 ${user.username} 状态失败: ${error.statusChangeError[user.id] || '未知错误'}`);
     }
-    setIsSubmitting(false);
+    // 成功后UI会自动刷新，无需额外操作
   };
 
   const handleDelete = async () => {
-    setIsSubmitting(true);
-    clearError();
-    const success = await storeDeleteUser(user.id);
+    clearError("deleteError", user.id);
+    const success = await deleteUser(user.id);
     if (success) {
-      onUserDelete(user.id); // 回调通知父组件
       setShowDeleteDialog(false);
+      // 成功后UI会自动刷新
     } else {
-      console.error("删除用户失败 (UserActions):", error);
-      // 可以在此显示错误提示给用户, 例如使用 toast
-      alert(`删除用户 ${user.username} 失败: ${error || '未知错误'}`);
+      alert(`删除用户 ${user.username} 失败: ${error.deleteError[user.id] || '未知错误'}`);
     }
-    setIsSubmitting(false);
   };
 
   const handleResetPassword = async () => {
-    setIsSubmitting(true);
-    clearError();
-    const tempPassword = Math.random().toString(36).slice(-8); // 生成一个8位随机密码
-    // 使用 storeUpdateUser 来更新密码，UserUpdateRequest 支持 password 字段
-    const updatedUser = await storeUpdateUser(user.id, { password: tempPassword });
-    if (updatedUser) {
-      alert(`用户 ${user.username} 的密码已成功重置为: ${tempPassword}\n请用户使用此临时密码登录后立即修改。`);
+    clearError("resetPasswordError", user.id);
+    const newPassword = await resetPassword(user.id);
+    if (newPassword) {
+      alert(`用户 ${user.username} 的密码已成功重置为: ${newPassword}\n请用户使用此临时密码登录后立即修改。`);
       setShowResetPasswordDialog(false);
-      // 可选: 如果 storeUpdateUser 返回了更新后的用户对象，可以调用 onUserUpdate
-      // onUserUpdate(updatedUser);
     } else {
-      console.error("重置密码失败 (UserActions):", error);
-      alert(`重置用户 ${user.username} 的密码失败: ${error || '未知错误'}`);
+      alert(`重置用户 ${user.username} 的密码失败: ${error.resetPasswordError[user.id] || '未知错误'}`);
     }
-    setIsSubmitting(false);
   };
 
   const getStatusBadge = (status: UserStatus) => {

@@ -7,15 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface UserMobileListProps {
   users: User[];
   loading?: boolean;
-  onUserUpdate: (user: User) => void;
-  onUserDelete: (userId: number) => void;
 }
 
 export function UserMobileList({
   users,
   loading = false,
-  onUserUpdate,
-  onUserDelete,
 }: UserMobileListProps) {
   if (loading) {
     return (
@@ -69,8 +65,6 @@ export function UserMobileList({
         <UserMobileCard
           key={user.id}
           user={user}
-          onUserUpdate={onUserUpdate}
-          onUserDelete={onUserDelete}
         />
       ))}
     </div>

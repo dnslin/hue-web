@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useStore } from "zustand";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Pagination,
@@ -18,15 +19,10 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
+import { userDataStore } from "@/lib/store/user/user-data.store";
 
 interface UserPaginationProps {
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  pageSize: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
-  loading?: boolean;
   isMobile?: boolean;
 }
 
@@ -130,21 +126,20 @@ const OptimizedPaginationNext = ({
   </motion.a>
 );
 
-export function UserPagination({
-  currentPage,
-  totalPages,
-  totalItems,
-  pageSize,
-  onPageChange,
-  onPageSizeChange,
-  loading = false,
-  isMobile = false,
-}: UserPaginationProps) {
+export function UserPagination({ isMobile = false }: UserPaginationProps) {
+  const {
+    pagination: { page: currentPage, pageSize },
+    goToPage,
+    setPagination,
+  } = useUserFilterStore();
+  const { total: totalItems, loading } = useStore(userDataStore);
+
   // 如果没有数据，不显示分页
   if (totalItems === 0) {
     return null;
   }
 
+  const totalPages = Math.ceil(totalItems / pageSize);
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
@@ -217,7 +212,7 @@ export function UserPagination({
             <PaginationContent className="gap-1">
               <PaginationItem>
                 <OptimizedPaginationPrevious
-                  onClick={() => onPageChange(currentPage - 1)}
+                  onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage <= 1 || loading}
                 />
               </PaginationItem>
@@ -229,7 +224,7 @@ export function UserPagination({
               </PaginationItem>
               <PaginationItem>
                 <OptimizedPaginationNext
-                  onClick={() => onPageChange(currentPage + 1)}
+                  onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage >= totalPages || loading}
                 />
               </PaginationItem>
@@ -257,26 +252,26 @@ export function UserPagination({
           <AnimatedNumber number={endItem} /> 条，共{" "}
           <AnimatedNumber number={totalItems} /> 条
         </span>
-        {onPageSizeChange && (
-          <div className="flex items-center gap-2">
-            <span>每页显示</span>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={(value) => onPageSizeChange(parseInt(value))}
-            >
-              <SelectTrigger className="w-20 h-7">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-              </SelectContent>
-            </Select>
-            <span>条</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <span>每页显示</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) =>
+              setPagination({ pageSize: parseInt(value) })
+            }
+          >
+            <SelectTrigger className="w-20 h-7">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+          <span>条</span>
+        </div>
       </motion.div>
 
       <motion.div variants={itemVariants}>
@@ -284,7 +279,7 @@ export function UserPagination({
           <PaginationContent className="gap-1">
             <PaginationItem>
               <OptimizedPaginationPrevious
-                onClick={() => onPageChange(currentPage - 1)}
+                onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1 || loading}
               />
             </PaginationItem>
@@ -299,7 +294,7 @@ export function UserPagination({
                     whileTap={{ scale: 0.95 }}
                   >
                     <PaginationLink
-                      onClick={() => onPageChange(page)}
+                      onClick={() => goToPage(page)}
                       isActive={page === currentPage}
                       size="sm"
                       className={cn(
@@ -316,7 +311,7 @@ export function UserPagination({
 
             <PaginationItem>
               <OptimizedPaginationNext
-                onClick={() => onPageChange(currentPage + 1)}
+                onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage >= totalPages || loading}
               />
             </PaginationItem>
