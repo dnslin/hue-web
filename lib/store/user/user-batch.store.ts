@@ -39,7 +39,7 @@ const fakeBatchApi = (
   userIds: number[]
 ): Promise<void> => {
   console.log(
-    `[UserBatchStore] Executing batch action '${action}' for users:`,
+    `[用户批量操作] 正在为以下用户执行批量操作 '${action}':`,
     userIds
   );
   return new Promise((resolve) => setTimeout(resolve, 1000)); // 模拟网络延迟
@@ -60,7 +60,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
       useUserSelectionStore.getState().selectedUserIds
     );
     if (selectedIds.length === 0) {
-      console.warn("[UserBatchStore] No users selected for batch action.");
+      console.warn("[用户批量操作] 未选择任何用户进行批量操作。");
       return;
     }
 
@@ -69,9 +69,9 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
     try {
       await fakeBatchApi(action, selectedIds);
       set({ lastBatchSuccessAt: Date.now() });
-      console.log(`[UserBatchStore] Batch action '${action}' successful.`);
+      console.log(`[用户批量操作] 批量操作 '${action}' 成功。`);
     } catch (error) {
-      console.error(`[UserBatchStore] Batch action '${action}' failed:`, error);
+      console.error(`[用户批量操作] 批量操作 '${action}' 失败:`, error);
     } finally {
       set({ isBatching: false });
     }
@@ -86,7 +86,7 @@ let previousUsers: User[] = [];
 userDataStore.subscribe((state) => {
   if (state.users !== previousUsers && state.users.length > 0) {
     useUserCacheStore.getState().addUsersToCache(state.users);
-    console.log("[UserBatchStore] Synced users to cache from user-data.store.");
+    console.log("[用户批量操作] 已将 user-data.store 的用户同步到缓存。");
   }
   previousUsers = state.users;
 });
@@ -99,7 +99,7 @@ useUserFilterStore.subscribe((state, prevState) => {
   ) {
     localStorage.setItem("user-filters", JSON.stringify(state.filters));
     console.log(
-      "[UserBatchStore] Saved filters to localStorage.",
+      "[用户批量操作] 已将筛选条件保存到 localStorage。",
       state.filters
     );
   }

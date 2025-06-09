@@ -84,6 +84,6 @@ userBatchStore.subscribe((state: UserBatchState, prevState: UserBatchState) => {
     state.lastBatchSuccessAt !== null
   ) {
     useUserSelectionStore.getState().clearSelection();
-    console.log("[UserSelectionStore] 批处理操作成功，选择清除.");
+    console.log("[用户选择] 批量操作成功，已清空选择。");
   }
 });

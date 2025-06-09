@@ -6,12 +6,12 @@ import { userDataStore } from "./user-data.store";
 /**
  * @hook useUserDataHydration
  * @description
- * 这个 Hook 负责在客户端初始化用户数据逻辑。它确保：
- * 1.  只在客户端执行，避免在 SSR 环境中运行。
- * 2.  `userDataStore` 的 `initialize` 方法只被调用一次。
- * 3.  返回一个 `isHydrated` 状态，让 UI 组件可以据此判断是否可以安全地渲染依赖于 store 的内容。
+ * 此 Hook 负责在客户端初始化用户数据逻辑，确保：
+ * 1. 仅在客户端执行，避免在 SSR 环境中运行。
+ * 2. `userDataStore` 的 `initialize` 方法仅被调用一次。
+ * 3. 返回 `isHydrated` 状态，UI 组件可依此判断是否能安全渲染依赖 store 的内容。
  *
- * @returns {boolean} `isHydrated` - 如果数据逻辑已初始化，则为 true。
+ * @returns {boolean} `isHydrated` - 数据逻辑若已初始化则返回 true。
  */
 export function useUserDataHydration(): boolean {
   const [isHydrated, setIsHydrated] = useState(false);

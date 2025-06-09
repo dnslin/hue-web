@@ -98,9 +98,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           } else if (fromStatus === UserStatus.DISABLED) {
             actionResponse = await unbanUserAction(userId);
           } else {
-            throw new Error(
-              `Unsupported status transition from ${fromStatus} to ${toStatus}`
-            );
+            throw new Error(`不支持从 ${fromStatus} 到 ${toStatus} 的状态转换`);
           }
           break;
         case UserStatus.DISABLED:
@@ -110,7 +108,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           actionResponse = await rejectUserAction(userId, reason);
           break;
         default:
-          throw new Error(`Unsupported target status: ${toStatus}`);
+          throw new Error(`不支持的目标状态: ${toStatus}`);
       }
 
       if (
@@ -119,8 +117,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         actionResponse.code !== 200
       ) {
         throw new Error(
-          (actionResponse as ApiErrorResponse).message ||
-            "Failed to change user status"
+          (actionResponse as ApiErrorResponse).message || "更改用户状态失败"
         );
       }
 
@@ -129,12 +126,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       useUserCacheStore.getState().invalidateUserCache(userId);
       return true;
     } catch (e) {
-      const errorMessage =
-        e instanceof Error ? e.message : "An unknown error occurred";
-      console.error(
-        `Failed to change status for user ${userId}:`,
-        errorMessage
-      );
+      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
+      console.error(`为用户 ${userId} 更改状态失败:`, errorMessage);
       set((state) => ({
         error: {
           ...state.error,
@@ -179,8 +172,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         actionResponse.code !== 200
       ) {
         throw new Error(
-          (actionResponse as ApiErrorResponse).message ||
-            "Failed to delete user"
+          (actionResponse as ApiErrorResponse).message || "删除用户失败"
         );
       }
 
@@ -190,9 +182,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       useUserCacheStore.getState().invalidateUserCache(userId);
       return true;
     } catch (e) {
-      const errorMessage =
-        e instanceof Error ? e.message : "An unknown error occurred";
-      console.error(`Failed to delete user ${userId}:`, errorMessage);
+      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
+      console.error(`删除用户 ${userId} 失败:`, errorMessage);
       set((state) => ({
         error: {
           ...state.error,
@@ -241,8 +232,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         actionResponse.code !== 200
       ) {
         throw new Error(
-          (actionResponse as ApiErrorResponse).message ||
-            "Failed to reset password"
+          (actionResponse as ApiErrorResponse).message || "重置密码失败"
         );
       }
 
@@ -253,12 +243,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       useUserCacheStore.getState().invalidateUserCache(userId);
       return tempPassword;
     } catch (e) {
-      const errorMessage =
-        e instanceof Error ? e.message : "An unknown error occurred";
-      console.error(
-        `Failed to reset password for user ${userId}:`,
-        errorMessage
-      );
+      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
+      console.error(`为用户 ${userId} 重置密码失败:`, errorMessage);
       set((state) => ({
         error: {
           ...state.error,

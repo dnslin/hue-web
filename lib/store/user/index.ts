@@ -1,15 +1,13 @@
 /**
- * @file User Store Barrel.
+ * @file 用户 Store 集合点
  *
  * @description
- * This file serves as the central hub for the user-related state management in the application.
- * It re-exports all individual user store modules and provides a collection of convenient
- * selector hooks. These hooks are designed to simplify state access within UI components,
- * promoting a clean and maintainable architecture.
+ * 该文件是应用程序中用户相关状态管理的中心枢纽。
+ * 它重新导出了所有独立的用户 store 模块，并提供了一系列方便的选择器钩子 (selector hooks)。
+ * 这些钩子旨在简化 UI 组件内部的状态访问，从而推广一种清晰且可维护的架构。
  *
- * By consolidating store exports and providing dedicated selectors, this module offers a
- * unified and intuitive API for interacting with user state, abstracting away the
- * underlying store implementation details.
+ * 通过整合 store 导出并提供专用的选择器，该模块为与用户状态交互提供了一个统一且直观的 API，
+ * 同时抽象了底层 store 的实现细节。
  */
 
 import { useStore } from "zustand";
@@ -44,60 +42,68 @@ export * from "./user-selection.store";
 // CONVENIENCE SELECTOR HOOKS
 // ============================================================================
 
-// --- User Data Selectors ---
+// --- 用户数据选择器 ---
 /**
- * Hook to get the current list of users.
- * @returns An array of user objects.
+ * @hook useUsers
+ * @description 获取当前用户列表。
+ * @returns {User[]} 用户对象数组。
  */
 export const useUsers = () =>
   useStore(userDataStore, (state: UserDataState) => state.users);
 
 /**
- * Hook to get the total number of users.
- * @returns The total user count.
+ * @hook useTotalUsers
+ * @description 获取用户总数。
+ * @returns {number} 用户总数。
  */
 export const useTotalUsers = () =>
   useStore(userDataStore, (state: UserDataState) => state.total);
 
 /**
- * Hook to get the current pagination state.
- * @returns The pagination object { page, limit }.
+ * @hook useUserPagination
+ * @description 获取当前的分页状态。
+ * @returns {object} 分页对象 { page, pageSize }。
  */
 export const useUserPagination = () =>
   useUserFilterStore((state: UserFilterState) => state.pagination);
 
 /**
- * Hook to check if the user list is currently being loaded.
- * @returns `true` if users are loading, `false` otherwise.
+ * @hook useIsUsersLoading
+ * @description 检查用户列表当前是否正在加载。
+ * @returns {boolean} 如果正在加载则为 `true`，否则为 `false`。
  */
 export const useIsUsersLoading = () =>
   useStore(userDataStore, (state: UserDataState) => state.loading);
 
 /**
- * Hook to get the user data fetching error, if any.
- * @returns The error object or null.
+ * @hook useUsersError
+ * @description 获取用户数据加载时发生的错误。
+ * @returns {string | null} 错误信息或 null。
  */
 export const useUsersError = () =>
   useStore(userDataStore, (state: UserDataState) => state.error);
 
-// --- User Filter Selectors ---
+// --- 用户筛选选择器 ---
 /**
- * Hook to get the current filter values.
- * @returns The filter object.
+ * @hook useUserFilters
+ * @description 获取当前的筛选条件值。
+ * @returns {object} 筛选条件对象。
  */
 export const useUserFilters = () =>
   useUserFilterStore((state: UserFilterState) => state.filters);
 
 /**
- * Hook to get the current search query.
- * @returns The search string.
+ * @hook useUserSearchQuery
+ * @description 获取当前的搜索查询。
+ * @returns {string} 搜索字符串。
  */
 export const useUserSearchQuery = () =>
   useUserFilterStore((state: UserFilterState) => state.filters.search);
 
 /**
- * Hook to get the filter actions.
- * @returns An object containing filter action functions.
+ * @hook useUserFilterActions
+ * @description 获取筛选相关的操作函数。
+ * @returns {object} 包含筛选操作函数的对象。
  */
 export const useUserFilterActions = (): UserFilterActions => {
   return useUserFilterStore((state: UserFilterActions) => ({
@@ -108,25 +114,28 @@ export const useUserFilterActions = (): UserFilterActions => {
   }));
 };
 
-// --- User Selection Selectors ---
+// --- 用户选择选择器 ---
 /**
- * Hook to get the set of selected user IDs.
- * @returns A Set of selected user IDs.
+ * @hook useSelectedUserIds
+ * @description 获取已选择用户 ID 的集合。
+ * @returns {Set<number>} 已选择用户 ID 的 Set 集合。
  */
 export const useSelectedUserIds = () =>
   useUserSelectionStore((state: any) => state.selectedUserIds);
 
 /**
- * Hook to get the count of selected users.
- * @returns The number of selected users.
+ * @hook useSelectedUserCount
+ * @description 获取已选择用户的数量。
+ * @returns {number} 已选择用户的数量。
  */
 export const useSelectedUserCount = () =>
   useUserSelectionStore((state: any) => state.selectedUserIds.size);
 
 /**
- * Hook to check if all currently displayed users are selected.
- * This requires access to both selection and data stores.
- * @returns `true` if all users are selected, `false` otherwise.
+ * @hook useIsAllUsersSelected
+ * @description 检查当前显示的所有用户是否都已被选择。
+ * @description 需要同时访问选择 store 和数据 store。
+ * @returns {boolean} 如果所有用户都已选择则为 `true`，否则为 `false`。
  */
 export const useIsAllUsersSelected = () => {
   const selectedUserIds = useUserSelectionStore(
@@ -140,8 +149,9 @@ export const useIsAllUsersSelected = () => {
 };
 
 /**
- * Hook to get the selection action functions.
- * @returns An object containing selection actions.
+ * @hook useUserSelectionActions
+ * @description 获取选择相关的操作函数。
+ * @returns {object} 包含选择操作函数的对象。
  */
 export const useUserSelectionActions = () => {
   return useUserSelectionStore((state: any) => ({
@@ -153,10 +163,11 @@ export const useUserSelectionActions = () => {
   }));
 };
 
-// --- User Action Selectors ---
+// --- 用户操作选择器 ---
 /**
- * Hook to check if a specific user action is in progress.
- * @returns `true` if an action is running, `false` otherwise.
+ * @hook useIsUserActionLoading
+ * @description 检查是否有任何用户相关的操作正在进行中。
+ * @returns {boolean} 如果有操作正在运行则为 `true`，否则为 `false`。
  */
 export const useIsUserActionLoading = () =>
   useUserActionStore((state: UserActionState) =>
@@ -166,8 +177,9 @@ export const useIsUserActionLoading = () =>
   );
 
 /**
- * Hook to get the user action functions.
- * @returns An object containing user actions.
+ * @hook useUserActions
+ * @description 获取用户相关的操作函数。
+ * @returns {object} 包含用户操作函数的对象。
  */
 export const useUserActions = () => {
   return useUserActionStore((state: UserActionState) => ({
@@ -178,17 +190,19 @@ export const useUserActions = () => {
   }));
 };
 
-// --- User Batch Selectors ---
+// --- 用户批量操作选择器 ---
 /**
- * Hook to check if a batch operation is in progress.
- * @returns `true` if a batch action is running, `false` otherwise.
+ * @hook useIsBatchActionLoading
+ * @description 检查是否有批量操作正在进行中。
+ * @returns {boolean} 如果有批量操作正在运行则为 `true`，否则为 `false`。
  */
 export const useIsBatchActionLoading = () =>
   useUserBatchStore((state: UserBatchState) => state.isBatching);
 
 /**
- * Hook to get the batch action functions.
- * @returns An object containing batch actions.
+ * @hook useUserBatchActions
+ * @description 获取批量操作相关的函数。
+ * @returns {object} 包含批量操作函数的对象。
  */
 export const useUserBatchActions = () => {
   return useUserBatchStore((state: UserBatchState) => ({
@@ -196,10 +210,10 @@ export const useUserBatchActions = () => {
   }));
 };
 
-// --- Hydration Hook ---
+// --- 水合钩子 ---
 /**
- * Custom hook to manage the hydration of user-related stores.
- * It ensures that client-side stores are correctly initialized
- * after server-side rendering.
+ * @hook useUserDataHydration
+ * @description 管理用户相关 store 的水合 (hydration) 过程。
+ * @description 确保在服务端渲染 (SSR) 之后，客户端的 store 能够被正确初始化。
  */
 export { useUserDataHydration };

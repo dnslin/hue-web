@@ -125,7 +125,7 @@ export const createUserDataSlice: StateCreator<
     set({ loading: true, error: null });
     try {
       // [骨架] 模拟 API 调用
-      console.log("骨架操作: 正在获取用户, 参数:", params);
+      console.log("正在获取用户，参数:", params);
       // 真实实现:
       // const data = await apiFetchUsers(params);
       // set({ users: data.users, total: data.total, loading: false });
@@ -133,7 +133,7 @@ export const createUserDataSlice: StateCreator<
       set({ loading: false });
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "获取用户失败";
+        error instanceof Error ? error.message : "获取用户列表失败";
       set({ loading: false, error: errorMessage });
     }
   },
@@ -142,7 +142,7 @@ export const createUserDataSlice: StateCreator<
     set({ loading: true, error: null });
     try {
       // [骨架] 模拟 API 调用
-      console.log("骨架操作: 正在创建用户:", userData);
+      console.log("正在创建用户:", userData);
       // 真实实现:
       // const newUser = await apiCreateUser(userData);
       // get().fetchUsers({}); // 刷新列表
@@ -162,7 +162,7 @@ export const createUserDataSlice: StateCreator<
     set({ loading: true, error: null });
     try {
       // [骨架] 模拟 API 调用
-      console.log(`骨架操作: 正在更新用户 ${userId}:`, userData);
+      console.log(`正在更新用户 ${userId}:`, userData);
       // 真实实现:
       // const updatedUser = await apiUpdateUser(userId, userData);
       // get().fetchUsers({}); // 刷新列表
@@ -182,7 +182,7 @@ export const createUserDataSlice: StateCreator<
     set({ loading: true, error: null });
     try {
       // [骨架] 模拟 API 调用
-      console.log(`骨架操作: 正在删除用户 ${userId}`);
+      console.log(`正在删除用户 ${userId}`);
       // 真实实现:
       // await apiDeleteUser(userId);
       // get().fetchUsers({}); // 刷新列表
@@ -202,7 +202,7 @@ export const createUserDataSlice: StateCreator<
     set({ loading: true, error: null });
     try {
       // [骨架] 模拟 API 调用
-      console.log(`骨架操作: 正在更改用户 ${userId} 的状态为 ${status}`);
+      console.log(`正在更改用户 ${userId} 的状态为 ${status}`);
       // 真实实现:
       // await apiUpdateUserStatus(userId, status);
       // get().fetchUsers({}); // 刷新列表
@@ -247,7 +247,7 @@ export const createUserDataSlice: StateCreator<
     get().fetchUsers();
 
     set({ isInitialized: true });
-    console.log("初始化用户数据存储并订阅过滤器更改");
+    console.log("用户数据存储已初始化并订阅筛选器变更");
   },
 });
 
