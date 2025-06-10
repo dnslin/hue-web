@@ -53,7 +53,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ConditionalLayout>{children}</ConditionalLayout>
-        <Toaster />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

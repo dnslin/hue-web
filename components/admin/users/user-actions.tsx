@@ -332,6 +332,52 @@ export function UserActions({ user }: UserActionsProps) {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* 状态变更确认弹窗 */}
+            <Dialog
+              open={showStatusChangeDialog}
+              onOpenChange={setShowStatusChangeDialog}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {targetStatus === UserStatus.BANNED
+                      ? "封禁用户"
+                      : "解封用户"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {targetStatus === UserStatus.BANNED
+                      ? `确定要封禁用户 "${user.username}" 吗？封禁后用户将无法登录系统。`
+                      : `确定要解封用户 "${user.username}" 吗？解封后用户将恢复正常使用权限。`}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowStatusChangeDialog(false)}
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    variant={
+                      targetStatus === UserStatus.BANNED
+                        ? "destructive"
+                        : "default"
+                    }
+                    onClick={handleConfirmStatusChange}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting
+                      ? targetStatus === UserStatus.BANNED
+                        ? "封禁中..."
+                        : "解封中..."
+                      : targetStatus === UserStatus.BANNED
+                      ? "确认封禁"
+                      : "确认解封"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </PopoverContent>
       </Popover>
