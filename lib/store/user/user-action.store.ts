@@ -38,9 +38,11 @@ export interface UserActionState {
     user: User,
     toStatus: UserStatus,
     reason?: string
-  ) => Promise<boolean>;
-  deleteUser: (userId: number) => Promise<boolean>;
-  resetPassword: (userId: number) => Promise<string | null>; // 成功时返回新密码
+  ) => Promise<{ success: boolean; error?: string }>;
+  deleteUser: (userId: number) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (
+    userId: number
+  ) => Promise<{ success: boolean; newPassword?: string; error?: string }>; // 修改返回类型
   clearError: (action: keyof ActionErrorState, userId: number) => void;
 }
 
@@ -125,7 +127,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       // 操作成功，刷新数据
       await userDataStore.getState().refreshUsers();
       useUserCacheStore.getState().invalidateUserCache(userId);
-      return true;
+      return { success: true };
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "发生未知错误";
       console.error(`为用户 ${userId} 更改状态失败:`, errorMessage);
@@ -138,7 +140,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           },
         },
       }));
-      return false;
+      return { success: false, error: errorMessage };
     } finally {
       set((state) => ({
         loading: {
@@ -180,7 +182,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       // 操作成功，刷新数据
       await userDataStore.getState().refreshUsers();
       useUserCacheStore.getState().invalidateUserCache(userId);
-      return true;
+      return { success: true };
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "发生未知错误";
       console.error(`删除用户 ${userId} 失败:`, errorMessage);
@@ -190,7 +192,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           deleteError: { ...state.error.deleteError, [userId]: errorMessage },
         },
       }));
-      return false;
+      return { success: false, error: errorMessage };
     } finally {
       set((state) => ({
         loading: {
@@ -229,7 +231,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
 
       // 使缓存失效
       useUserCacheStore.getState().invalidateUserCache(userId);
-      return result.newPassword || null;
+      return { success: true, newPassword: result.newPassword };
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "发生未知错误";
       console.error(`为用户 ${userId} 重置密码失败:`, errorMessage);
@@ -242,7 +244,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           },
         },
       }));
-      return null;
+      return { success: false, error: errorMessage };
     } finally {
       set((state) => ({
         loading: {

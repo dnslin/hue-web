@@ -38,38 +38,11 @@ export async function getUsersAction(
       params,
     });
 
-    // 完整的原始响应日志（仅开发环境）
-    if (process.env.NODE_ENV === "development") {
-      console.log("[Debug] 完整的Axios响应:", {
-        status: axiosResponse.status,
-        statusText: axiosResponse.statusText,
-        headers: axiosResponse.headers,
-        data: axiosResponse.data,
-        dataStringified: JSON.stringify(axiosResponse.data, null, 2),
-      });
-    }
+    // 移除详细的响应日志以提升性能
 
     const backendResponse = axiosResponse.data;
 
-    // 调试：打印实际响应结构（只在开发环境）
-    if (process.env.NODE_ENV === "development") {
-      console.log("[Debug] getUsersAction - 后端响应结构:", {
-        hasData: !!backendResponse.data,
-        dataType: Array.isArray(backendResponse.data)
-          ? "array"
-          : typeof backendResponse.data,
-        dataLength: Array.isArray(backendResponse.data)
-          ? backendResponse.data.length
-          : "N/A",
-        hasMeta: !!backendResponse.meta,
-        responseKeys: Object.keys(backendResponse || {}),
-        status: axiosResponse.status,
-        sampleData:
-          Array.isArray(backendResponse.data) && backendResponse.data.length > 0
-            ? Object.keys(backendResponse.data[0] || {})
-            : "No data",
-      });
-    }
+    // 移除详细的结构调试日志
 
     // 检查响应是否为错误
     if (axiosResponse.status >= 400) {
@@ -107,13 +80,7 @@ export async function getUsersAction(
         userData = backendResponse.users;
         metaData = backendResponse.pagination || backendResponse.meta || {};
       } else {
-        // 如果没有可识别的数据数组，尝试用 backendResponse 本身
-        if (process.env.NODE_ENV === "development") {
-          console.error(
-            "[Debug] getUsersAction - 无法识别的响应格式:",
-            backendResponse
-          );
-        }
+        // 移除无法识别响应格式的调试日志
         throw new Error(
           `API响应格式不正确。期望包含用户数组，但收到未知格式的响应。`
         );
@@ -134,9 +101,8 @@ export async function getUsersAction(
           return convertBackendUserToUser(backendUser);
         } catch (conversionError: any) {
           console.error(
-            `[Debug] 转换用户数据失败 (索引 ${index}):`,
-            conversionError,
-            backendUser
+            `转换用户数据失败 (索引 ${index}):`,
+            conversionError.message
           );
           throw new Error(`转换用户数据失败: ${conversionError.message}`);
         }
@@ -150,19 +116,13 @@ export async function getUsersAction(
       meta: metaData,
     };
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("[Debug] getUsersAction - 转换成功:", {
-        convertedUsersCount: convertedUsers.length,
-        metaData: metaData,
-      });
-    }
+    // 移除转换成功的调试日志
 
     return responseData;
   } catch (error: any) {
-    console.error("[Debug] getUsersAction - 错误详情:", {
+    console.error("getUsersAction - 错误详情:", {
       message: error.message,
       status: error.response?.status,
-      data: error.response?.data,
     });
 
     const errorResponse: ErrorResponse = {

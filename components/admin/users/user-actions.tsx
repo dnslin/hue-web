@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { User, UserStatus } from "@/lib/types/user";
 import { useUserActionStore } from "@/lib/store/user/user-action.store";
+import { showToast } from "@/lib/utils/toast";
 
 interface UserActionsProps {
   user: User;
@@ -35,6 +36,8 @@ interface UserActionsProps {
 export function UserActions({ user }: UserActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
+  const [targetStatus, setTargetStatus] = useState<UserStatus | null>(null);
 
   const {
     loading,
@@ -51,47 +54,92 @@ export function UserActions({ user }: UserActionsProps) {
     loading.isResettingPassword[user.id];
 
   const handleStatusToggle = async (newStatus: UserStatus) => {
+    // 如果是敏感操作（封禁/解封），显示确认弹窗
+    if (
+      newStatus === UserStatus.BANNED ||
+      (user.status === UserStatus.BANNED && newStatus === UserStatus.NORMAL)
+    ) {
+      setTargetStatus(newStatus);
+      setShowStatusChangeDialog(true);
+      return;
+    }
+
+    // 其他状态变更直接执行
+    await executeStatusChange(newStatus);
+  };
+
+  const executeStatusChange = async (newStatus: UserStatus) => {
     clearError("statusChangeError", user.id);
-    const success = await changeUserStatus(user, newStatus);
-    if (!success) {
-      // 可以在此显示 toast 错误提示
-      alert(
-        `更新用户 ${user.username} 状态失败: ${
-          error.statusChangeError[user.id] || "未知错误"
-        }`
+
+    try {
+      const result = await changeUserStatus(user, newStatus);
+      if (result.success) {
+        showToast.success(`用户 ${user.username} 状态已更新`);
+      } else {
+        showToast.error(
+          `更新用户 ${user.username} 状态失败`,
+          result.error || "操作失败，请重试"
+        );
+      }
+    } catch (err: any) {
+      showToast.error(
+        `更新用户 ${user.username} 状态失败`,
+        err.message || "操作失败，请重试"
       );
     }
-    // 成功后UI会自动刷新，无需额外操作
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (targetStatus) {
+      await executeStatusChange(targetStatus);
+      setShowStatusChangeDialog(false);
+      setTargetStatus(null);
+    }
   };
 
   const handleDelete = async () => {
     clearError("deleteError", user.id);
-    const success = await deleteUser(user.id);
-    if (success) {
-      setShowDeleteDialog(false);
-      // 成功后UI会自动刷新
-    } else {
-      alert(
-        `删除用户 ${user.username} 失败: ${
-          error.deleteError[user.id] || "未知错误"
-        }`
+
+    try {
+      const result = await deleteUser(user.id);
+      if (result.success) {
+        setShowDeleteDialog(false);
+        showToast.success(`用户 ${user.username} 已删除`);
+      } else {
+        showToast.error(
+          `删除用户 ${user.username} 失败`,
+          result.error || "操作失败，请重试"
+        );
+      }
+    } catch (err: any) {
+      showToast.error(
+        `删除用户 ${user.username} 失败`,
+        err.message || "操作失败，请重试"
       );
     }
   };
 
   const handleResetPassword = async () => {
     clearError("resetPasswordError", user.id);
-    const newPassword = await resetPassword(user.id);
-    if (newPassword) {
-      alert(
-        `用户 ${user.username} 的密码已成功重置为: ${newPassword}\n请用户使用此临时密码登录后立即修改。`
-      );
-      setShowResetPasswordDialog(false);
-    } else {
-      alert(
-        `重置用户 ${user.username} 的密码失败: ${
-          error.resetPasswordError[user.id] || "未知错误"
-        }`
+
+    try {
+      const result = await resetPassword(user.id);
+      if (result.success && result.newPassword) {
+        showToast.success(
+          `用户 ${user.username} 的密码已成功重置`,
+          `新密码：${result.newPassword}，请用户登录后立即修改`
+        );
+        setShowResetPasswordDialog(false);
+      } else {
+        showToast.error(
+          `重置用户 ${user.username} 的密码失败`,
+          result.error || "操作失败，请重试"
+        );
+      }
+    } catch (err: any) {
+      showToast.error(
+        `重置用户 ${user.username} 的密码失败`,
+        err.message || "操作失败，请重试"
       );
     }
   };
