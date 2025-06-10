@@ -50,14 +50,14 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
     switch (status) {
       case UserStatus.NORMAL:
         return "正常";
-      case UserStatus.DISABLED:
-        return "禁用";
+      case UserStatus.BANNED:
+        return "封禁";
       case UserStatus.PENDING:
         return "待审核";
-      case UserStatus.REJECTED:
-        return "审核拒绝";
       case UserStatus.DELETED:
         return "已删除";
+      case UserStatus.REJECTED:
+        return "审核拒绝";
       default:
         return "未知";
     }
@@ -180,25 +180,31 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                   >
                     <SelectTrigger className={isMobile ? "h-11" : "h-9"}>
                       <SelectValue placeholder="选择状态" />
-                                          </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL_STATUS">全部状态</SelectItem>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL_STATUS">全部状态</SelectItem>
                       <SelectItem value={UserStatus.NORMAL.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-green-500" />
                           正常
                         </div>
                       </SelectItem>
-                      <SelectItem value={UserStatus.DISABLED.toString()}>
+                      <SelectItem value={UserStatus.BANNED.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                          禁用
+                          封禁
                         </div>
                       </SelectItem>
                       <SelectItem value={UserStatus.PENDING.toString()}>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-blue-500" />
                           待审核
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={UserStatus.DELETED.toString()}>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-red-500" />
+                          已删除
                         </div>
                       </SelectItem>
                       <SelectItem value={UserStatus.REJECTED.toString()}>
@@ -220,8 +226,11 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                   <Select
                     value={filters.role || "ALL_ROLES"}
                     onValueChange={(value: string) =>
-                      updateFilters({ 
-                        role: value === "ALL_ROLES" ? undefined : (value as UserRole) 
+                      updateFilters({
+                        role:
+                          value === "ALL_ROLES"
+                            ? undefined
+                            : (value as UserRole),
                       })
                     }
                   >

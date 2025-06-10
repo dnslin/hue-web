@@ -17,6 +17,8 @@ import {
   SuccessResponse,
   BatchOperationResult,
   ErrorResponse,
+  BackendUserResponse,
+  convertBackendUserToUser,
 } from "@/lib/types/user";
 
 const USER_API_BASE = "/admin/users";
@@ -30,14 +32,145 @@ export async function getUsersAction(
 ): Promise<UserListResponse | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const responseData = (await apiService.get(USER_API_BASE, {
+
+    // 调用后端API获取原始数据
+    const axiosResponse = await apiService.get(USER_API_BASE, {
       params,
-    })) as UserListResponse;
+    });
+
+    // 完整的原始响应日志（仅开发环境）
+    if (process.env.NODE_ENV === "development") {
+      console.log("[Debug] 完整的Axios响应:", {
+        status: axiosResponse.status,
+        statusText: axiosResponse.statusText,
+        headers: axiosResponse.headers,
+        data: axiosResponse.data,
+        dataStringified: JSON.stringify(axiosResponse.data, null, 2),
+      });
+    }
+
+    const backendResponse = axiosResponse.data;
+
+    // 调试：打印实际响应结构（只在开发环境）
+    if (process.env.NODE_ENV === "development") {
+      console.log("[Debug] getUsersAction - 后端响应结构:", {
+        hasData: !!backendResponse.data,
+        dataType: Array.isArray(backendResponse.data)
+          ? "array"
+          : typeof backendResponse.data,
+        dataLength: Array.isArray(backendResponse.data)
+          ? backendResponse.data.length
+          : "N/A",
+        hasMeta: !!backendResponse.meta,
+        responseKeys: Object.keys(backendResponse || {}),
+        status: axiosResponse.status,
+        sampleData:
+          Array.isArray(backendResponse.data) && backendResponse.data.length > 0
+            ? Object.keys(backendResponse.data[0] || {})
+            : "No data",
+      });
+    }
+
+    // 检查响应是否为错误
+    if (axiosResponse.status >= 400) {
+      throw new Error(
+        `HTTP ${axiosResponse.status}: ${backendResponse.message || "请求失败"}`
+      );
+    }
+
+    // 更灵活的响应结构检查
+    let userData: BackendUserResponse[] = [];
+    let metaData: any = {};
+
+    if (backendResponse && typeof backendResponse === "object") {
+      if (Array.isArray(backendResponse.data)) {
+        // 标准 PaginatedResponse 格式：{ data: [...], meta: {...}, code: 200, message: "..." }
+        userData = backendResponse.data;
+        metaData = backendResponse.meta || {
+          page: params.page || 1,
+          page_size: params.pageSize || 10,
+          total: backendResponse.data.length,
+        };
+      } else if (Array.isArray(backendResponse)) {
+        // 直接数组格式：[...]（向后兼容）
+        userData = backendResponse;
+        metaData = {
+          page: params.page || 1,
+          page_size: params.pageSize || 10,
+          total: backendResponse.length,
+        };
+      } else if (
+        backendResponse.users &&
+        Array.isArray(backendResponse.users)
+      ) {
+        // 替代格式：{ users: [...], pagination: {...} }
+        userData = backendResponse.users;
+        metaData = backendResponse.pagination || backendResponse.meta || {};
+      } else {
+        // 如果没有可识别的数据数组，尝试用 backendResponse 本身
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            "[Debug] getUsersAction - 无法识别的响应格式:",
+            backendResponse
+          );
+        }
+        throw new Error(
+          `API响应格式不正确。期望包含用户数组，但收到未知格式的响应。`
+        );
+      }
+    } else {
+      throw new Error("API响应为空或格式无效");
+    }
+
+    // 验证用户数据
+    if (!Array.isArray(userData)) {
+      throw new Error("API返回的用户数据不是数组格式");
+    }
+
+    // 转换后端用户数据为前端用户数据
+    const convertedUsers: User[] = userData.map(
+      (backendUser: BackendUserResponse, index: number) => {
+        try {
+          return convertBackendUserToUser(backendUser);
+        } catch (conversionError: any) {
+          console.error(
+            `[Debug] 转换用户数据失败 (索引 ${index}):`,
+            conversionError,
+            backendUser
+          );
+          throw new Error(`转换用户数据失败: ${conversionError.message}`);
+        }
+      }
+    );
+
+    const responseData: UserListResponse = {
+      code: backendResponse.code || axiosResponse.status || 200,
+      message: backendResponse.message || "获取用户列表成功",
+      data: convertedUsers,
+      meta: metaData,
+    };
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("[Debug] getUsersAction - 转换成功:", {
+        convertedUsersCount: convertedUsers.length,
+        metaData: metaData,
+      });
+    }
+
     return responseData;
   } catch (error: any) {
+    console.error("[Debug] getUsersAction - 错误详情:", {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
     const errorResponse: ErrorResponse = {
-      code: error.code || 500,
-      message: error.message || "获取用户列表时发生未知错误",
+      code: error.response?.status || error.code || 500,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "获取用户列表时发生未知错误",
       error: error.name || "UnknownError",
     };
     return errorResponse;
@@ -520,4 +653,56 @@ export async function getAllUsersForExportAction(
         "Unknown error details",
     };
   }
+}
+
+/**
+ * 重置用户密码（使用更新用户API实现）
+ * PUT /api/v1/admin/users/{id}
+ */
+export async function resetPasswordUserAction(
+  id: number
+): Promise<{ success: boolean; newPassword?: string; error?: string }> {
+  try {
+    // 生成临时密码
+    const newPassword = generateTemporaryPassword();
+
+    const updateResult = await updateAdminUserAction(id, {
+      password: newPassword,
+    });
+
+    if ("code" in updateResult && updateResult.code === 200) {
+      return {
+        success: true,
+        newPassword: newPassword,
+      };
+    } else {
+      return {
+        success: false,
+        error: (updateResult as ErrorResponse).message || "重置密码失败",
+      };
+    }
+  } catch (error: any) {
+    console.error(
+      "[Action Error] resetPasswordUserAction:",
+      error.message,
+      error
+    );
+    return {
+      success: false,
+      error: error.message || "重置密码时发生未知错误",
+    };
+  }
+}
+
+/**
+ * 生成临时密码
+ */
+function generateTemporaryPassword(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const length = 12;
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }

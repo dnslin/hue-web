@@ -11,6 +11,7 @@ import {
   unbanUserAction,
   deleteAdminUserAction,
   updateAdminUserAction,
+  resetPasswordUserAction,
 } from "@/lib/actions/users/user.actions";
 import { userDataStore } from "./user-data.store";
 import { useUserCacheStore } from "./user-cache.store";
@@ -95,13 +96,13 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         case UserStatus.NORMAL:
           if (fromStatus === UserStatus.PENDING) {
             actionResponse = await approveUserAction(userId);
-          } else if (fromStatus === UserStatus.DISABLED) {
+          } else if (fromStatus === UserStatus.BANNED) {
             actionResponse = await unbanUserAction(userId);
           } else {
             throw new Error(`不支持从 ${fromStatus} 到 ${toStatus} 的状态转换`);
           }
           break;
-        case UserStatus.DISABLED:
+        case UserStatus.BANNED:
           actionResponse = await banUserAction(userId);
           break;
         case UserStatus.REJECTED:
@@ -177,7 +178,6 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       }
 
       // 操作成功，刷新数据
-      // 操作成功，刷新数据
       await userDataStore.getState().refreshUsers();
       useUserCacheStore.getState().invalidateUserCache(userId);
       return true;
@@ -221,27 +221,15 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
     }));
 
     try {
-      const tempPassword = Math.random().toString(36).slice(-8);
-      const actionResponse = await updateAdminUserAction(userId, {
-        password: tempPassword,
-      });
+      const result = await resetPasswordUserAction(userId);
 
-      if (
-        actionResponse &&
-        "code" in actionResponse &&
-        actionResponse.code !== 200
-      ) {
-        throw new Error(
-          (actionResponse as ApiErrorResponse).message || "重置密码失败"
-        );
+      if (!result.success) {
+        throw new Error(result.error || "重置密码失败");
       }
 
-      // 密码重置通常不需要刷新整个列表
-      // 使缓存失效
-      // 密码重置通常不需要刷新整个列表
       // 使缓存失效
       useUserCacheStore.getState().invalidateUserCache(userId);
-      return tempPassword;
+      return result.newPassword || null;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "发生未知错误";
       console.error(`为用户 ${userId} 重置密码失败:`, errorMessage);

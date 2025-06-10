@@ -55,7 +55,11 @@ export function UserActions({ user }: UserActionsProps) {
     const success = await changeUserStatus(user, newStatus);
     if (!success) {
       // 可以在此显示 toast 错误提示
-      alert(`更新用户 ${user.username} 状态失败: ${error.statusChangeError[user.id] || '未知错误'}`);
+      alert(
+        `更新用户 ${user.username} 状态失败: ${
+          error.statusChangeError[user.id] || "未知错误"
+        }`
+      );
     }
     // 成功后UI会自动刷新，无需额外操作
   };
@@ -67,7 +71,11 @@ export function UserActions({ user }: UserActionsProps) {
       setShowDeleteDialog(false);
       // 成功后UI会自动刷新
     } else {
-      alert(`删除用户 ${user.username} 失败: ${error.deleteError[user.id] || '未知错误'}`);
+      alert(
+        `删除用户 ${user.username} 失败: ${
+          error.deleteError[user.id] || "未知错误"
+        }`
+      );
     }
   };
 
@@ -75,10 +83,16 @@ export function UserActions({ user }: UserActionsProps) {
     clearError("resetPasswordError", user.id);
     const newPassword = await resetPassword(user.id);
     if (newPassword) {
-      alert(`用户 ${user.username} 的密码已成功重置为: ${newPassword}\n请用户使用此临时密码登录后立即修改。`);
+      alert(
+        `用户 ${user.username} 的密码已成功重置为: ${newPassword}\n请用户使用此临时密码登录后立即修改。`
+      );
       setShowResetPasswordDialog(false);
     } else {
-      alert(`重置用户 ${user.username} 的密码失败: ${error.resetPasswordError[user.id] || '未知错误'}`);
+      alert(
+        `重置用户 ${user.username} 的密码失败: ${
+          error.resetPasswordError[user.id] || "未知错误"
+        }`
+      );
     }
   };
 
@@ -102,8 +116,8 @@ export function UserActions({ user }: UserActionsProps) {
             待审核
           </Badge>
         );
-      case UserStatus.DISABLED:
-        return <Badge variant="destructive">已禁用</Badge>;
+      case UserStatus.BANNED:
+        return <Badge variant="destructive">已封禁</Badge>;
       case UserStatus.REJECTED:
         return (
           <Badge
@@ -155,13 +169,13 @@ export function UserActions({ user }: UserActionsProps) {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-yellow-600 hover:text-yellow-700"
-                onClick={() => handleStatusToggle(UserStatus.DISABLED)}
+                onClick={() => handleStatusToggle(UserStatus.BANNED)}
                 disabled={isSubmitting}
               >
                 <Ban className="h-4 w-4" />
-                禁用用户
+                封禁用户
               </Button>
-            ) : user.status === UserStatus.DISABLED ? (
+            ) : user.status === UserStatus.BANNED ? (
               <Button
                 variant="ghost"
                 size="sm"
@@ -170,7 +184,7 @@ export function UserActions({ user }: UserActionsProps) {
                 disabled={isSubmitting}
               >
                 <CheckCircle className="h-4 w-4" />
-                启用用户
+                解封用户
               </Button>
             ) : user.status === UserStatus.PENDING ? (
               <Button

@@ -1,8 +1,8 @@
 // 用户状态枚举 - 对齐后端定义
 export enum UserStatus {
   NORMAL = 0, // 正常
-  DISABLED = 1, // 禁用
-  PENDING = 2, // 待审核
+  PENDING = 1, // 待审核 - 修正：后端PendingApproval=1
+  BANNED = 2, // 封禁 - 修正：后端Banned=2
   DELETED = 3, // 已删除
   REJECTED = 4, // 审核拒绝
 }
@@ -31,30 +31,95 @@ export const ID_ROLE_MAP: Record<number, UserRole> = {
 // 状态标签映射
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   [UserStatus.NORMAL]: "正常",
-  [UserStatus.DISABLED]: "禁用",
+  [UserStatus.BANNED]: "封禁", // 修正：原DISABLED改为BANNED
   [UserStatus.PENDING]: "待审核",
   [UserStatus.DELETED]: "已删除",
   [UserStatus.REJECTED]: "审核拒绝",
 };
 
-// 基础用户信息接口 - 对齐后端models.User
+// 后端角色响应结构
+export interface BackendRole {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 基础用户信息接口 - 对齐后端AdminUserResponseDTO
 export interface User {
   id: number;
   username: string;
   email: string;
   nickname?: string;
-  avatar?: string; // 后端可能不提供，前端使用Gravatar生成
+  avatar?: string; // 前端使用Gravatar生成
   status: UserStatus;
-  role: UserRole;
+  role: UserRole; // 转换后的角色枚举
   roleID: number;
+  role_id: number; // 后端字段
   originalRoleID?: number;
+  original_role_id?: number; // 后端字段
   created_at: string;
   updated_at: string;
-  last_login?: string;
+  last_login_at?: string; // 后端字段名
+  last_login_ip?: string; // 后端字段名
+  last_login?: string; // 前端兼容字段
   storage_used?: number;
   storage_limit?: number;
   upload_count?: number;
-  passwordHash?: string; // 仅在特定场景下返回
+  passwordHash?: string;
+}
+
+// 后端用户响应结构 - 对齐dtos.AdminUserResponseDTO
+export interface BackendUserResponse {
+  id: number;
+  username: string;
+  email: string;
+  nickname?: string;
+  status: number; // 后端状态值
+  role_id: number;
+  role: BackendRole;
+  original_role_id?: number;
+  created_at: string;
+  updated_at: string;
+  last_login_at?: string;
+  last_login_ip?: string;
+}
+
+// 角色转换辅助函数
+export function convertBackendRoleToUserRole(
+  backendRole: BackendRole
+): UserRole {
+  // 基于角色ID或名称进行映射
+  const roleMap: Record<number, UserRole> = {
+    1: UserRole.ADMIN,
+    2: UserRole.USER,
+    3: UserRole.MODERATOR,
+  };
+
+  return roleMap[backendRole.id] || UserRole.USER;
+}
+
+// 后端用户数据转换为前端用户数据
+export function convertBackendUserToUser(
+  backendUser: BackendUserResponse
+): User {
+  return {
+    id: backendUser.id,
+    username: backendUser.username,
+    email: backendUser.email,
+    nickname: backendUser.nickname,
+    status: backendUser.status as UserStatus,
+    role: convertBackendRoleToUserRole(backendUser.role),
+    roleID: backendUser.role_id,
+    role_id: backendUser.role_id,
+    originalRoleID: backendUser.original_role_id,
+    original_role_id: backendUser.original_role_id,
+    created_at: backendUser.created_at,
+    updated_at: backendUser.updated_at,
+    last_login_at: backendUser.last_login_at,
+    last_login_ip: backendUser.last_login_ip,
+    last_login: backendUser.last_login_at, // 兼容字段
+  };
 }
 
 // 管理员创建用户请求 - 对齐dtos.AdminUserCreateRequest
@@ -236,12 +301,12 @@ export const USER_STATUS_TRANSITIONS: UserStatusTransition[] = [
   },
   {
     from: UserStatus.NORMAL,
-    to: UserStatus.DISABLED,
+    to: UserStatus.BANNED,
     action: "ban",
     endpoint: "ban",
   },
   {
-    from: UserStatus.DISABLED,
+    from: UserStatus.BANNED,
     to: UserStatus.NORMAL,
     action: "unban",
     endpoint: "unban",

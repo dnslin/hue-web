@@ -7,7 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, UserListParams, UserRole, getUserDisplayName } from "@/lib/types/user";
+import {
+  User,
+  UserListParams,
+  UserRole,
+  getUserDisplayName,
+} from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { useUserSelectionStore } from "@/lib/store/user/user-selection.store";
 import { UserActions } from "./user-actions";
@@ -26,11 +31,7 @@ interface SortConfig {
   direction: "asc" | "desc";
 }
 
-export function UserTable({
-  users,
-  loading = false,
-  onSort,
-}: UserTableProps) {
+export function UserTable({ users, loading = false, onSort }: UserTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
   const {
     selectedUserIds,
@@ -173,6 +174,7 @@ export function UserTable({
                   {getSortIcon("last_login")}
                 </Button>
               </th>
+              <th className="text-left p-4 font-medium">登录IP</th>
               <th className="text-left p-4 font-medium">
                 <Button
                   variant="ghost"
@@ -232,7 +234,14 @@ export function UserTable({
                   {formatDate(user.created_at)}
                 </td>
                 <td className="p-4 text-sm text-muted-foreground">
-                  {user.last_login ? formatDate(user.last_login) : "从未登录"}
+                  <div>
+                    {user.last_login_at
+                      ? formatDate(user.last_login_at)
+                      : "从未登录"}
+                  </div>
+                </td>
+                <td className="p-4 text-sm text-muted-foreground">
+                  {user.last_login_ip || "无记录"}
                 </td>
                 <td className="p-4 text-sm">
                   <div className="font-medium">{user.upload_count || 0}</div>
@@ -261,9 +270,7 @@ export function UserTable({
                 </td>
                 <td className="p-4">
                   <div className="flex justify-end">
-                    <UserActions
-                      user={user}
-                    />
+                    <UserActions user={user} />
                   </div>
                 </td>
               </tr>
