@@ -18,7 +18,6 @@ import {
   BatchOperationResult,
   ErrorResponse,
 } from "@/lib/types/user";
-// import { redirect } from "next/navigation"; // Not currently used
 
 const USER_API_BASE = "/admin/users";
 
