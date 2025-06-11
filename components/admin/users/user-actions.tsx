@@ -33,6 +33,7 @@ import { User, UserStatus, UserUpdateRequest } from "@/lib/types/user";
 import { useUserActionStore } from "@/lib/store/user/user-action.store";
 import { updateAdminUserAction } from "@/lib/actions/users/user.actions";
 import { showToast } from "@/lib/utils/toast";
+import { RoleSelect } from "@/components/shared/role-select";
 
 interface UserActionsProps {
   user: User;
@@ -137,11 +138,18 @@ export function UserActions({ user }: UserActionsProps) {
 
     try {
       const result = await resetPassword(user.id);
-      if (result.success && result.newPassword) {
-        showToast.success(
-          `用户 ${user.username} 的密码已成功重置`,
-          `新密码：${result.newPassword}，请用户登录后立即修改`
-        );
+      if (result.success) {
+        if (result.newPassword && result.newPassword !== "已通过邮件发送") {
+          showToast.success(
+            `用户 ${user.username} 的密码已成功重置`,
+            `新密码：${result.newPassword}，请用户登录后立即修改`
+          );
+        } else {
+          showToast.success(
+            `用户 ${user.username} 的密码已成功重置`,
+            "新密码已通过邮件发送给用户"
+          );
+        }
         setShowResetPasswordDialog(false);
       } else {
         showToast.error(
@@ -262,7 +270,7 @@ export function UserActions({ user }: UserActionsProps) {
         </PopoverTrigger>
         <PopoverContent className="w-48" align="end">
           <div className="space-y-1">
-            {/* 编辑用户 */}
+            {/* 编辑用户信息 - 所有用户 */}
             <Button
               variant="ghost"
               size="sm"
@@ -273,7 +281,7 @@ export function UserActions({ user }: UserActionsProps) {
               编辑信息
             </Button>
 
-            {/* 状态切换 */}
+            {/* 封禁用户 - 只针对正常用户 */}
             {user.status === UserStatus.NORMAL && (
               <Button
                 variant="ghost"
@@ -287,6 +295,7 @@ export function UserActions({ user }: UserActionsProps) {
               </Button>
             )}
 
+            {/* 解封用户 - 只针对封禁用户 */}
             {user.status === UserStatus.BANNED && (
               <Button
                 variant="ghost"
@@ -300,6 +309,7 @@ export function UserActions({ user }: UserActionsProps) {
               </Button>
             )}
 
+            {/* 批准用户和拒绝用户 - 只针对待审核用户 */}
             {user.status === UserStatus.PENDING && (
               <>
                 <Button
@@ -325,7 +335,7 @@ export function UserActions({ user }: UserActionsProps) {
               </>
             )}
 
-            {/* 重置密码 */}
+            {/* 重置密码 - 所有用户 */}
             <Dialog
               open={showResetPasswordDialog}
               onOpenChange={setShowResetPasswordDialog}
@@ -362,7 +372,7 @@ export function UserActions({ user }: UserActionsProps) {
               </DialogContent>
             </Dialog>
 
-            {/* 删除用户 - 根据状态显示 */}
+            {/* 删除用户 - 所有用户 */}
             {user.status !== UserStatus.DELETED && (
               <Dialog
                 open={showDeleteDialog}
@@ -526,21 +536,18 @@ export function UserActions({ user }: UserActionsProps) {
                       placeholder="请输入邮箱"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-role">角色ID</Label>
-                    <Input
-                      id="edit-role"
-                      type="number"
-                      value={editForm.role_id}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          role_id: parseInt(e.target.value) || 2,
-                        })
-                      }
-                      placeholder="请输入角色ID"
-                    />
-                  </div>
+                  <RoleSelect
+                    value={editForm.role_id}
+                    onValueChange={(roleId) =>
+                      setEditForm({
+                        ...editForm,
+                        role_id: roleId,
+                      })
+                    }
+                    label="用户角色"
+                    placeholder="请选择角色"
+                    required
+                  />
                 </div>
                 <DialogFooter>
                   <Button

@@ -343,3 +343,11 @@ export async function removePermissionFromRoleAction(
 // - getPermissionGroups: 可以通过 getPermissionsAction 带 group_name 参数实现类似功能，或者前端自行分组。
 // - checkRolePermission: 客户端可以通过获取角色权限列表后自行检查。
 // - duplicateRole: swagger 中没有此功能。
+
+// 角色基本信息接口
+export interface RoleBasic {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}

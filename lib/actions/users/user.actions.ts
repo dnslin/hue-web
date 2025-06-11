@@ -616,29 +616,28 @@ export async function getAllUsersForExportAction(
 }
 
 /**
- * 重置用户密码（使用更新用户API实现）
- * PUT /api/v1/admin/users/{id}
+ * 重置用户密码
+ * POST /api/v1/admin/users/{id}/reset-password
  */
 export async function resetPasswordUserAction(
   id: number
 ): Promise<{ success: boolean; newPassword?: string; error?: string }> {
   try {
-    // 生成临时密码
-    const newPassword = generateTemporaryPassword();
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.post<SuccessResponse>(
+      `${USER_API_BASE}/${id}/reset-password`
+    );
 
-    const updateResult = await updateAdminUserAction(id, {
-      password: newPassword,
-    });
-
-    if ("code" in updateResult && updateResult.code === 200) {
+    if (response.data && response.data.code === 200) {
       return {
         success: true,
-        newPassword: newPassword,
+        newPassword:
+          (response.data as any).data?.newPassword || "已通过邮件发送",
       };
     } else {
       return {
         success: false,
-        error: (updateResult as ErrorResponse).message || "重置密码失败",
+        error: response.data?.message || "重置密码失败",
       };
     }
   } catch (error: any) {
@@ -647,22 +646,15 @@ export async function resetPasswordUserAction(
       error.message,
       error
     );
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
     return {
       success: false,
       error: error.message || "重置密码时发生未知错误",
     };
   }
-}
-
-/**
- * 生成临时密码
- */
-function generateTemporaryPassword(): string {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const length = 12;
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
 }
