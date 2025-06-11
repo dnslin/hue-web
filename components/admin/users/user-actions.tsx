@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/popover";
 import { User, UserStatus, UserUpdateRequest } from "@/lib/types/user";
 import { useUserActionStore } from "@/lib/store/user/user-action.store";
-import { updateAdminUserAction } from "@/lib/actions/users/user.actions";
 import { showToast } from "@/lib/utils/toast";
 import { RoleSelect } from "@/components/shared/role-select";
 
@@ -59,13 +58,15 @@ export function UserActions({ user }: UserActionsProps) {
     changeUserStatus,
     deleteUser,
     resetPassword,
+    updateUser,
     clearError,
   } = useUserActionStore();
 
   const isSubmitting =
     loading.isChangingStatus[user.id] ||
     loading.isDeleting[user.id] ||
-    loading.isResettingPassword[user.id];
+    loading.isResettingPassword[user.id] ||
+    loading.isUpdating[user.id];
 
   const handleStatusToggle = async (newStatus: UserStatus) => {
     // 如果是敏感操作（封禁/解封），显示确认弹窗
@@ -194,24 +195,19 @@ export function UserActions({ user }: UserActionsProps) {
   };
 
   const handleEditUser = async () => {
-    try {
-      const updateData: UserUpdateRequest = {
-        username: editForm.username,
-        email: editForm.email,
-        role_id: editForm.role_id,
-      };
+    const updateData: UserUpdateRequest = {
+      username: editForm.username,
+      email: editForm.email,
+      role_id: editForm.role_id,
+    };
 
-      const result = await updateAdminUserAction(user.id, updateData);
-      if ("code" in result && result.code === 200) {
+    try {
+      const result = await updateUser(user.id, updateData);
+      if (result.success) {
         showToast.success(`用户 ${user.username} 信息已更新`);
         setShowEditDialog(false);
-        // 刷新用户数据需要导入 userDataStore
-        window.location.reload(); // 临时解决方案
       } else {
-        showToast.error(
-          "更新用户信息失败",
-          (result as any).message || "操作失败，请重试"
-        );
+        showToast.error("更新用户信息失败", result.error || "操作失败，请重试");
       }
     } catch (err: any) {
       showToast.error("更新用户信息失败", err.message || "操作失败，请重试");

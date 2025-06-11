@@ -21,6 +21,7 @@ interface ActionLoadingState {
   isChangingStatus: Record<number, boolean>; // 按用户ID跟踪状态变更
   isDeleting: Record<number, boolean>; // 按用户ID跟踪删除
   isResettingPassword: Record<number, boolean>; // 按用户ID跟踪密码重置
+  isUpdating: Record<number, boolean>; // 按用户ID跟踪信息更新
 }
 
 // 定义错误状态的类型
@@ -28,6 +29,7 @@ interface ActionErrorState {
   statusChangeError: Record<number, string | null>;
   deleteError: Record<number, string | null>;
   resetPasswordError: Record<number, string | null>;
+  updateError: Record<number, string | null>;
 }
 
 // Store 的完整状态接口
@@ -43,6 +45,10 @@ export interface UserActionState {
   resetPassword: (
     userId: number
   ) => Promise<{ success: boolean; newPassword?: string; error?: string }>; // 修改返回类型
+  updateUser: (
+    userId: number,
+    updateData: UserUpdateRequest
+  ) => Promise<{ success: boolean; error?: string }>;
   clearError: (action: keyof ActionErrorState, userId: number) => void;
 }
 
@@ -57,11 +63,13 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
     isChangingStatus: {},
     isDeleting: {},
     isResettingPassword: {},
+    isUpdating: {},
   },
   error: {
     statusChangeError: {},
     deleteError: {},
     resetPasswordError: {},
+    updateError: {},
   },
 
   // 清除特定操作的错误信息
@@ -258,6 +266,57 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             ...state.loading.isResettingPassword,
             [userId]: false,
           },
+        },
+      }));
+    }
+  },
+
+  // 更新用户信息
+  updateUser: async (userId, updateData) => {
+    set((state) => ({
+      loading: {
+        ...state.loading,
+        isUpdating: { ...state.loading.isUpdating, [userId]: true },
+      },
+      error: {
+        ...state.error,
+        updateError: { ...state.error.updateError, [userId]: null },
+      },
+    }));
+
+    try {
+      const actionResponse = await updateAdminUserAction(userId, updateData);
+
+      // 检查响应是否成功 (200-299)
+      if (
+        actionResponse &&
+        "code" in actionResponse &&
+        (actionResponse.code < 200 || actionResponse.code >= 300)
+      ) {
+        throw new Error(
+          (actionResponse as ApiErrorResponse).message || "更新用户信息失败"
+        );
+      }
+
+      // 操作成功，刷新数据
+      await userDataStore.getState().refreshUsers();
+      useUserCacheStore.getState().invalidateUserCache(userId);
+      return { success: true };
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
+      console.error(`更新用户 ${userId} 失败:`, errorMessage);
+      set((state) => ({
+        error: {
+          ...state.error,
+          updateError: { ...state.error.updateError, [userId]: errorMessage },
+        },
+      }));
+      return { success: false, error: errorMessage };
+    } finally {
+      set((state) => ({
+        loading: {
+          ...state.loading,
+          isUpdating: { ...state.loading.isUpdating, [userId]: false },
         },
       }));
     }
