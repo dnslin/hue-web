@@ -80,6 +80,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
   // 更改用户状态
   changeUserStatus: async (user, toStatus, reason) => {
     const { id: userId, status: fromStatus } = user;
+
     set((state) => ({
       loading: {
         ...state.loading,
@@ -130,7 +131,11 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       return { success: true };
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "发生未知错误";
-      console.error(`为用户 ${userId} 更改状态失败:`, errorMessage);
+      console.error(
+        `💥 [UserActionStore] 用户 ${userId} 状态更改失败:`,
+        errorMessage,
+        e
+      );
       set((state) => ({
         error: {
           ...state.error,

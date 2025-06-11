@@ -87,6 +87,7 @@ export function UserActions({ user }: UserActionsProps) {
 
     try {
       const result = await changeUserStatus(user, newStatus);
+
       if (result.success) {
         showToast.success(`用户 ${user.username} 状态已更新`);
       } else {
@@ -104,7 +105,7 @@ export function UserActions({ user }: UserActionsProps) {
   };
 
   const handleConfirmStatusChange = async () => {
-    if (targetStatus) {
+    if (targetStatus !== null && targetStatus !== undefined) {
       await executeStatusChange(targetStatus);
       setShowStatusChangeDialog(false);
       setTargetStatus(null);
@@ -305,7 +306,7 @@ export function UserActions({ user }: UserActionsProps) {
                 disabled={isSubmitting}
               >
                 <CheckCircle className="h-4 w-4" />
-                解除封禁
+                {isSubmitting ? "解封中..." : "解除封禁"}
               </Button>
             )}
 

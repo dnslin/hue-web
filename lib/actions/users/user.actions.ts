@@ -287,6 +287,7 @@ export async function banUserAction(
     return response.data;
   } catch (error: any) {
     console.error("[Action Error] banUserAction:", error.message, error);
+
     if (error instanceof AuthenticationError) {
       return {
         code: error.status,
@@ -294,6 +295,7 @@ export async function banUserAction(
         error: "AuthenticationError",
       };
     }
+
     return {
       code: error.code || 500,
       message: error.message || "Failed to ban user",
@@ -350,6 +352,7 @@ export async function unbanUserAction(
     return response.data;
   } catch (error: any) {
     console.error("[Action Error] unbanUserAction:", error.message, error);
+
     if (error instanceof AuthenticationError) {
       return {
         code: error.status,
@@ -357,6 +360,7 @@ export async function unbanUserAction(
         error: "AuthenticationError",
       };
     }
+
     return {
       code: error.code || 500,
       message: error.message || "Failed to unban user",
