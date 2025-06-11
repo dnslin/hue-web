@@ -53,7 +53,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
 
   // 本地状态用于UI控制，例如对话框的显示
   // selectedRoleForDisplay 用于UI高亮等，不直接用于数据操作
-  const [selectedRoleForDisplay, setSelectedRoleForDisplay] = useState<Role | null>(null);
+  const [selectedRoleForDisplay, setSelectedRoleForDisplay] =
+    useState<Role | null>(null);
   const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<number | null>(null); // 使用 number 类型的 roleId
   // duplicating 状态由 store 的 isSubmitting 替代一部分，但如果需要针对特定角色显示复制中，可以保留
@@ -85,7 +86,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
     }
     // 如果 selectedRoleForDisplay 也需要更新
     if (selectedRoleForDisplay?.id === updatedRole.id) {
-        setSelectedRoleForDisplay(updatedRole);
+      setSelectedRoleForDisplay(updatedRole);
     }
     // fetchRoles(); // 可选：强制刷新列表，但store内部通常会处理
   };
@@ -138,7 +139,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
     }
   };
 
-  if (isLoadingRoles && roles.length === 0) { // 初始加载时显示骨架屏
+  if (isLoadingRoles && roles.length === 0) {
+    // 初始加载时显示骨架屏
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -175,9 +177,13 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
             key={role.id}
             className={`
             cursor-pointer transition-all hover:shadow-md
-            ${selectedRoleForDisplay?.id === role.id ? "ring-2 ring-primary" : ""}
+            ${
+              selectedRoleForDisplay?.id === role.id
+                ? "ring-2 ring-primary"
+                : ""
+            }
           `}
-          onClick={() => handleRoleSelect(role)}
+            onClick={() => handleRoleSelect(role)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -225,8 +231,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                       </Button>
                       <Dialog
                         open={showDeleteDialog === role.id} // 比较 number
-                        onOpenChange={(open) =>
-                          setShowDeleteDialog(open ? role.id : null) // 设置 number 或 null
+                        onOpenChange={
+                          (open) => setShowDeleteDialog(open ? role.id : null) // 设置 number 或 null
                         }
                       >
                         <DialogTrigger asChild>
@@ -315,12 +321,14 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
 
                 {/* 创建时间 */}
                 <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
-                  创建于: {new Date(role.created_at).toLocaleDateString("zh-CN")}
+                  创建于:{" "}
+                  {new Date(role.created_at).toLocaleDateString("zh-CN")}
                 </div>
                 {role.updated_at && role.updated_at !== role.created_at && (
-                   <div className="text-xs text-muted-foreground">
-                     更新于: {new Date(role.updated_at).toLocaleDateString("zh-CN")}
-                   </div>
+                  <div className="text-xs text-muted-foreground">
+                    更新于:{" "}
+                    {new Date(role.updated_at).toLocaleDateString("zh-CN")}
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -329,12 +337,19 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
       </div>
 
       {/* 权限管理对话框 */}
-      <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
+      <Dialog
+        open={showPermissionsDialog}
+        onOpenChange={setShowPermissionsDialog}
+      >
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>权限管理</DialogTitle>
             <DialogDescription>
-              为角色 {storeSelectedRoleForDialog?.name ? `"${storeSelectedRoleForDialog.name}"` : ""} 分配和管理权限
+              为角色{" "}
+              {storeSelectedRoleForDialog?.name
+                ? `"${storeSelectedRoleForDialog.name}"`
+                : ""}{" "}
+              分配和管理权限
             </DialogDescription>
           </DialogHeader>
           {storeSelectedRoleForDialog && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -11,8 +11,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
-import { getRolesAction } from "@/lib/actions/roles/role.actions";
-import { Role } from "@/lib/types/user";
+import { useRoleStore } from "@/lib/store/role-store";
+import { Role } from "@/lib/types/roles";
 
 interface RoleSelectProps {
   value?: number; // 当前选中的角色ID
@@ -33,36 +33,16 @@ export function RoleSelect({
   required = false,
   className = "",
 }: RoleSelectProps) {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // 使用 RoleStore 获取角色数据
+  const { roles, isLoadingRoles, error, fetchRoles } = useRoleStore();
 
   // 获取角色列表
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await getRolesAction({ page: 1, page_size: 100 }); // 获取所有角色
-
-        if ("code" in response && response.code === 200) {
-          // 处理PaginatedResponse类型
-          const paginatedResponse = response as any;
-          setRoles(paginatedResponse.data || []);
-        } else {
-          setError((response as any).message || "获取角色列表失败");
-        }
-      } catch (err) {
-        console.error("获取角色列表失败:", err);
-        setError("网络错误，请稍后重试");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRoles();
-  }, []);
+    // 如果还没有角色数据，则获取
+    if (roles.length === 0 && !isLoadingRoles) {
+      fetchRoles(1, 100); // 获取所有角色
+    }
+  }, [roles.length, isLoadingRoles, fetchRoles]);
 
   // 处理角色选择
   const handleValueChange = (selectedValue: string) => {
@@ -77,7 +57,7 @@ export function RoleSelect({
     return selectedRole?.name;
   };
 
-  if (loading) {
+  if (isLoadingRoles) {
     return (
       <div className={`space-y-2 ${className}`}>
         {label && (

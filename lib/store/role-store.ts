@@ -3,11 +3,15 @@ import { devtools } from "zustand/middleware";
 import {
   Role,
   Permission,
+  BackendRoleResponse,
+  convertBackendRolesToRoles,
+  convertBackendPermissionToPermission,
+} from "@/lib/types/roles";
+import {
   PaginatedResponse,
   ErrorResponse,
   SuccessResponse,
-  // PermissionGroup, // swagger中没有直接的PermissionGroup返回类型
-} from "@/lib/types/user"; // 假设角色和权限类型在此定义
+} from "@/lib/types/user";
 import {
   getRolesAction,
   getRoleByIdAction,
@@ -113,10 +117,30 @@ export const useRoleStore = create<RoleStoreState>()(
         set({ isLoadingRoles: true, error: null });
         try {
           const response = await getRolesAction({ page, page_size: pageSize });
-          if ("data" in response && response.data && response.meta) {
-            const paginatedResponse = response as PaginatedResponse<Role>;
+
+          // 处理后端直接返回角色数组的情况（不是标准的PaginatedResponse）
+          if (Array.isArray(response)) {
+            // 后端直接返回BackendRoleResponse数组，进行数据转换
+            const backendRoles = response as BackendRoleResponse[];
+            const convertedRoles = convertBackendRolesToRoles(backendRoles);
             set({
-              roles: paginatedResponse.data,
+              roles: convertedRoles,
+              pagination: {
+                page: 1,
+                pageSize: convertedRoles.length,
+                total: convertedRoles.length,
+              },
+              isLoadingRoles: false,
+            });
+          } else if ("data" in response && response.data && response.meta) {
+            // 标准的PaginatedResponse格式
+            const paginatedResponse =
+              response as unknown as PaginatedResponse<BackendRoleResponse>;
+            const convertedRoles = convertBackendRolesToRoles(
+              paginatedResponse.data
+            );
+            set({
+              roles: convertedRoles,
               pagination: {
                 page: paginatedResponse.meta.page,
                 pageSize: paginatedResponse.meta.page_size,

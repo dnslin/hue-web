@@ -8,13 +8,15 @@ import {
 import {
   Role,
   Permission,
-  // PermissionGroup, // swagger中没有直接的PermissionGroup返回类型，permissions接口返回Permission[]
-  CreateRoleRequest, // swagger中是 dtos.RoleCreateDTO { name: string }
-  UpdateRoleRequest, // swagger中是 dtos.RoleUpdateDTO { name: string }
+  CreateRoleRequest,
+  UpdateRoleRequest,
+  BackendRoleResponse,
+} from "@/lib/types/roles";
+import {
   ErrorResponse,
   SuccessResponse,
-  PaginatedResponse, // 用于列表
-} from "@/lib/types/user"; // 假设角色和权限类型在此定义或从swagger推断
+  PaginatedResponse,
+} from "@/lib/types/user";
 
 // swagger中定义的角色相关基础路径
 const ROLES_API_BASE = "/roles";
@@ -28,15 +30,16 @@ const PERMISSIONS_API_BASE = "/permissions";
 export async function getRolesAction(params?: {
   page?: number;
   page_size?: number;
-}): Promise<PaginatedResponse<Role> | ErrorResponse> {
+}): Promise<
+  BackendRoleResponse[] | PaginatedResponse<BackendRoleResponse> | ErrorResponse
+> {
   try {
     const apiService = await getAuthenticatedApiService();
-    // 假设后端 /roles GET 请求直接返回 PaginatedResponse<Role> 结构作为 AxiosResponse 的 data 部分
-    const response = await apiService.get<PaginatedResponse<Role>>(
-      ROLES_API_BASE,
-      { params }
-    );
-    return response.data; // 显式返回 response.data
+    // 后端实际返回 BackendRoleResponse[] 或 PaginatedResponse<BackendRoleResponse>
+    const response = await apiService.get<
+      BackendRoleResponse[] | PaginatedResponse<BackendRoleResponse>
+    >(ROLES_API_BASE, { params });
+    return response.data; // 返回后端原始数据
   } catch (error: any) {
     console.error("[Action Error] getRolesAction:", error.message, error);
     if (error instanceof AuthenticationError) {
