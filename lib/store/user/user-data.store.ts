@@ -5,14 +5,6 @@ import { shallow } from "zustand/shallow";
 import { User } from "@/lib/types/user";
 import { useUserFilterStore } from "./user-filter.store";
 import { getUsersAction } from "@/lib/actions/users/user.actions";
-// 假设的 Action 路径，后续需要根据实际情况调整
-// import {
-//   createUser as apiCreateUser,
-//   deleteUser as apiDeleteUser,
-//   fetchUsers as apiFetchUsers,
-//   updateUser as apiUpdateUser,
-//   updateUserStatus as apiUpdateUserStatus,
-// } from '@/lib/actions/users/user.actions';
 
 /**
  * 用户核心数据状态
@@ -117,7 +109,6 @@ export const createUserDataSlice: StateCreator<
   },
 
   fetchUsers: async () => {
-    console.log("[Debug] fetchUsers: 开始获取用户数据。");
     const { filters, pagination } = useUserFilterStore.getState();
     const params = {
       ...filters,
@@ -126,14 +117,10 @@ export const createUserDataSlice: StateCreator<
     };
     set({ loading: true, error: null });
     try {
-      console.log("[Debug] fetchUsers: 调用 getUsersAction，参数:", params);
       const response = await getUsersAction(params);
 
       // 首先检查成功的响应结构
       if ("data" in response && "meta" in response) {
-        console.log(
-          `[Debug] fetchUsers: 成功获取到 ${response.data.length} 个用户，总数 ${response.meta.total}。`
-        );
         set({
           users: response.data,
           total: response.meta.total,
