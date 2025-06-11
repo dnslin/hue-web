@@ -1,10 +1,10 @@
 // 用户状态枚举 - 对齐后端定义
 export enum UserStatus {
-  NORMAL = 0, // 正常
-  PENDING = 1, // 待审核 - 修正：后端PendingApproval=1
-  BANNED = 2, // 封禁 - 修正：后端Banned=2
-  DELETED = 3, // 已删除
-  REJECTED = 4, // 审核拒绝
+  NORMAL = 0, // 正常/激活 - 对应后端 StatusNormal = 0
+  BANNED = 1, // 禁用/封禁 - 对应后端 StatusBanned = 1
+  PENDING = 2, // 待审核 - 对应后端 StatusPendingApproval = 2
+  DELETED = 3, // 已删除 (逻辑删除) - 对应后端 StatusDeleted = 3
+  REJECTED = 4, // 审核拒绝 - 对应后端 StatusApprovalRejected = 4
 }
 
 // 用户角色枚举 - 保持字符串类型但添加ID映射
@@ -31,7 +31,7 @@ export const ID_ROLE_MAP: Record<number, UserRole> = {
 // 状态标签映射
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   [UserStatus.NORMAL]: "正常",
-  [UserStatus.BANNED]: "封禁", // 修正：原DISABLED改为BANNED
+  [UserStatus.BANNED]: "封禁",
   [UserStatus.PENDING]: "待审核",
   [UserStatus.DELETED]: "已删除",
   [UserStatus.REJECTED]: "审核拒绝",

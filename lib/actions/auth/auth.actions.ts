@@ -60,19 +60,51 @@ export async function loginAction(
       code: 500, // 假设是服务器端问题
     };
   } catch (error: any) {
-    // console.error('[Auth Action] Login error:', error); // 中文注释：登录错误日志
+    console.error("[Auth Action] Login error:", error); // 中文注释：登录错误日志
+
+    // 处理认证错误（主要是401错误）
     if (error instanceof AuthenticationError) {
       return {
         success: false,
-        message: error.message || "用户名或密码错误。",
+        message: error.message || "用户名或密码错误，请重新输入。",
         code: error.status,
       };
     }
+
+    // 处理其他结构化错误
+    if (error && typeof error === "object") {
+      // 根据错误代码提供合适的用户提示
+      let userMessage = "登录失败，请稍后重试。";
+
+      if (error.code === 400) {
+        userMessage = error.message || "请求参数有误，请检查输入信息。";
+      } else if (error.code === 422) {
+        userMessage = error.message || "输入信息格式有误，请重新检查。";
+      } else if (error.code === 500) {
+        userMessage = "服务器繁忙，请稍后重试。";
+      } else if (error.code === 0) {
+        userMessage = error.message || "网络连接失败，请检查网络后重试。";
+      } else if (error.message && !error.message.includes("status code")) {
+        // 如果有自定义错误消息且不包含技术性状态码信息，则使用它
+        userMessage = error.message;
+      }
+
+      return {
+        success: false,
+        message: userMessage,
+        code: error.code || 500,
+        error: error.data || error,
+      };
+    }
+
+    // 处理未知错误类型
+    const fallbackMessage =
+      typeof error === "string" ? error : "登录时发生未知错误，请稍后重试。";
     return {
       success: false,
-      message: error.message || "登录时发生未知错误。",
-      code: error.code || 500,
-      error: error.data || error,
+      message: fallbackMessage,
+      code: 500,
+      error,
     };
   }
 }
@@ -86,16 +118,10 @@ export async function registerAction(
   userData: RegisterRequest
 ): Promise<ServerActionResponse<AuthResponseData | { message: string }>> {
   try {
-    // console.log('[Auth Action] Attempting registration for:', userData.username); // 中文注释：尝试注册日志
-    // 后端注册成功后可能直接返回token和user，也可能只返回成功消息要求用户激活
-    // swagger.yaml /auth/register 描述为 "注册请求已提交，请检查邮箱以激活账户"
-    // 因此，这里假设成功时不自动登录，而是返回一个消息
     const response = await publicApiService.post<
       AuthResponseData | { message: string }
     >("/auth/register", userData);
     const responseData = response.data; // 显式访问 .data
-    // console.log('[Auth Action] Register API Response Data:', responseData);
-
     // 检查后端是否返回了token和user，如果是，则可以考虑自动登录
     if (responseData && "token" in responseData && "user" in responseData) {
       const cookieStore = await cookies(); // 尝试 await
@@ -128,12 +154,53 @@ export async function registerAction(
       code: 500,
     };
   } catch (error: any) {
-    // console.error('[Auth Action] Registration error:', error); // 中文注释：注册错误日志
+    console.error("[Auth Action] Registration error:", error); // 中文注释：注册错误日志
+
+    // 处理认证错误（可能在某些注册流程中出现）
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: error.message || "注册失败，认证信息有误。",
+        code: error.status,
+      };
+    }
+
+    // 处理其他结构化错误
+    if (error && typeof error === "object") {
+      // 根据错误代码提供合适的用户提示
+      let userMessage = "注册失败，请稍后重试。";
+
+      if (error.code === 400) {
+        userMessage = error.message || "请求参数有误，请检查输入信息。";
+      } else if (error.code === 422) {
+        userMessage = error.message || "输入信息验证失败，请检查格式。";
+      } else if (error.code === 409) {
+        userMessage = error.message || "用户名或邮箱已存在，请使用其他信息。";
+      } else if (error.code === 500) {
+        userMessage = "服务器繁忙，请稍后重试。";
+      } else if (error.code === 0) {
+        userMessage = error.message || "网络连接失败，请检查网络后重试。";
+      } else if (error.message && !error.message.includes("status code")) {
+        // 如果有自定义错误消息且不包含技术性状态码信息，则使用它
+        userMessage = error.message;
+      }
+
+      return {
+        success: false,
+        message: userMessage,
+        code: error.code || 500,
+        error: error.data || error,
+      };
+    }
+
+    // 处理未知错误类型
+    const fallbackMessage =
+      typeof error === "string" ? error : "注册时发生未知错误，请稍后重试。";
     return {
       success: false,
-      message: error.message || "注册时发生未知错误。",
-      code: error.code || 500,
-      error: error.data || error,
+      message: fallbackMessage,
+      code: 500,
+      error,
     };
   }
 }

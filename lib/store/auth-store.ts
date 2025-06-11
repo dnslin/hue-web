@@ -109,17 +109,33 @@ export const useAuthStore = create<AuthState>()(
             return true;
           } else {
             console.error("❌ 登录失败:", response.message); // 中文注释：登录失败
+            // 确保错误消息从response中正确传递
+            const errorMessage =
+              response.message || "登录失败，请检查您的凭据。";
             set({
               isLoading: false,
-              error: response.message || "登录失败，请检查您的凭据。",
+              error: errorMessage,
             });
             return false;
           }
         } catch (err: any) {
           console.error("❌ 登录时发生意外错误:", err); // 中文注释：登录时发生意外错误
+          // 处理意外的客户端错误
+          let errorMessage = "登录失败，请稍后重试。";
+
+          if (err && typeof err === "object") {
+            if (err.message && !err.message.includes("status code")) {
+              errorMessage = err.message;
+            } else if (err.code === 0) {
+              errorMessage = "网络连接失败，请检查网络后重试。";
+            }
+          } else if (typeof err === "string") {
+            errorMessage = err;
+          }
+
           set({
             isLoading: false,
-            error: err.message || "登录失败，请稍后重试。",
+            error: errorMessage,
           });
           return false;
         }
@@ -162,17 +178,33 @@ export const useAuthStore = create<AuthState>()(
             return true; // Action本身是成功的
           } else {
             console.error("❌ 注册失败:", response.message); // 中文注释：注册失败
+            // 确保错误消息从response中正确传递
+            const errorMessage =
+              response.message || "注册失败，请检查输入信息。";
             set({
               isLoading: false,
-              error: response.message || "注册失败，请检查输入信息。",
+              error: errorMessage,
             });
             return false;
           }
         } catch (err: any) {
           console.error("❌ 注册时发生意外错误:", err); // 中文注释：注册时发生意外错误
+          // 处理意外的客户端错误
+          let errorMessage = "注册失败，请稍后重试。";
+
+          if (err && typeof err === "object") {
+            if (err.message && !err.message.includes("status code")) {
+              errorMessage = err.message;
+            } else if (err.code === 0) {
+              errorMessage = "网络连接失败，请检查网络后重试。";
+            }
+          } else if (typeof err === "string") {
+            errorMessage = err;
+          }
+
           set({
             isLoading: false,
-            error: err.message || "注册失败，请稍后重试。",
+            error: errorMessage,
           });
           return false;
         }
