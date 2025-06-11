@@ -168,10 +168,10 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   variant="ghost"
                   size="sm"
                   className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("last_login")}
+                  onClick={() => handleSort("last_login_at")}
                 >
                   最后登录
-                  {getSortIcon("last_login")}
+                  {getSortIcon("last_login_at")}
                 </Button>
               </th>
               <th className="text-left p-4 font-medium">登录IP</th>

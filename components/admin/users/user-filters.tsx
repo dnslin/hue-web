@@ -275,7 +275,7 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                         <SelectItem value="DEFAULT_SORT">默认</SelectItem>
                         <SelectItem value="created_at">注册时间</SelectItem>
                         <SelectItem value="updated_at">更新时间</SelectItem>
-                        <SelectItem value="last_login">最后登录</SelectItem>
+                        <SelectItem value="last_login_at">最后登录</SelectItem>
                         <SelectItem value="upload_count">上传数量</SelectItem>
                       </SelectContent>
                     </Select>

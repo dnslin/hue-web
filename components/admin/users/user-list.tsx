@@ -22,11 +22,7 @@ interface UserListProps {
 export function UserList({ isMobile = false }: UserListProps) {
   // --- 从新的 stores 中获取状态和方法 ---
   const { users, total, loading, error } = useStore(userDataStore);
-  const {
-    filters,
-    pagination,
-    setFilters,
-  } = useUserFilterStore();
+  const { filters, pagination, setFilters } = useUserFilterStore();
   const isHydrated = useUserDataHydration();
 
   // 错误处理应该在所有 hooks 调用之后，但在任何可能提前返回的逻辑之前
@@ -69,27 +65,51 @@ export function UserList({ isMobile = false }: UserListProps) {
       }
 
       // 2. Convert users array to CSV string
-      const headers = ["ID", "用户名", "昵称", "邮箱", "角色", "状态", "注册时间", "最后登录时间", "上传数量", "已用存储(MB)", "存储上限(MB)"];
-      const csvRows = [
-        headers.join(','),
-        ...usersToExport.map(user => [
-          user.id,
-          `"${user.username.replace(/"/g, '""')}"`, // Handle quotes in username
-          `"${(user.nickname || '').replace(/"/g, '""')}"`,
-          user.email,
-          user.role,
-          user.status,
-          user.created_at ? new Date(user.created_at).toLocaleString('zh-CN') : '',
-          user.last_login ? new Date(user.last_login).toLocaleString('zh-CN') : '',
-          user.upload_count || 0,
-          user.storage_used ? (user.storage_used / (1024 * 1024)).toFixed(2) : 0,
-          user.storage_limit ? (user.storage_limit / (1024 * 1024)).toFixed(2) : '无限制',
-        ].join(','))
+      const headers = [
+        "ID",
+        "用户名",
+        "昵称",
+        "邮箱",
+        "角色",
+        "状态",
+        "注册时间",
+        "最后登录时间",
+        "上传数量",
+        "已用存储(MB)",
+        "存储上限(MB)",
       ];
-      const csvString = csvRows.join('\n');
+      const csvRows = [
+        headers.join(","),
+        ...usersToExport.map((user) =>
+          [
+            user.id,
+            `"${user.username.replace(/"/g, '""')}"`, // Handle quotes in username
+            `"${(user.nickname || "").replace(/"/g, '""')}"`,
+            user.email,
+            user.role,
+            user.status,
+            user.created_at
+              ? new Date(user.created_at).toLocaleString("zh-CN")
+              : "",
+            user.last_login_at
+              ? new Date(user.last_login_at).toLocaleString("zh-CN")
+              : "",
+            user.upload_count || 0,
+            user.storage_used
+              ? (user.storage_used / (1024 * 1024)).toFixed(2)
+              : 0,
+            user.storage_limit
+              ? (user.storage_limit / (1024 * 1024)).toFixed(2)
+              : "无限制",
+          ].join(",")
+        ),
+      ];
+      const csvString = csvRows.join("\n");
 
       // 3. Create Blob and trigger download
-      const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' }); // Add BOM for Excel compatibility
+      const blob = new Blob(["\uFEFF" + csvString], {
+        type: "text/csv;charset=utf-8;",
+      }); // Add BOM for Excel compatibility
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = "none";
@@ -157,10 +177,7 @@ export function UserList({ isMobile = false }: UserListProps) {
         </CardHeader>
         <CardContent>
           {isMobile ? (
-            <UserMobileList
-              users={users}
-              loading={loading}
-            />
+            <UserMobileList users={users} loading={loading} />
           ) : (
             <UserTable
               users={users}

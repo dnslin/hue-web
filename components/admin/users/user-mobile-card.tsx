@@ -11,9 +11,7 @@ interface UserMobileCardProps {
   user: User;
 }
 
-export function UserMobileCard({
-  user,
-}: UserMobileCardProps) {
+export function UserMobileCard({ user }: UserMobileCardProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("zh-CN", {
       year: "numeric",
@@ -65,7 +63,10 @@ export function UserMobileCard({
           {/* 用户基本信息 - 优化布局 */}
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
-              <AvatarImage src={user.avatar || getGravatarUrl(user.email)} alt={user.username} />
+              <AvatarImage
+                src={user.avatar || getGravatarUrl(user.email)}
+                alt={user.username}
+              />
               <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
                 {getUserInitials(getUserDisplayName(user))}
               </AvatarFallback>
@@ -95,9 +96,7 @@ export function UserMobileCard({
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <UserActions
-                user={user}
-              />
+              <UserActions user={user} />
             </div>
           </div>
 
@@ -112,7 +111,7 @@ export function UserMobileCard({
             <div className="space-y-1 p-2 bg-muted/20 rounded-md border border-border/50">
               <div className="text-muted-foreground font-medium">最后登录</div>
               <div className="font-semibold text-foreground text-xs">
-                {user.last_login ? formatDate(user.last_login) : "从未"}
+                {user.last_login_at ? formatDate(user.last_login_at) : "从未"}
               </div>
             </div>
           </div>

@@ -62,7 +62,6 @@ export interface User {
   updated_at: string;
   last_login_at?: string; // 后端字段名
   last_login_ip?: string; // 后端字段名
-  last_login?: string; // 前端兼容字段
   storage_used?: number;
   storage_limit?: number;
   upload_count?: number;
@@ -118,7 +117,6 @@ export function convertBackendUserToUser(
     updated_at: backendUser.updated_at,
     last_login_at: backendUser.last_login_at,
     last_login_ip: backendUser.last_login_ip,
-    last_login: backendUser.last_login_at, // 兼容字段
   };
 }
 
@@ -173,7 +171,7 @@ export interface UserListParams {
     | "status"
     | "created_at"
     | "updated_at"
-    | "last_login"
+    | "last_login_at"
     | "upload_count";
   order?: "asc" | "desc";
   // 前端扩展字段
