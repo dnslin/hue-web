@@ -8,9 +8,13 @@ import {
   CheckCircle,
   Key,
   UserX,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +29,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { User, UserStatus } from "@/lib/types/user";
+import { User, UserStatus, UserUpdateRequest } from "@/lib/types/user";
 import { useUserActionStore } from "@/lib/store/user/user-action.store";
+import { updateAdminUserAction } from "@/lib/actions/users/user.actions";
 import { showToast } from "@/lib/utils/toast";
 
 interface UserActionsProps {
@@ -37,7 +42,15 @@ export function UserActions({ user }: UserActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [targetStatus, setTargetStatus] = useState<UserStatus | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [editForm, setEditForm] = useState({
+    username: user.username,
+    email: user.email,
+    role_id: user.role_id,
+  });
 
   const {
     loading,
@@ -144,6 +157,58 @@ export function UserActions({ user }: UserActionsProps) {
     }
   };
 
+  const handleRejectUser = async () => {
+    clearError("statusChangeError", user.id);
+
+    try {
+      const result = await changeUserStatus(
+        user,
+        UserStatus.REJECTED,
+        rejectReason
+      );
+      if (result.success) {
+        showToast.success(`用户 ${user.username} 已被拒绝`);
+        setShowRejectDialog(false);
+        setRejectReason("");
+      } else {
+        showToast.error(
+          `拒绝用户 ${user.username} 失败`,
+          result.error || "操作失败，请重试"
+        );
+      }
+    } catch (err: any) {
+      showToast.error(
+        `拒绝用户 ${user.username} 失败`,
+        err.message || "操作失败，请重试"
+      );
+    }
+  };
+
+  const handleEditUser = async () => {
+    try {
+      const updateData: UserUpdateRequest = {
+        username: editForm.username,
+        email: editForm.email,
+        role_id: editForm.role_id,
+      };
+
+      const result = await updateAdminUserAction(user.id, updateData);
+      if ("code" in result && result.code === 200) {
+        showToast.success(`用户 ${user.username} 信息已更新`);
+        setShowEditDialog(false);
+        // 刷新用户数据需要导入 userDataStore
+        window.location.reload(); // 临时解决方案
+      } else {
+        showToast.error(
+          "更新用户信息失败",
+          (result as any).message || "操作失败，请重试"
+        );
+      }
+    } catch (err: any) {
+      showToast.error("更新用户信息失败", err.message || "操作失败，请重试");
+    }
+  };
+
   const getStatusBadge = (status: UserStatus) => {
     switch (status) {
       case UserStatus.NORMAL:
@@ -202,17 +267,14 @@ export function UserActions({ user }: UserActionsProps) {
               variant="ghost"
               size="sm"
               className="w-full justify-start gap-2"
-              onClick={() => {
-                // TODO: 实现编辑用户功能
-                console.log("编辑用户:", user.id);
-              }}
+              onClick={() => setShowEditDialog(true)}
             >
               <Edit className="h-4 w-4" />
-              编辑用户
+              编辑信息
             </Button>
 
             {/* 状态切换 */}
-            {user.status === UserStatus.NORMAL ? (
+            {user.status === UserStatus.NORMAL && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -221,9 +283,11 @@ export function UserActions({ user }: UserActionsProps) {
                 disabled={isSubmitting}
               >
                 <Ban className="h-4 w-4" />
-                封禁用户
+                封禁账号
               </Button>
-            ) : user.status === UserStatus.BANNED ? (
+            )}
+
+            {user.status === UserStatus.BANNED && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -232,30 +296,33 @@ export function UserActions({ user }: UserActionsProps) {
                 disabled={isSubmitting}
               >
                 <CheckCircle className="h-4 w-4" />
-                解封用户
+                解除封禁
               </Button>
-            ) : user.status === UserStatus.PENDING ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
-                onClick={() => handleStatusToggle(UserStatus.NORMAL)}
-                disabled={isSubmitting}
-              >
-                <CheckCircle className="h-4 w-4" />
-                批准用户
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
-                onClick={() => handleStatusToggle(UserStatus.NORMAL)}
-                disabled={isSubmitting}
-              >
-                <CheckCircle className="h-4 w-4" />
-                激活用户
-              </Button>
+            )}
+
+            {user.status === UserStatus.PENDING && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 text-green-600 hover:text-green-700"
+                  onClick={() => handleStatusToggle(UserStatus.NORMAL)}
+                  disabled={isSubmitting}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  批准注册
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 text-red-600 hover:text-red-700"
+                  onClick={() => setShowRejectDialog(true)}
+                  disabled={isSubmitting}
+                >
+                  <XCircle className="h-4 w-4" />
+                  拒绝注册
+                </Button>
+              </>
             )}
 
             {/* 重置密码 */}
@@ -295,43 +362,48 @@ export function UserActions({ user }: UserActionsProps) {
               </DialogContent>
             </Dialog>
 
-            {/* 删除用户 */}
-            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 text-red-600 hover:text-red-700"
-                >
-                  <UserX className="h-4 w-4" />
-                  删除用户
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>删除用户</DialogTitle>
-                  <DialogDescription>
-                    确定要删除用户 &ldquo;{user.username}&rdquo;
-                    吗？此操作不可撤销，用户的所有数据将被永久删除。
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
+            {/* 删除用户 - 根据状态显示 */}
+            {user.status !== UserStatus.DELETED && (
+              <Dialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+              >
+                <DialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    onClick={() => setShowDeleteDialog(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start gap-2 text-red-600 hover:text-red-700"
                   >
-                    取消
+                    <UserX className="h-4 w-4" />
+                    删除账号
                   </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "删除中..." : "确认删除"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>删除用户</DialogTitle>
+                    <DialogDescription>
+                      确定要删除用户 &ldquo;{user.username}&rdquo;
+                      吗？此操作不可撤销，用户的所有数据将被永久删除。
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteDialog(false)}
+                    >
+                      取消
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "删除中..." : "确认删除"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
 
             {/* 状态变更确认弹窗 */}
             <Dialog
@@ -374,6 +446,111 @@ export function UserActions({ user }: UserActionsProps) {
                       : targetStatus === UserStatus.BANNED
                       ? "确认封禁"
                       : "确认解封"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* 拒绝用户弹窗 */}
+            <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>拒绝注册</DialogTitle>
+                  <DialogDescription>
+                    确定要拒绝用户 &ldquo;{user.username}&rdquo; 的注册申请吗？
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reject-reason">拒绝理由（可选）</Label>
+                    <Textarea
+                      id="reject-reason"
+                      placeholder="请输入拒绝理由..."
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      className="w-full min-h-20"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowRejectDialog(false);
+                      setRejectReason("");
+                    }}
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleRejectUser}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "拒绝中..." : "确认拒绝"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* 编辑用户弹窗 */}
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>编辑用户信息</DialogTitle>
+                  <DialogDescription>
+                    修改用户 &ldquo;{user.username}&rdquo; 的基本信息
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-username">用户名</Label>
+                    <Input
+                      id="edit-username"
+                      value={editForm.username}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, username: e.target.value })
+                      }
+                      placeholder="请输入用户名"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-email">邮箱</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, email: e.target.value })
+                      }
+                      placeholder="请输入邮箱"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-role">角色ID</Label>
+                    <Input
+                      id="edit-role"
+                      type="number"
+                      value={editForm.role_id}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          role_id: parseInt(e.target.value) || 2,
+                        })
+                      }
+                      placeholder="请输入角色ID"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowEditDialog(false)}
+                  >
+                    取消
+                  </Button>
+                  <Button onClick={handleEditUser} disabled={isSubmitting}>
+                    {isSubmitting ? "保存中..." : "保存更改"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

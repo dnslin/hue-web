@@ -1261,6 +1261,61 @@
         }
       }
     },
+    "/admin/users/{id}/reset-password": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "管理员为指定用户重置密码。新密码将通过邮件发送给用户。",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Admin User Management"
+        ],
+        "summary": "管理员重置用户密码",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "用户ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "密码重置成功",
+            "schema": {
+              "$ref": "#/definitions/utils.SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "无效的用户ID",
+            "schema": {
+              "$ref": "#/definitions/utils.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "用户未找到",
+            "schema": {
+              "$ref": "#/definitions/utils.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "schema": {
+              "$ref": "#/definitions/utils.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/admin/users/{id}/unban": {
       "post": {
         "security": [
@@ -2002,6 +2057,62 @@
           },
           "400": {
             "description": "请求参数错误或用户已存在",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "/auth/resend-activation-email": {
+      "post": {
+        "description": "为待激活的用户重新发送激活邮件",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Auth"
+        ],
+        "summary": "重发激活邮件",
+        "parameters": [
+          {
+            "description": "重发激活邮件请求",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dtos.ResendActivationEmailRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "激活邮件已发送",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "400": {
+            "description": "请求参数错误或账户状态不适用",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "429": {
+            "description": "操作过于频繁",
             "schema": {
               "type": "object",
               "additionalProperties": true
@@ -4437,6 +4548,17 @@
         }
       }
     },
+    "dtos.ResendActivationEmailRequest": {
+      "type": "object",
+      "required": [
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      }
+    },
     "dtos.ResetPasswordRequest": {
       "type": "object",
       "required": [
@@ -4647,6 +4769,8 @@
         "USER_REQUEST_RESET_PWD",
         "USER_RESET_PASSWORD",
         "USER_VERIFY_EMAIL",
+        "USER_REQUEST_ACTIVATION_EMAIL",
+        "USER_REQUEST_RESET_PWD_EMAIL",
         "ADMIN_USER_CREATE",
         "ADMIN_USER_UPDATE",
         "ADMIN_USER_DELETE",
@@ -4671,6 +4795,8 @@
         "ActionUserRequestResetPwd",
         "ActionUserResetPassword",
         "ActionUserVerifyEmail",
+        "ActionUserRequestActivationEmail",
+        "ActionUserRequestResetPwdEmail",
         "ActionAdminUserCreate",
         "ActionAdminUserUpdate",
         "ActionAdminUserDelete",
