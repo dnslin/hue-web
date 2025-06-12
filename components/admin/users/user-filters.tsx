@@ -70,7 +70,7 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
       case UserRole.USER:
         return "普通用户";
       case UserRole.MODERATOR:
-        return "版主";
+        return "封禁用户";
       default:
         return "未知";
     }

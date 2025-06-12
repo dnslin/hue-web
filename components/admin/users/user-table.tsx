@@ -92,7 +92,7 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
       case UserRole.ADMIN:
         return <Badge variant="destructive">管理员</Badge>;
       case UserRole.MODERATOR:
-        return <Badge variant="secondary">版主</Badge>;
+        return <Badge variant="secondary">封禁用户</Badge>;
       case UserRole.USER:
         return <Badge variant="outline">普通用户</Badge>;
       default:

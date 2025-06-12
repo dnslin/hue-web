@@ -125,7 +125,9 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
   };
 
   // 处理表单提交
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
     if (!validateForm()) {
       return;
     }
@@ -157,12 +159,21 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
     setOpen(newOpen);
   };
 
+  // 处理键盘事件
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Escape键关闭对话框
+    if (e.key === "Escape" && !isSubmitting) {
+      setOpen(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         className="w-[calc(100vw-2rem)] max-w-md max-h-[85vh] overflow-y-auto sm:w-full"
         ref={dialogContentRef}
+        onKeyDown={handleKeyDown}
       >
         <DialogHeader>
           <DialogTitle>添加用户</DialogTitle>
@@ -171,133 +182,145 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
             用户创建后将收到邮件通知。
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2 sm:py-4">
-          {/* 用户名输入 */}
-          <div className="space-y-2">
-            <Label htmlFor="create-username">
-              用户名 <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="create-username"
-              value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })}
-              placeholder="3-50字符"
-              className={errors.username ? "border-red-500" : ""}
-              autoComplete="username"
-            />
-            {errors.username && (
-              <p className="text-sm text-red-500">{errors.username}</p>
-            )}
-          </div>
+        <form id="user-create-form" onSubmit={handleSubmit} noValidate>
+          <div className="space-y-4 py-2 sm:py-4">
+            {/* 用户名输入 */}
+            <div className="space-y-2">
+              <Label htmlFor="create-username">
+                用户名 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="create-username"
+                name="username"
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                placeholder="3-50字符"
+                className={errors.username ? "border-red-500" : ""}
+                autoComplete="username"
+                required
+              />
+              {errors.username && (
+                <p className="text-sm text-red-500">{errors.username}</p>
+              )}
+            </div>
 
-          {/* 邮箱输入 */}
-          <div className="space-y-2">
-            <Label htmlFor="create-email">
-              邮箱 <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="create-email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="example@domain.com"
-              className={errors.email ? "border-red-500" : ""}
-              autoComplete="email"
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
-            )}
-          </div>
+            {/* 邮箱输入 */}
+            <div className="space-y-2">
+              <Label htmlFor="create-email">
+                邮箱 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="create-email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="example@domain.com"
+                className={errors.email ? "border-red-500" : ""}
+                autoComplete="email"
+                required
+              />
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email}</p>
+              )}
+            </div>
 
-          {/* 密码输入 */}
-          <div className="space-y-2">
-            <Label htmlFor="create-password">
-              密码 <span className="text-red-500">*</span>
-            </Label>
-            <div className="space-y-2 sm:space-y-0">
-              {/* 移动端：垂直布局，桌面端：水平布局 */}
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative flex-1">
-                  <Input
-                    id="create-password"
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
-                    placeholder="8-100字符"
-                    className={`pr-10 ${
-                      errors.password ? "border-red-500" : ""
-                    }`}
-                    autoComplete="new-password"
-                  />
+            {/* 密码输入 */}
+            <div className="space-y-2">
+              <Label htmlFor="create-password">
+                密码 <span className="text-red-500">*</span>
+              </Label>
+              <div className="space-y-2 sm:space-y-0">
+                {/* 移动端：垂直布局，桌面端：水平布局 */}
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="relative flex-1">
+                    <Input
+                      id="create-password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) =>
+                        setForm({ ...form, password: e.target.value })
+                      }
+                      placeholder="8-100字符"
+                      className={`pr-10 ${
+                        errors.password ? "border-red-500" : ""
+                      }`}
+                      autoComplete="new-password"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    variant="outline"
+                    onClick={handleGeneratePassword}
+                    className="w-full sm:w-auto shrink-0 justify-center sm:justify-start"
+                    title="生成安全密码"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    <RefreshCw className="h-4 w-4 mr-2 sm:mr-0" />
+                    <span className="sm:hidden">生成密码</span>
                   </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleGeneratePassword}
-                  className="w-full sm:w-auto shrink-0 justify-center sm:justify-start"
-                  title="生成安全密码"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2 sm:mr-0" />
-                  <span className="sm:hidden">生成密码</span>
-                </Button>
               </div>
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password}</p>
+              )}
+              {form.password && (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  建议将生成的密码发送给用户，并要求首次登录后修改
+                </p>
+              )}
             </div>
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password}</p>
-            )}
-            {form.password && (
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                建议将生成的密码发送给用户，并要求首次登录后修改
-              </p>
+
+            {/* 角色选择 */}
+            <div
+              className={`space-y-2 ${errors.role_id ? "border-red-500" : ""}`}
+            >
+              <RoleSelect
+                value={form.role_id}
+                onValueChange={(roleId) =>
+                  setForm({ ...form, role_id: roleId })
+                }
+                label="用户角色"
+                placeholder="请选择角色"
+                required
+                portalContainer={dialogContentRef.current}
+              />
+              {errors.role_id && (
+                <p className="text-sm text-red-500">{errors.role_id}</p>
+              )}
+              {form.role_id === ROLE_ID_MAP[UserRole.USER] && (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  默认选择普通用户角色，可根据需要修改
+                </p>
+              )}
+            </div>
+
+            {/* 显示服务器错误 */}
+            {error.createError && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md leading-relaxed">
+                {error.createError}
+              </div>
             )}
           </div>
-
-          {/* 角色选择 */}
-          <div
-            className={`space-y-2 ${errors.role_id ? "border-red-500" : ""}`}
-          >
-            <RoleSelect
-              value={form.role_id}
-              onValueChange={(roleId) => setForm({ ...form, role_id: roleId })}
-              label="用户角色"
-              placeholder="请选择角色"
-              required
-              portalContainer={dialogContentRef.current}
-            />
-            {errors.role_id && (
-              <p className="text-sm text-red-500">{errors.role_id}</p>
-            )}
-            {form.role_id === ROLE_ID_MAP[UserRole.USER] && (
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                默认选择普通用户角色，可根据需要修改
-              </p>
-            )}
-          </div>
-
-          {/* 显示服务器错误 */}
-          {error.createError && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md leading-relaxed">
-              {error.createError}
-            </div>
-          )}
-        </div>
+        </form>
         <DialogFooter className="gap-3 pt-4 sm:pt-6">
           <Button
+            type="button"
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isSubmitting}
@@ -306,7 +329,8 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
             取消
           </Button>
           <Button
-            onClick={handleSubmit}
+            type="submit"
+            form="user-create-form"
             disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
