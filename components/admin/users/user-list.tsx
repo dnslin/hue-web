@@ -9,6 +9,7 @@ import { UserFilters } from "./user-filters";
 import { UserTable } from "./user-table";
 import { UserMobileList } from "./user-mobile-list";
 import { UserPagination } from "./user-pagination";
+import { UserCreateDialog } from "./user-create-dialog";
 import { UserListParams, User } from "@/lib/types/user";
 import { userDataStore } from "@/lib/store/user/user-data.store";
 import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
@@ -152,10 +153,12 @@ export function UserList({ isMobile = false }: UserListProps) {
               导出数据
             </Button>
           )}
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            {isMobile ? "添加" : "添加用户"}
-          </Button>
+          <UserCreateDialog>
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              {isMobile ? "添加" : "添加用户"}
+            </Button>
+          </UserCreateDialog>
         </div>
       </div>
 

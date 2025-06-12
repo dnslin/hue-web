@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { User, UserStatus, UserUpdateRequest } from "@/lib/types/user";
+import {
+  User,
+  UserStatus,
+  UserUpdateRequest,
+  AdminUserCreateRequest,
+} from "@/lib/types/user";
 import {
   SuccessResponse,
   ErrorResponse as ApiErrorResponse,
@@ -12,6 +17,7 @@ import {
   deleteAdminUserAction,
   updateAdminUserAction,
   resetPasswordUserAction,
+  createAdminUserAction,
 } from "@/lib/actions/users/user.actions";
 import { userDataStore } from "./user-data.store";
 import { useUserCacheStore } from "./user-cache.store";
@@ -23,6 +29,7 @@ interface ActionLoadingState {
   isDeleting: Record<number, boolean>; // 按用户ID跟踪删除
   isResettingPassword: Record<number, boolean>; // 按用户ID跟踪密码重置
   isUpdating: Record<number, boolean>; // 按用户ID跟踪信息更新
+  isCreating: boolean; // 创建用户的加载状态
 }
 
 // 定义错误状态的类型
@@ -31,6 +38,7 @@ interface ActionErrorState {
   deleteError: Record<number, string | null>;
   resetPasswordError: Record<number, string | null>;
   updateError: Record<number, string | null>;
+  createError: string | null; // 创建用户的错误状态
 }
 
 // Store 的完整状态接口
@@ -45,12 +53,15 @@ export interface UserActionState {
   deleteUser: (userId: number) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (
     userId: number
-  ) => Promise<{ success: boolean; newPassword?: string; error?: string }>; // 修改返回类型
+  ) => Promise<{ success: boolean; newPassword?: string; error?: string }>;
   updateUser: (
     userId: number,
     updateData: UserUpdateRequest
   ) => Promise<{ success: boolean; error?: string }>;
-  clearError: (action: keyof ActionErrorState, userId: number) => void;
+  createUser: (
+    userData: AdminUserCreateRequest
+  ) => Promise<{ success: boolean; user?: User; error?: string }>;
+  clearError: (action: keyof ActionErrorState, userId?: number) => void;
 }
 
 /**
@@ -65,25 +76,36 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
     isDeleting: {},
     isResettingPassword: {},
     isUpdating: {},
+    isCreating: false,
   },
   error: {
     statusChangeError: {},
     deleteError: {},
     resetPasswordError: {},
     updateError: {},
+    createError: null,
   },
 
   // 清除特定操作的错误信息
   clearError: (action, userId) => {
-    set((state) => ({
-      error: {
-        ...state.error,
-        [action]: {
-          ...state.error[action],
-          [userId]: null,
+    if (action === "createError") {
+      set((state) => ({
+        error: {
+          ...state.error,
+          createError: null,
         },
-      },
-    }));
+      }));
+    } else if (userId !== undefined) {
+      set((state) => ({
+        error: {
+          ...state.error,
+          [action]: {
+            ...state.error[action],
+            [userId]: null,
+          },
+        },
+      }));
+    }
   },
 
   // 更改用户状态
@@ -352,6 +374,77 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         loading: {
           ...state.loading,
           isUpdating: { ...state.loading.isUpdating, [userId]: false },
+        },
+      }));
+    }
+  },
+
+  // 创建用户
+  createUser: async (userData) => {
+    set((state) => ({
+      loading: {
+        ...state.loading,
+        isCreating: true,
+      },
+      error: {
+        ...state.error,
+        createError: null,
+      },
+    }));
+
+    try {
+      const actionResponse = await createAdminUserAction(userData);
+
+      // 检查响应是否成功 (code = 201 for creation)
+      if (
+        actionResponse &&
+        "code" in actionResponse &&
+        (actionResponse.code < 200 || actionResponse.code >= 300)
+      ) {
+        const error = new Error(
+          (actionResponse as ApiErrorResponse).message || "创建用户失败"
+        );
+        const result = await handleStoreError(error, "创建用户");
+        set((state) => ({
+          error: {
+            ...state.error,
+            createError: result.error,
+          },
+        }));
+        return result;
+      }
+
+      // 操作成功，刷新数据
+      await userDataStore.getState().refreshUsers();
+      const createdUser = (actionResponse as SuccessResponse<User>).data;
+      if (createdUser) {
+        useUserCacheStore.getState().invalidateUserCache(createdUser.id);
+        return { success: true, user: createdUser };
+      } else {
+        const error = new Error("创建用户成功但未返回用户数据");
+        const result = await handleStoreError(error, "创建用户");
+        set((state) => ({
+          error: {
+            ...state.error,
+            createError: result.error,
+          },
+        }));
+        return result;
+      }
+    } catch (e) {
+      const result = await handleStoreError(e, "创建用户");
+      set((state) => ({
+        error: {
+          ...state.error,
+          createError: result.error,
+        },
+      }));
+      return result;
+    } finally {
+      set((state) => ({
+        loading: {
+          ...state.loading,
+          isCreating: false,
         },
       }));
     }

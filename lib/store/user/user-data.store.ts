@@ -49,35 +49,6 @@ export interface UserDataActions {
    */
   refreshUsers: () => Promise<void>;
   /**
-   * 创建一个新用户
-   * @param userData 新用户的数据
-   * @returns 创建成功后的用户对象，或在失败时返回 null
-   */
-  createUser: (userData: Partial<User>) => Promise<User | null>;
-  /**
-   * 更新一个已存在用户的信息
-   * @param userId 要更新的用户 ID
-   * @param userData 需要更新的数据
-   * @returns 更新成功后的用户对象，或在失败时返回 null
-   */
-  updateUser: (userId: string, userData: Partial<User>) => Promise<User | null>;
-  /**
-   * 删除一个用户
-   * @param userId 要删除的用户 ID
-   * @returns 操作是否成功
-   */
-  deleteUser: (userId: string) => Promise<boolean>;
-  /**
-   * 更改用户的状态
-   * @param userId 用户 ID
-   * @param status 新的状态
-   * @returns 操作是否成功
-   */
-  changeUserStatus: (
-    userId: string,
-    status: "active" | "inactive" | "banned"
-  ) => Promise<boolean>;
-  /**
    * 初始化订阅
    * @description 设置对 filter store 的订阅，以便在筛选条件变化时自动获取数据。
    */
@@ -143,86 +114,6 @@ export const createUserDataSlice: StateCreator<
         error instanceof Error ? error.message : "获取用户列表时发生未知错误";
       await handleError(error, "获取用户列表失败");
       set({ loading: false, error: errorMessage });
-    }
-  },
-
-  createUser: async (userData) => {
-    set({ loading: true, error: null });
-    try {
-      // [骨架] 模拟 API 调用
-      console.log("正在创建用户:", userData);
-      // 真实实现:
-      // const newUser = await apiCreateUser(userData);
-      // get().fetchUsers({}); // 刷新列表
-      // return newUser;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      set({ loading: false });
-      return null; // 骨架返回 null
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "创建用户失败";
-      set({ loading: false, error: errorMessage });
-      return null;
-    }
-  },
-
-  updateUser: async (userId, userData) => {
-    set({ loading: true, error: null });
-    try {
-      // [骨架] 模拟 API 调用
-      console.log(`正在更新用户 ${userId}:`, userData);
-      // 真实实现:
-      // const updatedUser = await apiUpdateUser(userId, userData);
-      // get().fetchUsers({}); // 刷新列表
-      // return updatedUser;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      set({ loading: false });
-      return null; // 骨架返回 null
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "更新用户失败";
-      set({ loading: false, error: errorMessage });
-      return null;
-    }
-  },
-
-  deleteUser: async (userId) => {
-    set({ loading: true, error: null });
-    try {
-      // [骨架] 模拟 API 调用
-      console.log(`正在删除用户 ${userId}`);
-      // 真实实现:
-      // await apiDeleteUser(userId);
-      // get().fetchUsers({}); // 刷新列表
-      // return true;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      set({ loading: false });
-      return true; // 骨架返回 true
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "删除用户失败";
-      set({ loading: false, error: errorMessage });
-      return false;
-    }
-  },
-
-  changeUserStatus: async (userId, status) => {
-    set({ loading: true, error: null });
-    try {
-      // [骨架] 模拟 API 调用
-      console.log(`正在更改用户 ${userId} 的状态为 ${status}`);
-      // 真实实现:
-      // await apiUpdateUserStatus(userId, status);
-      // get().fetchUsers({}); // 刷新列表
-      // return true;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      set({ loading: false });
-      return true; // 骨架返回 true
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "更改用户状态失败";
-      set({ loading: false, error: errorMessage });
-      return false;
     }
   },
 
