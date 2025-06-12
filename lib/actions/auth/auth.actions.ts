@@ -29,14 +29,11 @@ export async function loginAction(
   credentials: LoginRequest
 ): Promise<ServerActionResponse<AuthResponseData>> {
   try {
-    // console.log('[Auth Action] Attempting login for:', credentials.username_or_email); // 中文注释：尝试登录日志
     const response = await publicApiService.post<AuthResponseData>(
       "/auth/login",
       credentials
     );
     const responseData = response.data; // 显式访问 .data
-    // console.log('[Auth Action] Login API Response Data:', responseData);
-
     if (responseData && responseData.token && responseData.user) {
       const cookieStore = await cookies(); // 尝试 await
       cookieStore.set(AUTH_COOKIE_NAME, responseData.token, {
@@ -46,14 +43,12 @@ export async function loginAction(
         maxAge: AUTH_COOKIE_MAX_AGE,
         sameSite: "lax",
       });
-      // console.log('[Auth Action] Auth token set in cookie.');
       return {
         success: true,
         data: responseData,
         message: responseData.message || "登录成功",
       };
     }
-    // console.error('[Auth Action] Login failed: Invalid response structure from API', response); // 中文注释：登录失败，API响应结构无效
     return {
       success: false,
       message: "登录失败：服务器响应格式不正确。",

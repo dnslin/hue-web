@@ -105,13 +105,13 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
             <div className="space-y-1 p-2 bg-muted/20 rounded-md border border-border/50">
               <div className="text-muted-foreground font-medium">注册时间</div>
               <div className="font-semibold text-foreground text-xs">
-                {formatDate(user.created_at)}
+                {formatDate(user.createdAt)}
               </div>
             </div>
             <div className="space-y-1 p-2 bg-muted/20 rounded-md border border-border/50">
               <div className="text-muted-foreground font-medium">最后登录</div>
               <div className="font-semibold text-foreground text-xs">
-                {user.last_login_at ? formatDate(user.last_login_at) : "从未"}
+                {user.lastLoginAt ? formatDate(user.lastLoginAt) : "从未"}
               </div>
             </div>
           </div>
@@ -121,27 +121,27 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
             <div className="flex justify-between items-center text-xs">
               <div className="flex items-center gap-3">
                 <span className="text-muted-foreground font-medium">
-                  上传: {user.upload_count || 0}
+                  上传: {user.uploadCount || 0}
                 </span>
                 <span className="text-muted-foreground font-medium">
-                  存储: {formatFileSize(user.storage_used)} /{" "}
-                  {formatFileSize(user.storage_limit)}
+                  存储: {formatFileSize(user.storageUsed)} /{" "}
+                  {formatFileSize(user.storageLimit)}
                 </span>
               </div>
               <span className="font-bold text-primary text-xs">
-                {user.storage_limit && user.storage_used
-                  ? Math.round((user.storage_used / user.storage_limit) * 100)
+                {user.storageLimit && user.storageUsed
+                  ? Math.round((user.storageUsed / user.storageLimit) * 100)
                   : 0}
                 %
               </span>
             </div>
-            {user.storage_limit != null && user.storage_used != null && (
+            {user.storageLimit != null && user.storageUsed != null && (
               <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-primary to-primary/80 h-1.5 rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${Math.min(
-                      (user.storage_used / user.storage_limit) * 100,
+                      (user.storageUsed / user.storageLimit) * 100,
                       100
                     )}%`,
                   }}

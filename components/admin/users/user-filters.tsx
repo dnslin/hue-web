@@ -258,13 +258,13 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                     }
                   >
                     <Select
-                      value={filters.sort_by || "DEFAULT_SORT"}
+                      value={filters.sortBy || "DEFAULT_SORT"}
                       onValueChange={(value: string) =>
                         updateFilters({
-                          sort_by:
+                          sortBy:
                             value === "DEFAULT_SORT"
                               ? undefined
-                              : (value as UserFilterState["sort_by"]),
+                              : (value as UserFilterState["sortBy"]),
                         })
                       }
                     >
@@ -273,17 +273,17 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="DEFAULT_SORT">默认</SelectItem>
-                        <SelectItem value="created_at">注册时间</SelectItem>
-                        <SelectItem value="updated_at">更新时间</SelectItem>
-                        <SelectItem value="last_login_at">最后登录</SelectItem>
-                        <SelectItem value="upload_count">上传数量</SelectItem>
+                        <SelectItem value="createdAt">注册时间</SelectItem>
+                        <SelectItem value="updatedAt">更新时间</SelectItem>
+                        <SelectItem value="lastLoginAt">最后登录</SelectItem>
+                        <SelectItem value="uploadCount">上传数量</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select
-                      value={filters.sort_order || "desc"}
+                      value={filters.sortOrder || "desc"}
                       onValueChange={(value: string) =>
                         updateFilters({
-                          sort_order: value as "asc" | "desc",
+                          sortOrder: value as "asc" | "desc",
                         })
                       }
                     >

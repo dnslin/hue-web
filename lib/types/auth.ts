@@ -5,7 +5,7 @@ import type { User } from "./user";
  * 登录请求体 - 基于 swagger.yaml controllers.LoginRequest
  */
 export interface LoginRequest {
-  username_or_email: string;
+  usernameOrEmail: string;
   password: string; // 根据 swagger.yaml controllers.LoginRequest，密码是必填的
 }
 

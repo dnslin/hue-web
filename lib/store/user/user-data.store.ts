@@ -85,7 +85,7 @@ export const createUserDataSlice: StateCreator<
     const params = {
       ...filters,
       page: pagination.page,
-      page_size: pagination.pageSize,
+      pageSize: pagination.pageSize,
     };
     set({ loading: true, error: null });
     try {

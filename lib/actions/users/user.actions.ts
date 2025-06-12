@@ -17,8 +17,6 @@ import {
   SuccessResponse,
   BatchOperationResult,
   ErrorResponse,
-  BackendUserResponse,
-  convertBackendUserToUser,
 } from "@/lib/types/user";
 
 const USER_API_BASE = "/admin/users";
@@ -33,92 +31,11 @@ export async function getUsersAction(
   try {
     const apiService = await getAuthenticatedApiService();
 
-    // 调用后端API获取原始数据
-    const axiosResponse = await apiService.get(USER_API_BASE, {
+    // API服务层现在会自动处理命名转换，所以我们直接获取并返回数据
+    const response = await apiService.get<UserListResponse>(USER_API_BASE, {
       params,
     });
-
-    // 移除详细的响应日志以提升性能
-
-    const backendResponse = axiosResponse.data;
-
-    // 移除详细的结构调试日志
-
-    // 检查响应是否为错误
-    if (axiosResponse.status >= 400) {
-      throw new Error(
-        `HTTP ${axiosResponse.status}: ${backendResponse.message || "请求失败"}`
-      );
-    }
-
-    // 更灵活的响应结构检查
-    let userData: BackendUserResponse[] = [];
-    let metaData: any = {};
-
-    if (backendResponse && typeof backendResponse === "object") {
-      if (Array.isArray(backendResponse.data)) {
-        // 标准 PaginatedResponse 格式：{ data: [...], meta: {...}, code: 200, message: "..." }
-        userData = backendResponse.data;
-        metaData = backendResponse.meta || {
-          page: params.page || 1,
-          page_size: params.pageSize || 10,
-          total: backendResponse.data.length,
-        };
-      } else if (Array.isArray(backendResponse)) {
-        // 直接数组格式：[...]（向后兼容）
-        userData = backendResponse;
-        metaData = {
-          page: params.page || 1,
-          page_size: params.pageSize || 10,
-          total: backendResponse.length,
-        };
-      } else if (
-        backendResponse.users &&
-        Array.isArray(backendResponse.users)
-      ) {
-        // 替代格式：{ users: [...], pagination: {...} }
-        userData = backendResponse.users;
-        metaData = backendResponse.pagination || backendResponse.meta || {};
-      } else {
-        // 移除无法识别响应格式的调试日志
-        throw new Error(
-          `API响应格式不正确。期望包含用户数组，但收到未知格式的响应。`
-        );
-      }
-    } else {
-      throw new Error("API响应为空或格式无效");
-    }
-
-    // 验证用户数据
-    if (!Array.isArray(userData)) {
-      throw new Error("API返回的用户数据不是数组格式");
-    }
-
-    // 转换后端用户数据为前端用户数据
-    const convertedUsers: User[] = userData.map(
-      (backendUser: BackendUserResponse, index: number) => {
-        try {
-          return convertBackendUserToUser(backendUser);
-        } catch (conversionError: any) {
-          console.error(
-            `转换用户数据失败 (索引 ${index}):`,
-            conversionError.message
-          );
-          throw new Error(`转换用户数据失败: ${conversionError.message}`);
-        }
-      }
-    );
-
-    const responseData: UserListResponse = {
-      code: backendResponse.code || axiosResponse.status || 200,
-      message: backendResponse.message || "获取用户列表成功",
-      data: convertedUsers,
-      meta: metaData,
-    };
-
-    // 移除转换成功的调试日志
-
-    return responseData;
+    return response.data;
   } catch (error: any) {
     console.error("getUsersAction - 错误详情:", {
       message: error.message,
@@ -378,7 +295,7 @@ export async function batchApproveUsersAction(
 ): Promise<SuccessResponse<BatchOperationResult> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestData: BatchUserIDsRequest = { user_ids: userIds };
+    const requestData: BatchUserIDsRequest = { userIds: userIds };
     const response = await apiService.post<
       SuccessResponse<BatchOperationResult>
     >(`${USER_API_BASE}/batch-approve`, requestData);
@@ -413,7 +330,7 @@ export async function batchBanUsersAction(
 ): Promise<SuccessResponse<BatchOperationResult> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestData: BatchUserIDsRequest = { user_ids: userIds };
+    const requestData: BatchUserIDsRequest = { userIds: userIds };
     const response = await apiService.post<
       SuccessResponse<BatchOperationResult>
     >(`${USER_API_BASE}/batch-ban`, requestData);
@@ -446,7 +363,7 @@ export async function batchRejectUsersAction(
   try {
     const apiService = await getAuthenticatedApiService();
     const requestData: BatchUserRejectRequest = {
-      user_ids: userIds,
+      userIds: userIds,
       ...(reason && { reason }),
     };
     const response = await apiService.post<
@@ -483,7 +400,7 @@ export async function batchUnbanUsersAction(
 ): Promise<SuccessResponse<BatchOperationResult> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestData: BatchUserIDsRequest = { user_ids: userIds };
+    const requestData: BatchUserIDsRequest = { userIds: userIds };
     const response = await apiService.post<
       SuccessResponse<BatchOperationResult>
     >(`${USER_API_BASE}/batch-unban`, requestData);
@@ -569,7 +486,7 @@ export async function getAllUsersForExportAction(
         // Store the full response
         params: currentParams,
       });
-      const pageData = response.data; // Explicitly access .data
+      const pageData = response.data;
 
       if (
         pageData &&
@@ -580,7 +497,7 @@ export async function getAllUsersForExportAction(
         allUsers = allUsers.concat(pageData.data);
         if (
           pageData.data.length < pageSize ||
-          pageData.meta.page * pageData.meta.page_size >= pageData.meta.total
+          pageData.meta.page * pageData.meta.pageSize >= pageData.meta.total
         ) {
           break;
         }
@@ -631,7 +548,6 @@ export async function resetPasswordUserAction(
     const response = await apiService.post<SuccessResponse>(
       `${USER_API_BASE}/${id}/reset-password`
     );
-
     if (response.data && response.data.code === 200) {
       return {
         success: true,

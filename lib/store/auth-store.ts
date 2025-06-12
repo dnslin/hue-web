@@ -28,7 +28,7 @@ interface AuthState {
   setAuth: (user: User) => void;
   clearAuth: () => void;
   updateUser: (user: Partial<User>) => void;
-  login: (username_or_email: string, password: string) => Promise<boolean>;
+  login: (usernameOrEmail: string, password: string) => Promise<boolean>;
   register: (
     username: string,
     email: string,
@@ -100,12 +100,12 @@ export const useAuthStore = create<AuthState>()(
 
       // 用户登录
       login: async (
-        username_or_email: string,
+        usernameOrEmail: string,
         password: string
       ): Promise<boolean> => {
         set({ isLoading: true, error: null });
         try {
-          const credentials: LoginRequest = { username_or_email, password };
+          const credentials: LoginRequest = { usernameOrEmail, password };
           const response = await loginAction(credentials);
 
           if (response.success && response.data?.user) {

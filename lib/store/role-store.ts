@@ -1,12 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import {
-  Role,
-  Permission,
-  BackendRoleResponse,
-  convertBackendRolesToRoles,
-  convertBackendPermissionToPermission,
-} from "@/lib/types/roles";
+import { Role, Permission } from "@/lib/types/roles";
 import {
   PaginatedResponse,
   ErrorResponse,
@@ -91,20 +85,18 @@ const initialState = {
   },
 };
 
-// Helper to group permissions by group_name
+// Helper to group permissions by groupName
 const groupPermissions = (permissions: Permission[]): PermissionGroupFE[] => {
   const groups: Record<string, PermissionGroupFE> = {};
   permissions.forEach((permission) => {
     if (!groups[permission.groupName]) {
-      // 更新: group_name -> groupName
       groups[permission.groupName] = {
-        // 更新: group_name -> groupName
-        name: permission.groupName, // 更新: group_name -> groupName
+        name: permission.groupName,
         description: permission.description, // Or a predefined description for the group
         permissions: [],
       };
     }
-    groups[permission.groupName].permissions.push(permission); // 更新: group_name -> groupName
+    groups[permission.groupName].permissions.push(permission);
   });
   return Object.values(groups);
 };
@@ -117,34 +109,16 @@ export const useRoleStore = create<RoleStoreState>()(
       fetchRoles: async (page = 1, pageSize = 10) => {
         set({ isLoadingRoles: true, error: null });
         try {
-          const response = await getRolesAction({ page, page_size: pageSize });
+          const response = await getRolesAction({ page, pageSize });
 
-          // 处理后端直接返回角色数组的情况（不是标准的PaginatedResponse）
-          if (Array.isArray(response)) {
-            // 后端直接返回BackendRoleResponse数组，进行数据转换
-            const backendRoles = response as BackendRoleResponse[];
-            const convertedRoles = convertBackendRolesToRoles(backendRoles);
-            set({
-              roles: convertedRoles,
-              pagination: {
-                page: 1,
-                pageSize: convertedRoles.length,
-                total: convertedRoles.length,
-              },
-              isLoadingRoles: false,
-            });
-          } else if ("data" in response && response.data && response.meta) {
-            // 标准的PaginatedResponse格式
+          if ("data" in response && response.data && response.meta) {
             const paginatedResponse =
-              response as unknown as PaginatedResponse<BackendRoleResponse>;
-            const convertedRoles = convertBackendRolesToRoles(
-              paginatedResponse.data
-            );
+              response as unknown as PaginatedResponse<Role>;
             set({
-              roles: convertedRoles,
+              roles: paginatedResponse.data,
               pagination: {
                 page: paginatedResponse.meta.page,
-                pageSize: paginatedResponse.meta.page_size,
+                pageSize: paginatedResponse.meta.pageSize,
                 total: paginatedResponse.meta.total,
               },
               isLoadingRoles: false,
@@ -326,8 +300,8 @@ export const useRoleStore = create<RoleStoreState>()(
           // Fetch all pages of permissions if pagination is involved, or assume backend returns all if not paginated by default
           // For simplicity, assuming getPermissionsAction can fetch all or by group
           const response = await getPermissionsAction({
-            group_name: groupName,
-            page_size: 1000,
+            groupName: groupName,
+            pageSize: 1000,
           }); // Fetch a large number to get all
           if ("data" in response && response.data) {
             const permissions = (response as PaginatedResponse<Permission>)

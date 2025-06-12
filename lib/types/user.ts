@@ -37,15 +37,7 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   [UserStatus.REJECTED]: "审核拒绝",
 };
 
-// 后端角色响应结构
-export interface BackendRole {
-  id: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
-
-// 基础用户信息接口 - 对齐后端AdminUserResponseDTO
+// 基础用户信息接口
 export interface User {
   id: number;
   username: string;
@@ -54,136 +46,82 @@ export interface User {
   avatar?: string; // 前端使用Gravatar生成
   status: UserStatus;
   role: UserRole; // 转换后的角色枚举
-  roleID: number;
-  role_id: number; // 后端字段
-  originalRoleID?: number;
-  original_role_id?: number; // 后端字段
-  created_at: string;
-  updated_at: string;
-  last_login_at?: string; // 后端字段名
-  last_login_ip?: string; // 后端字段名
-  storage_used?: number;
-  storage_limit?: number;
-  upload_count?: number;
+  roleId: number;
+  originalRoleId?: number;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt?: string;
+  lastLoginIp?: string;
+  storageUsed?: number;
+  storageLimit?: number;
+  uploadCount?: number;
   passwordHash?: string;
 }
 
-// 后端用户响应结构 - 对齐dtos.AdminUserResponseDTO
-export interface BackendUserResponse {
-  id: number;
-  username: string;
-  email: string;
-  nickname?: string;
-  status: number; // 后端状态值
-  role_id: number;
-  role: BackendRole;
-  original_role_id?: number;
-  created_at: string;
-  updated_at: string;
-  last_login_at?: string;
-  last_login_ip?: string;
-}
-
-// 角色转换辅助函数
-export function convertBackendRoleToUserRole(
-  backendRole: BackendRole
-): UserRole {
-  // 基于角色ID或名称进行映射
-  const roleMap: Record<number, UserRole> = {
-    1: UserRole.ADMIN,
-    2: UserRole.USER,
-    3: UserRole.MODERATOR,
-  };
-
-  return roleMap[backendRole.id] || UserRole.USER;
-}
-
-// 后端用户数据转换为前端用户数据
-export function convertBackendUserToUser(
-  backendUser: BackendUserResponse
-): User {
-  return {
-    id: backendUser.id,
-    username: backendUser.username,
-    email: backendUser.email,
-    nickname: backendUser.nickname,
-    status: backendUser.status as UserStatus,
-    role: convertBackendRoleToUserRole(backendUser.role),
-    roleID: backendUser.role_id,
-    role_id: backendUser.role_id,
-    originalRoleID: backendUser.original_role_id,
-    original_role_id: backendUser.original_role_id,
-    created_at: backendUser.created_at,
-    updated_at: backendUser.updated_at,
-    last_login_at: backendUser.last_login_at,
-    last_login_ip: backendUser.last_login_ip,
-  };
-}
-
-// 管理员创建用户请求 - 对齐dtos.AdminUserCreateRequest
+// 管理员创建用户请求
 export interface AdminUserCreateRequest {
   username: string;
   email: string;
   password: string;
-  role_id: number;
+  roleId: number;
 }
 
-// 用户更新请求 - 对齐models.UserUpdateRequest
+// 用户更新请求
 export interface UserUpdateRequest {
   username?: string;
   email?: string;
   password?: string;
-  role_id?: number;
+  roleId?: number;
   status?: number;
 }
 
-// 批量用户ID请求 - 对齐dtos.BatchUserIDsRequest
+// 批量用户ID请求
 export interface BatchUserIDsRequest {
-  user_ids: number[];
+  userIds: number[];
 }
 
-// 批量用户拒绝请求 - 对齐dtos.BatchUserRejectRequest
+// 批量用户拒绝请求
 export interface BatchUserRejectRequest {
-  user_ids: number[];
+  userIds: number[];
   reason?: string;
 }
 
-// 用户审批请求 - 对齐dtos.UserApprovalRequest
+// 用户审批请求
 export interface UserApprovalRequest {
   reason?: string;
 }
 
-// 用户列表查询参数 - 对齐后端接口参数
+// 用户列表查询参数
 export interface UserListParams {
   page?: number;
   pageSize?: number;
   username?: string;
   email?: string;
-  role_id?: number;
+  roleId?: number;
   status?: number;
-  created_at_start?: string;
-  created_at_end?: string;
-  sort_by?:
+  createdAtStart?: string;
+  createdAtEnd?: string;
+  sortBy?:
     | "id"
     | "username"
     | "email"
-    | "role_id"
+    | "roleId"
     | "status"
-    | "created_at"
-    | "updated_at"
-    | "last_login_at"
-    | "upload_count";
+    | "createdAt"
+    | "updatedAt"
+    | "lastLoginAt"
+    | "uploadCount";
   order?: "asc" | "desc";
   // 前端扩展字段
   search?: string; // 搜索关键词
   role?: UserRole; // 角色筛选
-  sort_order?: "asc" | "desc"; // 排序方向别名
+  sortOrder?: "asc" | "desc"; // 排序方向别名
 }
 
-// 分页元数据 - 对齐dtos.PaginationMeta
+// 分页元数据
 export interface PaginationMeta {
   page: number;
-  page_size: number;
+  pageSize: number;
   total: number;
 }
 
@@ -215,9 +153,9 @@ export interface ErrorResponse {
 
 // 批量操作结果
 export interface BatchOperationResult {
-  success_count: number;
-  failed_count: number;
-  failed_items?: Array<{
+  successCount: number;
+  failedCount: number;
+  failedItems?: Array<{
     id: number;
     error: string;
   }>;
@@ -228,18 +166,18 @@ export interface Permission {
   id: number;
   name: string;
   description: string;
-  groupName: string; // 统一为 camelCase 以匹配 swagger.yaml models.Permission.groupName
-  created_at: string;
-  updated_at: string;
+  groupName: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 角色接口 - 对齐models.Role
+// 角色接口
 export interface Role {
   id: number;
   name: string;
   permissions: Permission[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // 角色创建请求接口
@@ -265,14 +203,14 @@ export interface PermissionGroup {
 
 // 用户统计信息接口
 export interface UserStats {
-  total_users: number;
-  active_users: number;
-  inactive_users: number;
-  banned_users: number;
-  pending_users: number;
-  new_users_today: number;
-  new_users_this_week: number;
-  new_users_this_month: number;
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  bannedUsers: number;
+  pendingUsers: number;
+  newUsersToday: number;
+  newUsersThisWeek: number;
+  newUsersThisMonth: number;
 }
 
 // 工具函数类型

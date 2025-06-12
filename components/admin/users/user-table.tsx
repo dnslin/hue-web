@@ -21,13 +21,13 @@ interface UserTableProps {
   users: User[];
   loading?: boolean;
   onSort?: (
-    sortBy: UserListParams["sort_by"],
-    sortOrder: UserListParams["sort_order"]
+    sortBy: UserListParams["sortBy"],
+    sortOrder: UserListParams["sortOrder"]
   ) => void;
 }
 
 interface SortConfig {
-  key: UserListParams["sort_by"];
+  key: UserListParams["sortBy"];
   direction: "asc" | "desc";
 }
 
@@ -43,7 +43,7 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
   const allUserIdsOnPage = users.map((u) => u.id);
   const isAllOnPageSelected = isAllSelected(allUserIdsOnPage);
 
-  const handleSort = (key: UserListParams["sort_by"]) => {
+  const handleSort = (key: UserListParams["sortBy"]) => {
     let direction: "asc" | "desc" = "desc";
 
     if (
@@ -58,7 +58,7 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
     onSort?.(key, direction);
   };
 
-  const getSortIcon = (key: UserListParams["sort_by"]) => {
+  const getSortIcon = (key: UserListParams["sortBy"]) => {
     if (!sortConfig || sortConfig.key !== key) {
       return <ArrowUpDown className="h-4 w-4" />;
     }
@@ -157,10 +157,10 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   variant="ghost"
                   size="sm"
                   className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("created_at")}
+                  onClick={() => handleSort("createdAt")}
                 >
                   注册时间
-                  {getSortIcon("created_at")}
+                  {getSortIcon("createdAt")}
                 </Button>
               </th>
               <th className="text-left p-4 font-medium">
@@ -168,10 +168,10 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   variant="ghost"
                   size="sm"
                   className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("last_login_at")}
+                  onClick={() => handleSort("lastLoginAt")}
                 >
                   最后登录
-                  {getSortIcon("last_login_at")}
+                  {getSortIcon("lastLoginAt")}
                 </Button>
               </th>
               <th className="text-left p-4 font-medium">登录IP</th>
@@ -180,10 +180,10 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   variant="ghost"
                   size="sm"
                   className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("upload_count")}
+                  onClick={() => handleSort("uploadCount")}
                 >
                   上传数量
-                  {getSortIcon("upload_count")}
+                  {getSortIcon("uploadCount")}
                 </Button>
               </th>
               <th className="text-left p-4 font-medium">存储使用</th>
@@ -231,35 +231,35 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                 </td>
                 <td className="p-4">{getRoleBadge(user.role)}</td>
                 <td className="p-4 text-sm text-muted-foreground">
-                  {formatDate(user.created_at)}
+                  {formatDate(user.createdAt)}
                 </td>
                 <td className="p-4 text-sm text-muted-foreground">
                   <div>
-                    {user.last_login_at
-                      ? formatDate(user.last_login_at)
+                    {user.lastLoginAt
+                      ? formatDate(user.lastLoginAt)
                       : "从未登录"}
                   </div>
                 </td>
                 <td className="p-4 text-sm text-muted-foreground">
-                  {user.last_login_ip || "无记录"}
+                  {user.lastLoginIp || "无记录"}
                 </td>
                 <td className="p-4 text-sm">
-                  <div className="font-medium">{user.upload_count || 0}</div>
+                  <div className="font-medium">{user.uploadCount || 0}</div>
                 </td>
                 <td className="p-4 text-sm">
                   <div className="space-y-1">
                     <div className="font-medium">
-                      {formatFileSize(user.storage_used)} /{" "}
-                      {formatFileSize(user.storage_limit)}
+                      {formatFileSize(user.storageUsed)} /{" "}
+                      {formatFileSize(user.storageLimit)}
                     </div>
-                    {user.storage_limit != null &&
-                      user.storage_used != null && (
+                    {user.storageLimit != null &&
+                      user.storageUsed != null && (
                         <div className="w-full bg-muted rounded-full h-1.5">
                           <div
                             className="bg-primary h-1.5 rounded-full transition-all"
                             style={{
                               width: `${Math.min(
-                                (user.storage_used / user.storage_limit) * 100,
+                                (user.storageUsed / user.storageLimit) * 100,
                                 100
                               )}%`,
                             }}

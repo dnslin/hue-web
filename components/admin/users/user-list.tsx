@@ -90,18 +90,18 @@ export function UserList({ isMobile = false }: UserListProps) {
             user.email,
             user.role,
             user.status,
-            user.created_at
-              ? new Date(user.created_at).toLocaleString("zh-CN")
+            user.createdAt
+              ? new Date(user.createdAt).toLocaleString("zh-CN")
               : "",
-            user.last_login_at
-              ? new Date(user.last_login_at).toLocaleString("zh-CN")
+            user.lastLoginAt
+              ? new Date(user.lastLoginAt).toLocaleString("zh-CN")
               : "",
-            user.upload_count || 0,
-            user.storage_used
-              ? (user.storage_used / (1024 * 1024)).toFixed(2)
+            user.uploadCount || 0,
+            user.storageUsed
+              ? (user.storageUsed / (1024 * 1024)).toFixed(2)
               : 0,
-            user.storage_limit
-              ? (user.storage_limit / (1024 * 1024)).toFixed(2)
+            user.storageLimit
+              ? (user.storageLimit / (1024 * 1024)).toFixed(2)
               : "无限制",
           ].join(",")
         ),
@@ -187,7 +187,7 @@ export function UserList({ isMobile = false }: UserListProps) {
               users={users}
               loading={loading}
               onSort={(sortBy, sortOrder) => {
-                setFilters({ sort_by: sortBy, sort_order: sortOrder });
+                setFilters({ sortBy: sortBy, sortOrder: sortOrder });
               }}
             />
           )}

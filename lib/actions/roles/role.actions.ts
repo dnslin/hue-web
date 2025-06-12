@@ -10,7 +10,6 @@ import {
   Permission,
   CreateRoleRequest,
   UpdateRoleRequest,
-  BackendRoleResponse,
 } from "@/lib/types/roles";
 import {
   ErrorResponse,
@@ -29,17 +28,15 @@ const PERMISSIONS_API_BASE = "/permissions";
  */
 export async function getRolesAction(params?: {
   page?: number;
-  page_size?: number;
-}): Promise<
-  BackendRoleResponse[] | PaginatedResponse<BackendRoleResponse> | ErrorResponse
-> {
+  pageSize?: number;
+}): Promise<PaginatedResponse<Role> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    // 后端实际返回 BackendRoleResponse[] 或 PaginatedResponse<BackendRoleResponse>
-    const response = await apiService.get<
-      BackendRoleResponse[] | PaginatedResponse<BackendRoleResponse>
-    >(ROLES_API_BASE, { params });
-    return response.data; // 返回后端原始数据
+    const response = await apiService.get<PaginatedResponse<Role>>(
+      ROLES_API_BASE,
+      { params }
+    );
+    return response.data;
   } catch (error: any) {
     console.error("[Action Error] getRolesAction:", error.message, error);
     if (error instanceof AuthenticationError) {
@@ -194,8 +191,8 @@ export async function deleteRoleAction(
  */
 export async function getPermissionsAction(params?: {
   page?: number;
-  page_size?: number;
-  group_name?: string;
+  pageSize?: number;
+  groupName?: string;
 }): Promise<PaginatedResponse<Permission> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
@@ -235,7 +232,7 @@ export async function syncRolePermissionsAction(
 ): Promise<SuccessResponse<Role> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestBody = { permission_ids: permissionIds };
+    const requestBody = { permissionIds: permissionIds };
     const response = await apiService.put<SuccessResponse<Role>>( // response is AxiosResponse<SuccessResponse<Role>>
       `${ROLES_API_BASE}/${id}/permissions`,
       requestBody
@@ -278,7 +275,7 @@ export async function assignPermissionToRoleAction(
     const apiService = await getAuthenticatedApiService();
     // swagger 定义的路径是 /roles/{role_id}/permissions，方法是 POST，请求体是 dtos.AssignPermissionDTO
     // 注意：这与 PUT /roles/{id}/permissions (syncRolePermissionsAction) 不同
-    const requestBody = { permission_id: permissionId };
+    const requestBody = { permissionId: permissionId };
     const response = await apiService.post<SuccessResponse<Role>>( // response is AxiosResponse<SuccessResponse<Role>>
       `${ROLES_API_BASE}/${roleId}/permissions`,
       requestBody
@@ -346,11 +343,3 @@ export async function removePermissionFromRoleAction(
 // - getPermissionGroups: 可以通过 getPermissionsAction 带 group_name 参数实现类似功能，或者前端自行分组。
 // - checkRolePermission: 客户端可以通过获取角色权限列表后自行检查。
 // - duplicateRole: swagger 中没有此功能。
-
-// 角色基本信息接口
-export interface RoleBasic {
-  id: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
