@@ -160,14 +160,18 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md" ref={dialogContentRef}>
+      <DialogContent
+        className="w-[calc(100vw-2rem)] max-w-md max-h-[85vh] overflow-y-auto sm:w-full"
+        ref={dialogContentRef}
+      >
         <DialogHeader>
           <DialogTitle>添加用户</DialogTitle>
-          <DialogDescription>
-            创建一个新的用户账户。用户创建后将收到邮件通知。
+          <DialogDescription className="text-sm leading-relaxed">
+            <span className="hidden sm:inline">创建一个新的用户账户。</span>
+            用户创建后将收到邮件通知。
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-2 sm:py-4">
           {/* 用户名输入 */}
           <div className="space-y-2">
             <Label htmlFor="create-username">
@@ -177,8 +181,9 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
               id="create-username"
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
-              placeholder="请输入用户名 (3-50字符)"
+              placeholder="3-50字符"
               className={errors.username ? "border-red-500" : ""}
+              autoComplete="username"
             />
             {errors.username && (
               <p className="text-sm text-red-500">{errors.username}</p>
@@ -195,8 +200,9 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="请输入邮箱地址"
+              placeholder="example@domain.com"
               className={errors.email ? "border-red-500" : ""}
+              autoComplete="email"
             />
             {errors.email && (
               <p className="text-sm text-red-500">{errors.email}</p>
@@ -208,47 +214,54 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
             <Label htmlFor="create-password">
               密码 <span className="text-red-500">*</span>
             </Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="create-password"
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  placeholder="请输入密码 (8-100字符)"
-                  className={`pr-10 ${errors.password ? "border-red-500" : ""}`}
-                />
+            <div className="space-y-2 sm:space-y-0">
+              {/* 移动端：垂直布局，桌面端：水平布局 */}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="relative flex-1">
+                  <Input
+                    id="create-password"
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    placeholder="8-100字符"
+                    className={`pr-10 ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
+                    autoComplete="new-password"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
+                  variant="outline"
+                  onClick={handleGeneratePassword}
+                  className="w-full sm:w-auto shrink-0 justify-center sm:justify-start"
+                  title="生成安全密码"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  <RefreshCw className="h-4 w-4 mr-2 sm:mr-0" />
+                  <span className="sm:hidden">生成密码</span>
                 </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGeneratePassword}
-                className="shrink-0"
-                title="生成安全密码"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
             </div>
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password}</p>
             )}
             {form.password && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 建议将生成的密码发送给用户，并要求首次登录后修改
               </p>
             )}
@@ -270,7 +283,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
               <p className="text-sm text-red-500">{errors.role_id}</p>
             )}
             {form.role_id === ROLE_ID_MAP[UserRole.USER] && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 默认选择普通用户角色，可根据需要修改
               </p>
             )}
@@ -278,20 +291,25 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
 
           {/* 显示服务器错误 */}
           {error.createError && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md leading-relaxed">
               {error.createError}
             </div>
           )}
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-3 pt-4 sm:pt-6">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isSubmitting}
+            className="w-full sm:w-auto"
           >
             取消
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             {isSubmitting ? "创建中..." : "创建用户"}
           </Button>
         </DialogFooter>
