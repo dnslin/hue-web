@@ -13,10 +13,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { AdminUserCreateRequest } from "@/lib/types/user";
+import {
+  AdminUserCreateRequest,
+  ROLE_ID_MAP,
+  UserRole,
+} from "@/lib/types/user";
 import { useUserActionStore } from "@/lib/store/user/user-action.store";
 import { showToast } from "@/lib/utils/toast";
 import { RoleSelect } from "@/components/shared/role-select";
+import { generateUserPassword } from "@/lib/utils/password";
+import { RefreshCw, Eye, EyeOff } from "lucide-react";
 
 interface UserCreateDialogProps {
   children: React.ReactNode;
@@ -42,9 +48,10 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
     username: "",
     email: "",
     password: "",
-    role_id: 0,
+    role_id: ROLE_ID_MAP[UserRole.USER], // 默认设置为user角色 (ID: 2)
   });
   const [errors, setErrors] = useState<CreateUserFormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
   const { loading, error, createUser, clearError } = useUserActionStore();
@@ -80,12 +87,28 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
     }
 
     // 角色验证
-    if (!form.role_id || form.role_id === 0) {
+    if (!form.role_id) {
       newErrors.role_id = "请选择用户角色";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // 生成密码
+  const handleGeneratePassword = () => {
+    const newPassword = generateUserPassword();
+    setForm({ ...form, password: newPassword });
+    setShowPassword(true); // 生成后显示密码以便用户查看
+
+    // 清除密码相关错误
+    if (errors.password) {
+      const newErrors = { ...errors };
+      delete newErrors.password;
+      setErrors(newErrors);
+    }
+
+    showToast.success("密码已生成");
   };
 
   // 重置表单
@@ -94,9 +117,10 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
       username: "",
       email: "",
       password: "",
-      role_id: 0,
+      role_id: ROLE_ID_MAP[UserRole.USER], // 重置时也设置默认角色
     });
     setErrors({});
+    setShowPassword(false); // 重置密码显示状态
     clearError("createError" as keyof typeof error);
   };
 
@@ -184,16 +208,49 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
             <Label htmlFor="create-password">
               密码 <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="create-password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="请输入密码 (8-100字符)"
-              className={errors.password ? "border-red-500" : ""}
-            />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="create-password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  placeholder="请输入密码 (8-100字符)"
+                  className={`pr-10 ${errors.password ? "border-red-500" : ""}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGeneratePassword}
+                className="shrink-0"
+                title="生成安全密码"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password}</p>
+            )}
+            {form.password && (
+              <p className="text-xs text-muted-foreground">
+                建议将生成的密码发送给用户，并要求首次登录后修改
+              </p>
             )}
           </div>
 
@@ -211,6 +268,11 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
             />
             {errors.role_id && (
               <p className="text-sm text-red-500">{errors.role_id}</p>
+            )}
+            {form.role_id === ROLE_ID_MAP[UserRole.USER] && (
+              <p className="text-xs text-muted-foreground">
+                默认选择普通用户角色，可根据需要修改
+              </p>
             )}
           </div>
 
