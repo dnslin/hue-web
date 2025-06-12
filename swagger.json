@@ -4822,6 +4822,11 @@
         "name"
       ],
       "properties": {
+        "alias": {
+          "description": "角色别名，可选",
+          "type": "string",
+          "example": "管理员"
+        },
         "name": {
           "description": "角色名称，必须唯一",
           "type": "string",
@@ -4832,6 +4837,9 @@
     "dtos.RoleResponseDTO": {
       "type": "object",
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "created_at": {
           "type": "string"
         },
@@ -4854,10 +4862,12 @@
     },
     "dtos.RoleUpdateDTO": {
       "type": "object",
-      "required": [
-        "name"
-      ],
       "properties": {
+        "alias": {
+          "description": "新的角色别名",
+          "type": "string",
+          "example": "超级管理员"
+        },
         "name": {
           "description": "新的角色名称",
           "type": "string",
@@ -4982,8 +4992,13 @@
         "nickname": {
           "type": "string"
         },
-        "role_id": {
-          "type": "integer"
+        "role": {
+          "description": "替换 RoleID",
+          "allOf": [
+            {
+              "$ref": "#/definitions/dtos.RoleResponseDTO"
+            }
+          ]
         },
         "status": {
           "type": "integer"
@@ -5212,8 +5227,11 @@
     "models.Role": {
       "type": "object",
       "properties": {
+        "alias": {
+          "description": "别名",
+          "type": "string"
+        },
         "createdAt": {
-          "description": "Permissions string `gorm:\"type:text\"` // 旧的权限描述字段，将被移除或注释",
           "type": "string"
         },
         "id": {

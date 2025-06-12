@@ -2,7 +2,7 @@
 
 import { StateCreator } from "zustand";
 import { shallow } from "zustand/shallow";
-import { User } from "@/lib/types/user";
+import { User, getRoleId, UserListParams } from "@/lib/types/user";
 import { useUserFilterStore } from "./user-filter.store";
 import { getUsersAction } from "@/lib/actions/users/user.actions";
 import { handleError } from "@/lib/utils/error-handler";
@@ -82,14 +82,24 @@ export const createUserDataSlice: StateCreator<
 
   fetchUsers: async () => {
     const { filters, pagination } = useUserFilterStore.getState();
-    const params = {
+
+    // 准备发送到后端的参数
+    const apiParams: Omit<UserListParams, "role"> = {
       ...filters,
       page: pagination.page,
       pageSize: pagination.pageSize,
     };
+
+    // 如果前端筛选条件中存在 role，则将其转换为 roleId
+    if (filters.role) {
+      apiParams.roleId = getRoleId(filters.role);
+    }
+    // 从发送到后端的参数中移除前端专用的 role 字段
+    delete (apiParams as Partial<UserListParams>).role;
+
     set({ loading: true, error: null });
     try {
-      const response = await getUsersAction(params);
+      const response = await getUsersAction(apiParams);
 
       // 首先检查成功的响应结构
       if ("data" in response && "meta" in response) {

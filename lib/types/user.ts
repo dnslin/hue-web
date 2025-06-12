@@ -45,7 +45,7 @@ export interface User {
   nickname?: string;
   avatar?: string; // 前端使用Gravatar生成
   status: UserStatus;
-  role: UserRole; // 转换后的角色枚举
+  role: Role; // 完整的角色对象
   roleId: number;
   originalRoleId?: number;
   createdAt: string;
@@ -175,6 +175,7 @@ export interface Permission {
 export interface Role {
   id: number;
   name: string;
+  alias?: string;
   permissions: Permission[];
   createdAt: string;
   updatedAt: string;
@@ -183,6 +184,7 @@ export interface Role {
 // 角色创建请求接口
 export interface CreateRoleRequest {
   name: string;
+  alias?: string;
   description?: string;
   permissions: string[];
 }
@@ -190,6 +192,7 @@ export interface CreateRoleRequest {
 // 角色更新请求接口
 export interface UpdateRoleRequest {
   name?: string;
+  alias?: string;
   description?: string;
   permissions?: string[];
 }

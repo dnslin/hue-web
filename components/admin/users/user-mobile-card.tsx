@@ -80,7 +80,7 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
                   >
                     {getUserDisplayName(user)}
                   </h3>
-                  {getRoleBadge(user.role)}
+                  {getRoleBadge(user.role.name as UserRole)}
                 </div>
                 <p className="text-xs text-muted-foreground" title={user.email}>
                   {user.email}

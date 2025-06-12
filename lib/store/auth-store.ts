@@ -320,11 +320,16 @@ export const useAuthStore = create<AuthState>()(
 // 获取用户角色权限辅助函数
 export const getUserRole = () => {
   const { user } = useAuthStore.getState();
-  return user?.role || "user";
+  if (user && user.role && typeof user.role === "object") {
+    return user.role.name;
+  }
+  // 兼容旧的或未登录的状态
+  return "user";
 };
 
 // 检查是否为管理员
 export const isAdmin = () => {
+  // 现在 getUserRole 返回的是字符串名称，可以直接比较
   return getUserRole() === "admin";
 };
 

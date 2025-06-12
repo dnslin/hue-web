@@ -229,7 +229,9 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                     </div>
                   </div>
                 </td>
-                <td className="p-4">{getRoleBadge(user.role)}</td>
+                <td className="p-4">
+                  {getRoleBadge(user.role.name as UserRole)}
+                </td>
                 <td className="p-4 text-sm text-muted-foreground">
                   {formatDate(user.createdAt)}
                 </td>

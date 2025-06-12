@@ -15,6 +15,7 @@ export interface Permission {
 export interface Role {
   id: number;
   name: string;
+  alias?: string;
   createdAt: string;
   updatedAt: string;
   permissions: Permission[];
@@ -23,11 +24,13 @@ export interface Role {
 // 角色创建请求类型
 export interface CreateRoleRequest {
   name: string;
+  alias?: string;
 }
 
 // 角色更新请求类型
 export interface UpdateRoleRequest {
   name: string;
+  alias?: string;
 }
 
 // 权限分组类型（前端聚合使用）

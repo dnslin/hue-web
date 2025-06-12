@@ -29,14 +29,14 @@ export async function loginAction(
   credentials: LoginRequest
 ): Promise<ServerActionResponse<AuthResponseData>> {
   try {
-    const response = await publicApiService.post<AuthResponseData>(
+    const response = await publicApiService.post<{ data: AuthResponseData }>(
       "/auth/login",
       credentials
     );
-    const responseData = response.data; // 显式访问 .data
-    if (responseData && responseData.token && responseData.user) {
-      const cookieStore = await cookies(); // 尝试 await
-      cookieStore.set(AUTH_COOKIE_NAME, responseData.token, {
+    const responseData = response.data; // 响应数据在 .data 中
+    if (responseData && responseData.data.token && responseData.data.user) {
+      const cookieStore = await cookies();
+      cookieStore.set(AUTH_COOKIE_NAME, responseData.data.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         path: "/",
@@ -45,8 +45,8 @@ export async function loginAction(
       });
       return {
         success: true,
-        data: responseData,
-        message: responseData.message || "登录成功",
+        data: responseData.data,
+        message: responseData.data.message || "登录成功",
       };
     }
     return {
