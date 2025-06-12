@@ -102,9 +102,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
       }
       // 列表刷新已在 storeDeleteRole 内部处理
     } else {
-      // 错误已在store中处理并可通过 error state 访问
-      console.error("删除角色失败 (RoleList):", error);
-      // 可以在此添加UI提示，例如toast
+      // 错误已在store中处理并显示toast，这里无需额外处理
     }
   };
 
@@ -116,8 +114,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
       // 列表刷新已在 storeDuplicateRole 内部处理
       console.log("角色复制成功:", duplicatedRole);
     } else {
-      console.error("复制角色失败 (RoleList):", error);
-      // 可以在此添加UI提示
+      // 错误已在store中处理并显示toast，这里无需额外处理
     }
   };
 

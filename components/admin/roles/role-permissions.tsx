@@ -16,7 +16,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Role, Permission, PermissionGroup as PermissionGroupTypeFromUserTypes } from "@/lib/types/user"; // Renamed to avoid conflict
+import {
+  Role,
+  Permission,
+  PermissionGroup as PermissionGroupTypeFromUserTypes,
+} from "@/lib/types/user"; // Renamed to avoid conflict
 import { useRoleStore, PermissionGroupFE } from "@/lib/store/role-store"; // Use PermissionGroupFE from store
 interface RolePermissionsProps {
   role: Role;
@@ -37,15 +41,15 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   } = useRoleStore();
 
   // Local state for managing UI selections
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<number>>( // Store permission IDs as numbers
-    new Set(role.permissions.map((p) => p.id))
-  );
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState<
+    Set<number>
+  >(new Set(role.permissions.map((p) => p.id))); // Store permission IDs as numbers
 
   // 获取权限分组和所有权限
   useEffect(() => {
     fetchPermissions(); // Fetches all permissions and groups them in the store
   }, [fetchPermissions]);
-  
+
   // Update local selection when the role prop changes (e.g., when a different role is selected in RoleList)
   useEffect(() => {
     setSelectedPermissionIds(new Set(role.permissions.map((p) => p.id)));
@@ -75,7 +79,8 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   };
 
   // 切换权限选择
-  const togglePermission = (permissionId: number) => { // ID is number
+  const togglePermission = (permissionId: number) => {
+    // ID is number
     const newSelected = new Set(selectedPermissionIds);
     if (newSelected.has(permissionId)) {
       newSelected.delete(permissionId);
@@ -86,7 +91,10 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   };
 
   // 切换分组所有权限
-  const toggleGroupPermissions = (group: PermissionGroupFE, checked: boolean) => {
+  const toggleGroupPermissions = (
+    group: PermissionGroupFE,
+    checked: boolean
+  ) => {
     const newSelected = new Set(selectedPermissionIds);
     group.permissions.forEach((permission) => {
       if (checked) {
@@ -101,13 +109,15 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   // 保存权限变更
   const savePermissions = async () => {
     // No need to set local updating state, use isSubmitting from store
-    const updatedRole = await syncPermissions(role.id, Array.from(selectedPermissionIds));
+    const updatedRole = await syncPermissions(
+      role.id,
+      Array.from(selectedPermissionIds)
+    );
     if (updatedRole) {
       onRoleUpdate(updatedRole); // Notify parent component
       // Optionally, show a success message
     } else {
-      // Error is handled in the store, can show a generic error message here or rely on store's error state
-      console.error("保存权限失败 (RolePermissions):", error);
+      // 错误已在store中处理并显示toast，这里无需额外处理
     }
   };
 
@@ -178,7 +188,11 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                 >
                   重置
                 </Button>
-                <Button size="sm" onClick={savePermissions} disabled={isSubmitting}>
+                <Button
+                  size="sm"
+                  onClick={savePermissions}
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "保存中..." : "保存变更"}
                 </Button>
               </>
@@ -194,13 +208,15 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
           </TabsList>
 
           <TabsContent value="by-group" className="space-y-6">
-            {storePermissionGroups.map((group) => { // Use storePermissionGroups
+            {storePermissionGroups.map((group) => {
+              // Use storePermissionGroups
               const groupPermissionIds = group.permissions.map((p) => p.id); // These are numbers
               const selectedInGroupCount = groupPermissionIds.filter((id) =>
                 selectedPermissionIds.has(id)
               ).length;
               const allSelectedInGroup =
-                selectedInGroupCount === groupPermissionIds.length && groupPermissionIds.length > 0;
+                selectedInGroupCount === groupPermissionIds.length &&
+                groupPermissionIds.length > 0;
 
               return (
                 <div key={group.name} className="space-y-3">
@@ -238,9 +254,12 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {group.permissions.map((permission) => { // permission.id is number
+                    {group.permissions.map((permission) => {
+                      // permission.id is number
                       const Icon = getPermissionIcon(permission.groupName); // 更新: group_name -> groupName
-                      const isSelected = selectedPermissionIds.has(permission.id);
+                      const isSelected = selectedPermissionIds.has(
+                        permission.id
+                      );
 
                       return (
                         <div
@@ -284,10 +303,11 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                                 {/* Assuming permission object has resource and action, or adjust as per actual Permission type */}
                                 {/* For now, using groupName as a placeholder if resource/action not directly on permission */}
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.groupName || 'N/A'}
+                                  {permission.groupName || "N/A"}
                                 </Badge>
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.name} {/* Display permission name as action-like identifier */}
+                                  {permission.name}{" "}
+                                  {/* Display permission name as action-like identifier */}
                                 </Badge>
                               </div>
                             </div>
@@ -304,7 +324,9 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
           <TabsContent value="selected" className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-medium">已选择的权限</h3>
-              <Badge variant="outline">{selectedPermissionIds.size} 个权限</Badge>
+              <Badge variant="outline">
+                {selectedPermissionIds.size} 个权限
+              </Badge>
             </div>
 
             {selectedPermissionIds.size === 0 ? (
@@ -343,12 +365,15 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                                 <span className="sr-only">取消选择</span>
                               </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1 truncate" title={permission.description}>
+                            <p
+                              className="text-xs text-muted-foreground mt-1 truncate"
+                              title={permission.description}
+                            >
                               {permission.description}
                             </p>
                             <div className="flex items-center gap-1 mt-2">
-                               <Badge variant="outline" className="text-xs">
-                                {permission.groupName || 'N/A'}
+                              <Badge variant="outline" className="text-xs">
+                                {permission.groupName || "N/A"}
                               </Badge>
                               <Badge variant="outline" className="text-xs">
                                 {permission.name}
