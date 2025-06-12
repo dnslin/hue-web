@@ -538,13 +538,13 @@
             "type": "integer",
             "default": 10,
             "description": "每页数量",
-            "name": "pageSize",
+            "name": "page_size",
             "in": "query"
           },
           {
             "type": "string",
             "default": "id",
-            "description": "排序字段 (id, username, email, role_id, status, created_at)",
+            "description": "排序字段 (id, username, email, role_id, status, created_at, updated_at, last_login_at)",
             "name": "sort_by",
             "in": "query"
           },
@@ -552,7 +552,7 @@
             "type": "string",
             "default": "asc",
             "description": "排序顺序 (asc, desc)",
-            "name": "order",
+            "name": "sort_order",
             "in": "query"
           }
         ],
@@ -888,7 +888,7 @@
             "type": "integer",
             "default": 10,
             "description": "每页数量",
-            "name": "pageSize",
+            "name": "page_size",
             "in": "query"
           }
         ],
@@ -1004,7 +1004,7 @@
             "ApiKeyAuth": []
           }
         ],
-        "description": "管理员逻辑删除指定ID的用户的主要接口。",
+        "description": "管理员物理删除指定ID的用户的主要接口。",
         "consumes": [
           "application/json"
         ],
@@ -1014,7 +1014,7 @@
         "tags": [
           "Admin User Management"
         ],
-        "summary": "管理员逻辑删除用户",
+        "summary": "管理员物理删除用户",
         "parameters": [
           {
             "type": "integer",
@@ -1026,7 +1026,7 @@
         ],
         "responses": {
           "200": {
-            "description": "用户删除成功",
+            "description": "用户物理删除成功",
             "schema": {
               "$ref": "#/definitions/utils.SuccessResponse"
             }
@@ -1412,7 +1412,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/definitions/models.Album"
+                        "$ref": "#/definitions/dtos.AlbumResponseDTO"
                       }
                     }
                   }
@@ -1474,7 +1474,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/definitions/models.Album"
+                      "$ref": "#/definitions/dtos.AlbumResponseDTO"
                     }
                   }
                 }
@@ -1538,7 +1538,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/definitions/models.Album"
+                      "$ref": "#/definitions/dtos.AlbumResponseDTO"
                     }
                   }
                 }
@@ -1624,7 +1624,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/definitions/models.Album"
+                      "$ref": "#/definitions/dtos.AlbumResponseDTO"
                     }
                   }
                 }
@@ -1778,7 +1778,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/definitions/models.Image"
+                        "$ref": "#/definitions/dtos.ImageResponseDTO"
                       }
                     },
                     "meta": {
@@ -2223,8 +2223,25 @@
           "200": {
             "description": "图片列表及分页信息",
             "schema": {
-              "type": "object",
-              "additionalProperties": true
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/dtos.ImageResponseDTO"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/definitions/utils.PaginationMeta"
+                    }
+                  }
+                }
+              ]
             }
           },
           "401": {
@@ -2280,8 +2297,22 @@
           "201": {
             "description": "图片上传成功，返回图片信息列表",
             "schema": {
-              "type": "object",
-              "additionalProperties": true
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/dtos.UploadResponseDTO"
+                      }
+                    }
+                  }
+                }
+              ]
             }
           },
           "400": {
@@ -2342,8 +2373,19 @@
           "200": {
             "description": "图片元数据",
             "schema": {
-              "type": "object",
-              "additionalProperties": true
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.ImageResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "401": {
@@ -2457,7 +2499,19 @@
           "200": {
             "description": "成功响应",
             "schema": {
-              "$ref": "#/definitions/models.User"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.UserResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "401": {
@@ -2506,7 +2560,19 @@
           "200": {
             "description": "成功响应，返回更新后的用户信息",
             "schema": {
-              "$ref": "#/definitions/models.User"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.UserResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "400": {
@@ -2888,7 +2954,25 @@
           "200": {
             "description": "成功",
             "schema": {
-              "$ref": "#/definitions/utils.SuccessResponse"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/dtos.RoleResponseDTO"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/definitions/utils.PaginationMeta"
+                    }
+                  }
+                }
+              ]
             }
           },
           "500": {
@@ -2931,7 +3015,19 @@
           "201": {
             "description": "创建成功",
             "schema": {
-              "$ref": "#/definitions/utils.SuccessResponse"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.RoleResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "400": {
@@ -2980,7 +3076,19 @@
           "200": {
             "description": "成功",
             "schema": {
-              "$ref": "#/definitions/utils.SuccessResponse"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.RoleResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "400": {
@@ -3042,7 +3150,19 @@
           "200": {
             "description": "更新成功",
             "schema": {
-              "$ref": "#/definitions/utils.SuccessResponse"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.RoleResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "400": {
@@ -4011,7 +4131,19 @@
           "200": {
             "description": "成功",
             "schema": {
-              "$ref": "#/definitions/utils.SuccessResponse"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/utils.SuccessResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/dtos.RoleResponseDTO"
+                    }
+                  }
+                }
+              ]
             }
           },
           "400": {
@@ -4323,6 +4455,35 @@
         }
       }
     },
+    "dtos.AlbumResponseDTO": {
+      "type": "object",
+      "properties": {
+        "cover_image_id": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "is_public": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer"
+        }
+      }
+    },
     "dtos.AssignPermissionDTO": {
       "type": "object",
       "required": [
@@ -4475,6 +4636,53 @@
         }
       }
     },
+    "dtos.ImageResponseDTO": {
+      "type": "object",
+      "properties": {
+        "album_id": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "is_public": {
+          "type": "boolean"
+        },
+        "mime_type": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "storage_strategy_id": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        }
+      }
+    },
     "dtos.PaginationMeta": {
       "type": "object",
       "properties": {
@@ -4510,6 +4718,29 @@
           "description": "权限名称，通常是唯一的动作标识符",
           "type": "string",
           "example": "create_user"
+        }
+      }
+    },
+    "dtos.PermissionResponseDTO": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "group_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
         }
       }
     },
@@ -4602,7 +4833,6 @@
       "type": "object",
       "properties": {
         "created_at": {
-          "description": "使用 string 避免时区问题，或根据需要使用 time.Time",
           "type": "string"
         },
         "id": {
@@ -4611,8 +4841,13 @@
         "name": {
           "type": "string"
         },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dtos.PermissionResponseDTO"
+          }
+        },
         "updated_at": {
-          "description": "使用 string 避免时区问题，或根据需要使用 time.Time",
           "type": "string"
         }
       }
@@ -4697,6 +4932,26 @@
         }
       }
     },
+    "dtos.UploadResponseDTO": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "mime_type": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
     "dtos.UserApprovalRequest": {
       "type": "object",
       "properties": {
@@ -4706,55 +4961,38 @@
         }
       }
     },
-    "models.Album": {
+    "dtos.UserResponseDTO": {
       "type": "object",
       "properties": {
-        "coverImage": {
-          "description": "关联封面图片",
-          "allOf": [
-            {
-              "$ref": "#/definitions/models.Image"
-            }
-          ]
-        },
-        "coverImageID": {
-          "description": "相册封面图片ID (允许为空)",
-          "type": "integer"
-        },
-        "createdAt": {
-          "description": "创建时间",
+        "created_at": {
           "type": "string"
         },
-        "description": {
-          "description": "相册描述",
+        "email": {
           "type": "string"
         },
         "id": {
           "type": "integer"
         },
-        "isPublic": {
-          "description": "相册是否公开",
-          "type": "boolean"
-        },
-        "name": {
-          "description": "相册名称",
+        "last_login_at": {
           "type": "string"
         },
-        "updatedAt": {
-          "description": "更新时间",
+        "last_login_ip": {
           "type": "string"
         },
-        "user": {
-          "description": "关联用户",
-          "allOf": [
-            {
-              "$ref": "#/definitions/models.User"
-            }
-          ]
+        "nickname": {
+          "type": "string"
         },
-        "userID": {
-          "description": "相册所有者用户ID",
+        "role_id": {
           "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
         }
       }
     },
@@ -4876,106 +5114,6 @@
         },
         "userRegistrationEnabled": {
           "type": "boolean"
-        }
-      }
-    },
-    "models.Image": {
-      "type": "object",
-      "properties": {
-        "album": {
-          "description": "关联相册",
-          "allOf": [
-            {
-              "$ref": "#/definitions/models.Album"
-            }
-          ]
-        },
-        "albumID": {
-          "description": "所属相册ID (允许为空)",
-          "type": "integer"
-        },
-        "createdAt": {
-          "description": "上传时间",
-          "type": "string"
-        },
-        "filename": {
-          "description": "原始文件名",
-          "type": "string"
-        },
-        "filepath": {
-          "description": "文件保存路径或对象键",
-          "type": "string"
-        },
-        "height": {
-          "description": "图片高度",
-          "type": "integer"
-        },
-        "id": {
-          "type": "integer"
-        },
-        "isPublic": {
-          "description": "图片是否公开",
-          "type": "boolean"
-        },
-        "mimeType": {
-          "description": "图片的MIME类型",
-          "type": "string"
-        },
-        "reviewNotes": {
-          "description": "审核备注 (可选)",
-          "type": "string"
-        },
-        "reviewedAt": {
-          "description": "审核时间 (可选)",
-          "type": "string"
-        },
-        "reviewedBy": {
-          "description": "审核员ID (可选, 0 可能表示系统自动)",
-          "type": "integer"
-        },
-        "size": {
-          "description": "文件大小（字节）",
-          "type": "integer"
-        },
-        "status": {
-          "description": "图片状态（参考ImageStatus常量）",
-          "type": "integer"
-        },
-        "storageStrategy": {
-          "description": "关联存储策略",
-          "allOf": [
-            {
-              "$ref": "#/definitions/models.StorageStrategy"
-            }
-          ]
-        },
-        "storageStrategyID": {
-          "description": "使用的存储策略ID",
-          "type": "integer"
-        },
-        "updatedAt": {
-          "description": "最后更新时间",
-          "type": "string"
-        },
-        "url": {
-          "description": "图片访问URL",
-          "type": "string"
-        },
-        "user": {
-          "description": "关联用户",
-          "allOf": [
-            {
-              "$ref": "#/definitions/models.User"
-            }
-          ]
-        },
-        "userID": {
-          "description": "上传用户ID",
-          "type": "integer"
-        },
-        "width": {
-          "description": "图片宽度",
-          "type": "integer"
         }
       }
     },

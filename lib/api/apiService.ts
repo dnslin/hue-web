@@ -7,6 +7,10 @@ import axios, {
   AxiosError,
 } from "axios";
 import { cookies } from "next/headers"; // 用于 getAuthenticatedApiService
+import {
+  deepConvertToCamelCase,
+  deepConvertToSnakeCase,
+} from "../utils/case-converter";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -37,6 +41,12 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
         config.headers.Authorization = `Bearer ${tokenToUse}`;
       }
       // console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`); // 中文注释：API请求日志
+
+      // 自动将请求数据转换为 snake_case
+      if (config.data) {
+        config.data = deepConvertToSnakeCase(config.data);
+      }
+
       return config;
     },
     (error: AxiosError) => {
@@ -46,7 +56,10 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
   );
 
   instance.interceptors.response.use(
-    (response: AxiosResponse) => response.data, // 直接返回data部分
+    (response: AxiosResponse) => {
+      // 自动将响应数据转换为 camelCase
+      return deepConvertToCamelCase(response.data);
+    },
     (error: AxiosError<any>) => {
       console.error("[API Response Error] Full error object:", error); // 中文注释：完整错误对象日志
 
