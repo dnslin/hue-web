@@ -14,6 +14,7 @@ import { userDataStore } from "@/lib/store/user/user-data.store";
 import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
 import { useUserDataHydration } from "@/lib/store/user/user-hydration.store";
 import { getAllUsersForExportAction } from "@/lib/actions/users/user.actions";
+import { showToast } from "@/lib/utils/toast";
 
 interface UserListProps {
   isMobile?: boolean;
@@ -28,8 +29,8 @@ export function UserList({ isMobile = false }: UserListProps) {
   // 错误处理应该在所有 hooks 调用之后，但在任何可能提前返回的逻辑之前
   useEffect(() => {
     if (error) {
+      // store中已经显示了toast，这里只记录日志用于调试
       console.error("User list error:", error);
-      // 可以在这里调用 toast.error(error)
     }
   }, [error]);
 
@@ -53,14 +54,14 @@ export function UserList({ isMobile = false }: UserListProps) {
 
       if (!Array.isArray(usersOrError)) {
         console.error("导出用户数据失败 (获取数据时):", usersOrError.message);
-        alert(`导出失败: ${usersOrError.message}`);
+        showToast.error("导出用户数据失败", usersOrError.message);
         return;
       }
 
       const usersToExport: User[] = usersOrError;
 
       if (usersToExport.length === 0) {
-        alert("没有可导出的用户数据。");
+        showToast.warning("没有可导出的用户数据");
         return;
       }
 
@@ -121,7 +122,7 @@ export function UserList({ isMobile = false }: UserListProps) {
       document.body.removeChild(a);
     } catch (error) {
       console.error("导出用户数据时发生意外错误:", error);
-      alert("导出用户数据时发生意外错误。");
+      showToast.error("导出用户数据时发生意外错误");
     }
   };
 

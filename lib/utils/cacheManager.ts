@@ -166,6 +166,45 @@ export class CacheManager {
   }
 
   /**
+   * 清理认证相关的缓存
+   */
+  clearAuthRelatedCache(): void {
+    // 清理认证相关的特定缓存项
+    const authKeys = [
+      "auth-storage", // Zustand auth store
+      "user-filter-storage", // 用户筛选存储
+      "admin-storage", // 管理员相关存储
+    ];
+
+    try {
+      // 清理localStorage中的认证相关项
+      authKeys.forEach((key) => {
+        localStorage.removeItem(key);
+      });
+
+      // 清理内存缓存中的用户相关数据
+      this.invalidate("^(users|roles|permissions|auth):");
+
+      console.log("✅ [CacheManager] 已清理认证相关缓存");
+    } catch (error) {
+      console.warn("⚠️ [CacheManager] 清理认证相关缓存失败:", error);
+    }
+  }
+
+  /**
+   * 清理所有用户数据相关缓存
+   */
+  clearAllUserData(): void {
+    try {
+      // 清理用户业务数据缓存
+      this.invalidate("^(users|roles|permissions|dashboard):");
+      console.log("✅ [CacheManager] 已清理所有用户数据缓存");
+    } catch (error) {
+      console.warn("⚠️ [CacheManager] 清理用户数据缓存失败:", error);
+    }
+  }
+
+  /**
    * 获取缓存统计信息
    */
   getStats(): {

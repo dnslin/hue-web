@@ -80,10 +80,45 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
 
       // 处理401认证错误
       if (statusCode === 401) {
-        // 为401错误提供更友好的默认消息
+        // 动态导入错误处理器避免循环依赖
+        import("@/lib/utils/error-handler")
+          .then(({ ErrorHandler }) => {
+            // 检测是否为token过期
+            const isTokenExpired =
+              errorMessage.includes("Token") ||
+              errorMessage.includes("token") ||
+              errorMessage.includes("过期") ||
+              errorMessage.includes("失效") ||
+              errorMessage.includes("expired") ||
+              errorMessage.includes("invalid") ||
+              errorMessage.includes("unauthorized") ||
+              errorMessage.includes("登录已过期");
+
+            if (isTokenExpired) {
+              // Token过期，触发清理和重定向
+              ErrorHandler.handleTokenExpired().catch((err) => {
+                console.error("处理token过期时发生错误:", err);
+              });
+            }
+          })
+          .catch((err) => {
+            console.warn("导入错误处理器失败:", err);
+          });
+
+        // 区分认证失败和token过期的错误消息
         const authErrorMessage =
-          errorMessage.includes("401") || errorMessage.includes("status code")
-            ? "用户名或密码错误，请重新输入。"
+          errorMessage.includes("Token") ||
+          errorMessage.includes("token") ||
+          errorMessage.includes("过期") ||
+          errorMessage.includes("失效") ||
+          errorMessage.includes("expired") ||
+          errorMessage.includes("invalid") ||
+          errorMessage.includes("unauthorized") ||
+          errorMessage.includes("登录已过期")
+            ? "登录已过期，请重新登录"
+            : errorMessage.includes("401") ||
+              errorMessage.includes("status code")
+            ? "用户名或密码错误，请重新输入"
             : errorMessage;
 
         return Promise.reject(

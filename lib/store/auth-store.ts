@@ -12,6 +12,7 @@ import type {
   RegisterRequest,
   AuthResponseData,
 } from "@/lib/types/auth";
+import { cacheManager } from "@/lib/utils/cacheManager";
 
 /**
  * 认证状态接口
@@ -71,6 +72,15 @@ export const useAuthStore = create<AuthState>()(
       // 清除认证信息
       clearAuth: () => {
         console.log("🚪 清除用户认证信息"); // 中文注释：清除用户认证信息
+
+        // 清理相关缓存
+        try {
+          cacheManager.clearAuthRelatedCache();
+          console.log("✅ 已清理认证相关缓存");
+        } catch (err) {
+          console.warn("清理认证相关缓存失败:", err);
+        }
+
         set({
           user: null,
           isAuthenticated: false,
@@ -228,9 +238,9 @@ export const useAuthStore = create<AuthState>()(
           console.error("❌ 登出时发生意外错误:", err); // 中文注释：登出时发生意外错误
           // 即使捕获到错误，也应清除客户端状态
         } finally {
+          // 使用clearAuth来确保清理缓存
+          get().clearAuth();
           set({
-            user: null,
-            isAuthenticated: false,
             isLoading: false,
             error: null, // 清除登出相关的错误，避免影响下次操作
           });

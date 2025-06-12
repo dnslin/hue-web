@@ -23,6 +23,7 @@ import {
   assignPermissionToRoleAction,
   removePermissionFromRoleAction,
 } from "@/lib/actions/roles/role.actions";
+import { handleError } from "@/lib/utils/error-handler";
 
 // 权限分组的本地类型，因为后端不直接返回这个聚合结构
 export interface PermissionGroupFE {
@@ -150,16 +151,18 @@ export const useRoleStore = create<RoleStoreState>()(
             });
           } else {
             const errorResponse = response as ErrorResponse;
-            console.error("获取角色列表失败 (Store):", errorResponse.message);
+            const errorMessage = errorResponse.message || "获取角色列表失败";
+            await handleError(new Error(errorMessage), "获取角色列表失败");
             set({
-              error: errorResponse.message || "获取角色列表失败",
+              error: errorMessage,
               isLoadingRoles: false,
             });
           }
         } catch (err: any) {
-          console.error("获取角色列表时发生意外错误 (Store):", err);
+          const errorMessage = err.message || "获取角色列表时发生意外错误";
+          await handleError(err, "获取角色列表失败");
           set({
-            error: err.message || "获取角色列表时发生意外错误",
+            error: errorMessage,
             isLoadingRoles: false,
           });
         }
@@ -180,15 +183,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return role;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "获取角色详情失败";
+            await handleError(new Error(errorMessage), "获取角色详情失败");
             set({
-              error: errorResponse.message || "获取角色详情失败",
+              error: errorMessage,
               isLoadingRoles: false,
             });
             return null;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "获取角色详情时发生意外错误";
+          await handleError(err, "获取角色详情失败");
           set({
-            error: err.message || "获取角色详情时发生意外错误",
+            error: errorMessage,
             isLoadingRoles: false,
           });
           return null;
@@ -212,15 +219,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return newRole;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "创建角色失败";
+            await handleError(new Error(errorMessage), "创建角色失败");
             set({
-              error: errorResponse.message || "创建角色失败",
+              error: errorMessage,
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "创建角色时发生意外错误";
+          await handleError(err, "创建角色失败");
           set({
-            error: err.message || "创建角色时发生意外错误",
+            error: errorMessage,
             isSubmitting: false,
           });
           return null;
@@ -245,15 +256,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "更新角色失败";
+            await handleError(new Error(errorMessage), "更新角色失败");
             set({
-              error: errorResponse.message || "更新角色失败",
+              error: errorMessage,
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "更新角色时发生意外错误";
+          await handleError(err, "更新角色失败");
           set({
-            error: err.message || "更新角色时发生意外错误",
+            error: errorMessage,
             isSubmitting: false,
           });
           return null;
@@ -282,15 +297,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return true;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "删除角色失败";
+            await handleError(new Error(errorMessage), "删除角色失败");
             set({
-              error: errorResponse.message || "删除角色失败",
+              error: errorMessage,
               isSubmitting: false,
             });
             return false;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "删除角色时发生意外错误";
+          await handleError(err, "删除角色失败");
           set({
-            error: err.message || "删除角色时发生意外错误",
+            error: errorMessage,
             isSubmitting: false,
           });
           return false;
@@ -320,14 +339,18 @@ export const useRoleStore = create<RoleStoreState>()(
             });
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "获取权限列表失败";
+            await handleError(new Error(errorMessage), "获取权限列表失败");
             set({
-              error: errorResponse.message || "获取权限列表失败",
+              error: errorMessage,
               isLoadingPermissions: false,
             });
           }
         } catch (err: any) {
+          const errorMessage = err.message || "获取权限列表时发生意外错误";
+          await handleError(err, "获取权限列表失败");
           set({
-            error: err.message || "获取权限列表时发生意外错误",
+            error: errorMessage,
             isLoadingPermissions: false,
           });
         }
@@ -356,15 +379,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "同步权限失败";
+            await handleError(new Error(errorMessage), "同步权限失败");
             set({
-              error: errorResponse.message || "同步权限失败",
+              error: errorMessage,
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "同步权限时发生意外错误";
+          await handleError(err, "同步权限失败");
           set({
-            error: err.message || "同步权限时发生意外错误",
+            error: errorMessage,
             isSubmitting: false,
           });
           return null;
@@ -394,15 +421,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "分配权限失败";
+            await handleError(new Error(errorMessage), "分配权限失败");
             set({
-              error: errorResponse.message || "分配权限失败",
+              error: errorMessage,
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "分配权限时发生意外错误";
+          await handleError(err, "分配权限失败");
           set({
-            error: err.message || "分配权限时发生意外错误",
+            error: errorMessage,
             isSubmitting: false,
           });
           return null;
@@ -444,15 +475,19 @@ export const useRoleStore = create<RoleStoreState>()(
             return true;
           } else {
             const errorResponse = response as ErrorResponse;
+            const errorMessage = errorResponse.message || "移除权限失败";
+            await handleError(new Error(errorMessage), "移除权限失败");
             set({
-              error: errorResponse.message || "移除权限失败",
+              error: errorMessage,
               isSubmitting: false,
             });
             return false;
           }
         } catch (err: any) {
+          const errorMessage = err.message || "移除权限时发生意外错误";
+          await handleError(err, "移除权限失败");
           set({
-            error: err.message || "移除权限时发生意外错误",
+            error: errorMessage,
             isSubmitting: false,
           });
           return false;

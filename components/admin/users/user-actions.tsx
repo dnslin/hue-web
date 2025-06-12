@@ -86,22 +86,11 @@ export function UserActions({ user }: UserActionsProps) {
   const executeStatusChange = async (newStatus: UserStatus) => {
     clearError("statusChangeError", user.id);
 
-    try {
-      const result = await changeUserStatus(user, newStatus);
+    const result = await changeUserStatus(user, newStatus);
 
-      if (result.success) {
-        showToast.success(`用户 ${user.username} 状态已更新`);
-      } else {
-        showToast.error(
-          `更新用户 ${user.username} 状态失败`,
-          result.error || "操作失败，请重试"
-        );
-      }
-    } catch (err: any) {
-      showToast.error(
-        `更新用户 ${user.username} 状态失败`,
-        err.message || "操作失败，请重试"
-      );
+    // store 已经处理了错误显示，这里只处理成功情况
+    if (result.success) {
+      showToast.success(`用户 ${user.username} 状态已更新`);
     }
   };
 
@@ -116,81 +105,51 @@ export function UserActions({ user }: UserActionsProps) {
   const handleDelete = async () => {
     clearError("deleteError", user.id);
 
-    try {
-      const result = await deleteUser(user.id);
-      if (result.success) {
-        setShowDeleteDialog(false);
-        showToast.success(`用户 ${user.username} 已删除`);
-      } else {
-        showToast.error(
-          `删除用户 ${user.username} 失败`,
-          result.error || "操作失败，请重试"
-        );
-      }
-    } catch (err: any) {
-      showToast.error(
-        `删除用户 ${user.username} 失败`,
-        err.message || "操作失败，请重试"
-      );
+    const result = await deleteUser(user.id);
+
+    // store 已经处理了错误显示，这里只处理成功情况
+    if (result.success) {
+      setShowDeleteDialog(false);
+      showToast.success(`用户 ${user.username} 已删除`);
     }
   };
 
   const handleResetPassword = async () => {
     clearError("resetPasswordError", user.id);
 
-    try {
-      const result = await resetPassword(user.id);
-      if (result.success) {
-        if (result.newPassword && result.newPassword !== "已通过邮件发送") {
-          showToast.success(
-            `用户 ${user.username} 的密码已成功重置`,
-            `新密码：${result.newPassword}，请用户登录后立即修改`
-          );
-        } else {
-          showToast.success(
-            `用户 ${user.username} 的密码已成功重置`,
-            "新密码已通过邮件发送给用户"
-          );
-        }
-        setShowResetPasswordDialog(false);
+    const result = await resetPassword(user.id);
+
+    // store 已经处理了错误显示，这里只处理成功情况
+    if (result.success) {
+      if (result.newPassword && result.newPassword !== "已通过邮件发送") {
+        showToast.success(
+          `用户 ${user.username} 的密码已成功重置`,
+          `新密码：${result.newPassword}，请用户登录后立即修改`
+        );
       } else {
-        showToast.error(
-          `重置用户 ${user.username} 的密码失败`,
-          result.error || "操作失败，请重试"
+        showToast.success(
+          `用户 ${user.username} 的密码已成功重置`,
+          "新密码已通过邮件发送给用户"
         );
       }
-    } catch (err: any) {
-      showToast.error(
-        `重置用户 ${user.username} 的密码失败`,
-        err.message || "操作失败，请重试"
-      );
+      setShowResetPasswordDialog(false);
     }
   };
 
   const handleRejectUser = async () => {
     clearError("statusChangeError", user.id);
 
-    try {
-      const result = await changeUserStatus(
-        user,
-        UserStatus.REJECTED,
-        rejectReason
-      );
-      if (result.success) {
-        showToast.success(`用户 ${user.username} 已被拒绝`);
-        setShowRejectDialog(false);
-        setRejectReason("");
-      } else {
-        showToast.error(
-          `拒绝用户 ${user.username} 失败`,
-          result.error || "操作失败，请重试"
-        );
-      }
-    } catch (err: any) {
-      showToast.error(
-        `拒绝用户 ${user.username} 失败`,
-        err.message || "操作失败，请重试"
-      );
+    const result = await changeUserStatus(
+      user,
+      UserStatus.REJECTED,
+      rejectReason
+    );
+
+    // store 已经处理了错误显示，这里只处理成功情况
+    if (result.success) {
+      showToast.success(`用户 ${user.username} 已被拒绝`);
+      setShowRejectDialog(false);
+      setRejectReason("");
     }
   };
 
@@ -201,16 +160,12 @@ export function UserActions({ user }: UserActionsProps) {
       role_id: editForm.role_id,
     };
 
-    try {
-      const result = await updateUser(user.id, updateData);
-      if (result.success) {
-        showToast.success(`用户 ${user.username} 信息已更新`);
-        setShowEditDialog(false);
-      } else {
-        showToast.error("更新用户信息失败", result.error || "操作失败，请重试");
-      }
-    } catch (err: any) {
-      showToast.error("更新用户信息失败", err.message || "操作失败，请重试");
+    const result = await updateUser(user.id, updateData);
+
+    // store 已经处理了错误显示，这里只处理成功情况
+    if (result.success) {
+      showToast.success(`用户 ${user.username} 信息已更新`);
+      setShowEditDialog(false);
     }
   };
 

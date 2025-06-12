@@ -5,6 +5,7 @@ import { shallow } from "zustand/shallow";
 import { User } from "@/lib/types/user";
 import { useUserFilterStore } from "./user-filter.store";
 import { getUsersAction } from "@/lib/actions/users/user.actions";
+import { handleError } from "@/lib/utils/error-handler";
 
 /**
  * 用户核心数据状态
@@ -128,15 +129,19 @@ export const createUserDataSlice: StateCreator<
         });
       } else if ("error" in response) {
         // 处理已知的 API 错误响应
-        throw new Error(response.message || "获取用户列表失败");
+        const errorToHandle = new Error(response.message || "获取用户列表失败");
+        await handleError(errorToHandle, "获取用户列表失败");
+        set({ loading: false, error: response.message || "获取用户列表失败" });
       } else {
         // 处理任何其他意外的响应格式
-        throw new Error("API响应格式不正确或未知");
+        const errorToHandle = new Error("API响应格式不正确或未知");
+        await handleError(errorToHandle, "获取用户列表失败");
+        set({ loading: false, error: "API响应格式不正确或未知" });
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "获取用户列表时发生未知错误";
-      console.error("[Debug] fetchUsers: 获取用户失败:", errorMessage);
+      await handleError(error, "获取用户列表失败");
       set({ loading: false, error: errorMessage });
     }
   },

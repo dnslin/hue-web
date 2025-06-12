@@ -15,6 +15,7 @@ import {
 } from "@/lib/actions/users/user.actions";
 import { userDataStore } from "./user-data.store";
 import { useUserCacheStore } from "./user-cache.store";
+import { handleStoreError } from "@/lib/utils/error-handler";
 
 // 定义加载状态的类型，针对每个具体操作
 interface ActionLoadingState {
@@ -110,7 +111,10 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           } else if (fromStatus === UserStatus.BANNED) {
             actionResponse = await unbanUserAction(userId);
           } else {
-            throw new Error(`不支持从 ${fromStatus} 到 ${toStatus} 的状态转换`);
+            const error = new Error(
+              `不支持从 ${fromStatus} 到 ${toStatus} 的状态转换`
+            );
+            return await handleStoreError(error, "更改用户状态");
           }
           break;
         case UserStatus.BANNED:
@@ -120,7 +124,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           actionResponse = await rejectUserAction(userId, reason);
           break;
         default:
-          throw new Error(`不支持的目标状态: ${toStatus}`);
+          const error = new Error(`不支持的目标状态: ${toStatus}`);
+          return await handleStoreError(error, "更改用户状态");
       }
 
       if (
@@ -128,9 +133,20 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         "code" in actionResponse &&
         actionResponse.code !== 200
       ) {
-        throw new Error(
+        const error = new Error(
           (actionResponse as ApiErrorResponse).message || "更改用户状态失败"
         );
+        const result = await handleStoreError(error, "更改用户状态");
+        set((state) => ({
+          error: {
+            ...state.error,
+            statusChangeError: {
+              ...state.error.statusChangeError,
+              [userId]: result.error,
+            },
+          },
+        }));
+        return result;
       }
 
       // 操作成功，刷新数据
@@ -138,22 +154,17 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       useUserCacheStore.getState().invalidateUserCache(userId);
       return { success: true };
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
-      console.error(
-        `💥 [UserActionStore] 用户 ${userId} 状态更改失败:`,
-        errorMessage,
-        e
-      );
+      const result = await handleStoreError(e, "更改用户状态");
       set((state) => ({
         error: {
           ...state.error,
           statusChangeError: {
             ...state.error.statusChangeError,
-            [userId]: errorMessage,
+            [userId]: result.error,
           },
         },
       }));
-      return { success: false, error: errorMessage };
+      return result;
     } finally {
       set((state) => ({
         loading: {
@@ -187,9 +198,17 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         "code" in actionResponse &&
         actionResponse.code !== 200
       ) {
-        throw new Error(
+        const error = new Error(
           (actionResponse as ApiErrorResponse).message || "删除用户失败"
         );
+        const result = await handleStoreError(error, "删除用户");
+        set((state) => ({
+          error: {
+            ...state.error,
+            deleteError: { ...state.error.deleteError, [userId]: result.error },
+          },
+        }));
+        return result;
       }
 
       // 操作成功，刷新数据
@@ -197,15 +216,14 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       useUserCacheStore.getState().invalidateUserCache(userId);
       return { success: true };
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
-      console.error(`删除用户 ${userId} 失败:`, errorMessage);
+      const result = await handleStoreError(e, "删除用户");
       set((state) => ({
         error: {
           ...state.error,
-          deleteError: { ...state.error.deleteError, [userId]: errorMessage },
+          deleteError: { ...state.error.deleteError, [userId]: result.error },
         },
       }));
-      return { success: false, error: errorMessage };
+      return result;
     } finally {
       set((state) => ({
         loading: {
@@ -239,25 +257,35 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       const result = await resetPasswordUserAction(userId);
 
       if (!result.success) {
-        throw new Error(result.error || "重置密码失败");
+        const error = new Error(result.error || "重置密码失败");
+        const storeResult = await handleStoreError(error, "重置密码");
+        set((state) => ({
+          error: {
+            ...state.error,
+            resetPasswordError: {
+              ...state.error.resetPasswordError,
+              [userId]: storeResult.error,
+            },
+          },
+        }));
+        return storeResult;
       }
 
       // 使缓存失效
       useUserCacheStore.getState().invalidateUserCache(userId);
       return { success: true, newPassword: result.newPassword };
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
-      console.error(`为用户 ${userId} 重置密码失败:`, errorMessage);
+      const storeResult = await handleStoreError(e, "重置密码");
       set((state) => ({
         error: {
           ...state.error,
           resetPasswordError: {
             ...state.error.resetPasswordError,
-            [userId]: errorMessage,
+            [userId]: storeResult.error,
           },
         },
       }));
-      return { success: false, error: errorMessage };
+      return { success: false, error: storeResult.error };
     } finally {
       set((state) => ({
         loading: {
@@ -293,9 +321,17 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
         "code" in actionResponse &&
         (actionResponse.code < 200 || actionResponse.code >= 300)
       ) {
-        throw new Error(
+        const error = new Error(
           (actionResponse as ApiErrorResponse).message || "更新用户信息失败"
         );
+        const result = await handleStoreError(error, "更新用户信息");
+        set((state) => ({
+          error: {
+            ...state.error,
+            updateError: { ...state.error.updateError, [userId]: result.error },
+          },
+        }));
+        return result;
       }
 
       // 操作成功，刷新数据
@@ -303,15 +339,14 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       useUserCacheStore.getState().invalidateUserCache(userId);
       return { success: true };
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "发生未知错误";
-      console.error(`更新用户 ${userId} 失败:`, errorMessage);
+      const result = await handleStoreError(e, "更新用户信息");
       set((state) => ({
         error: {
           ...state.error,
-          updateError: { ...state.error.updateError, [userId]: errorMessage },
+          updateError: { ...state.error.updateError, [userId]: result.error },
         },
       }));
-      return { success: false, error: errorMessage };
+      return result;
     } finally {
       set((state) => ({
         loading: {
