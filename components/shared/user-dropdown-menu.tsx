@@ -11,11 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserInfo } from "@/lib/store/auth-store";
 import { cn } from "@/lib/utils";
+import type { User as UserType } from "@/lib/types/user";
 
 interface UserDropdownMenuProps {
-  user: UserInfo;
+  user: UserType;
   onLogout: () => void;
   children: React.ReactNode;
 }

@@ -4,12 +4,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { UserInfo } from "@/lib/store/auth-store";
 import {
   getGravatarUrl,
   getUserInitials,
   getDiceBearUrl,
 } from "@/lib/utils/gravatar";
+import type { User } from "@/lib/types/user";
 
 // 头像尺寸配置
 const sizeConfig = {
@@ -38,7 +38,7 @@ const roleColors = {
 } as const;
 
 interface UserAvatarProps {
-  user: UserInfo;
+  user: User;
   size?: keyof typeof sizeConfig;
   className?: string;
 }
@@ -57,7 +57,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   // 获取用户角色对应的边框样式
   const roleColor =
-    roleColors[user.role as keyof typeof roleColors] || roleColors.user;
+    roleColors[user.role.name as keyof typeof roleColors] || roleColors.user;
 
   // 渐进式加载头像
   useEffect(() => {

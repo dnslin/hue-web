@@ -67,8 +67,8 @@ const initialState: UserFilterState = {
     search: undefined,
     role: undefined,
     status: undefined,
-    sort_by: undefined,
-    sort_order: undefined,
+    sortBy: undefined,
+    order: undefined,
   },
   pagination: {
     page: 1,
