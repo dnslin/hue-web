@@ -147,6 +147,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* 管理界面专用边框颜色 */
+  --admin-border: #d1d5db;
+  --admin-border-hover: #9ca3af;
+  --admin-border-selected: #374151;
 }
 
 .dark {
@@ -181,6 +185,10 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  /* 管理界面专用边框颜色 - 深色模式 */
+  --admin-border: #4b5563;
+  --admin-border-hover: #6b7280;
+  --admin-border-selected: #e5e7eb;
 }
 
 @layer base {

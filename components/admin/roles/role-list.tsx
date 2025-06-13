@@ -10,6 +10,7 @@ import {
   Copy,
   MoreHorizontal,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,12 @@ import { RolePermissions } from "./role-permissions";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
 import { formatDateOnly } from "@/lib/utils/date-formatter";
+import {
+  roleCardVariants,
+  roleGridVariants,
+  badgeVariants,
+  containerVariants,
+} from "@/lib/dashboard/animations";
 
 interface RoleListProps {
   onRoleSelect?: (role: Role) => void;
@@ -155,9 +162,19 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+    >
       {/* 页面头部 */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        className="flex items-center justify-between"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <div className="flex items-center gap-2">
           <Shield className="h-6 w-6" />
           <h1 className="text-2xl font-semibold">角色权限管理</h1>
@@ -166,125 +183,135 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
           <Plus className="h-4 w-4" />
           添加角色
         </Button>
-      </div>
+      </motion.div>
 
       {/* 角色卡片网格 */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {roles.map((role) => (
-          <Card
+      <motion.div
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        variants={roleGridVariants}
+        initial="initial"
+        animate="animate"
+      >
+        {roles.map((role, index) => (
+          <motion.div
             key={role.id}
-            className={`
-            cursor-pointer transition-all hover:shadow-md
-            ${
-              selectedRoleForDisplay?.id === role.id
-                ? "ring-2 ring-primary"
-                : ""
-            }
-          `}
-            onClick={() => handleRoleSelect(role)}
+            variants={roleCardVariants}
+            initial="initial"
+            animate="animate"
+            whileHover="hover"
+            whileTap="tap"
+            custom={index}
+            transition={{ delay: index * 0.08 }}
           >
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">
-                    {role.alias || role.name}
-                  </CardTitle>
+            <Card
+              className={`
+              role-card-enhanced cursor-pointer
+              ${selectedRoleForDisplay?.id === role.id ? "selected" : ""}
+            `}
+              onClick={() => handleRoleSelect(role)}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">
+                      {role.alias || role.name}
+                    </CardTitle>
+                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48" align="end">
+                      <div className="space-y-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleManagePermissionsClick(role);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                          管理权限
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicateRole(role);
+                          }}
+                          disabled={isSubmitting} // 使用 store 的 isSubmitting
+                        >
+                          <Copy className="h-4 w-4" />
+                          {isSubmitting ? "处理中..." : "复制角色"}
+                        </Button>
+                        <Dialog
+                          open={showDeleteDialog === role.id} // 比较 number
+                          onOpenChange={
+                            (open) => setShowDeleteDialog(open ? role.id : null) // 设置 number 或 null
+                          }
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start gap-2 text-red-600 hover:text-red-700"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              删除角色
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent onClick={(e) => e.stopPropagation()}>
+                            <DialogHeader>
+                              <DialogTitle>删除角色</DialogTitle>
+                              <DialogDescription>
+                                确定要删除角色 {role.alias || role.name} (
+                                {role.name}) 吗？
+                                此操作不可撤销，已分配此角色的用户将失去相应权限。
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button
+                                variant="outline"
+                                onClick={() => setShowDeleteDialog(null)}
+                              >
+                                取消
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleDeleteRole(role.id)} // 传递 number
+                                disabled={isSubmitting}
+                              >
+                                确认删除
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-48" align="end">
-                    <div className="space-y-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleManagePermissionsClick(role);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                        管理权限
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDuplicateRole(role);
-                        }}
-                        disabled={isSubmitting} // 使用 store 的 isSubmitting
-                      >
-                        <Copy className="h-4 w-4" />
-                        {isSubmitting ? "处理中..." : "复制角色"}
-                      </Button>
-                      <Dialog
-                        open={showDeleteDialog === role.id} // 比较 number
-                        onOpenChange={
-                          (open) => setShowDeleteDialog(open ? role.id : null) // 设置 number 或 null
-                        }
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start gap-2 text-red-600 hover:text-red-700"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            删除角色
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent onClick={(e) => e.stopPropagation()}>
-                          <DialogHeader>
-                            <DialogTitle>删除角色</DialogTitle>
-                            <DialogDescription>
-                              确定要删除角色 {role.alias || role.name} (
-                              {role.name}) 吗？
-                              此操作不可撤销，已分配此角色的用户将失去相应权限。
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <Button
-                              variant="outline"
-                              onClick={() => setShowDeleteDialog(null)}
-                            >
-                              取消
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleDeleteRole(role.id)} // 传递 number
-                              disabled={isSubmitting}
-                            >
-                              确认删除
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              {/* {role.description && ( // Role类型没有description属性，暂时移除
+                {/* {role.description && ( // Role类型没有description属性，暂时移除
                 <p className="text-sm text-muted-foreground">
                   {role.description}
                 </p>
               )} */}
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* 用户数量 - Role类型没有user_count属性，暂时移除或后续通过其他方式获取
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {/* 用户数量 - Role类型没有user_count属性，暂时移除或后续通过其他方式获取
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
@@ -293,56 +320,84 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                 </div>
                 */}
 
-                {/* 权限数量 */}
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {role.permissions.length} 个权限
-                  </span>
-                </div>
-
-                {/* 角色标签 */}
-                <div className="flex flex-wrap gap-1">
-                  <Badge className={getRoleColor(role.name)}>
-                    {role.alias || role.name}
-                  </Badge>
-                  {role.permissions.slice(0, 3).map((permission) => (
-                    <Badge
-                      key={permission.id.toString()} // key 应该是 string 或 number
-                      variant="outline"
-                      className="text-xs"
-                    >
-                      {permission.name} {/* 假设 Permission 类型有 name 字段 */}
-                    </Badge>
-                  ))}
-                  {role.permissions.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{role.permissions.length - 3}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* 创建时间 */}
-                <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
-                  创建于: {formatDateOnly(role.createdAt)}
-                </div>
-                {role.updatedAt && role.updatedAt !== role.createdAt && (
-                  <div className="text-xs text-muted-foreground">
-                    更新于: {formatDateOnly(role.updatedAt)}
+                  {/* 权限数量 */}
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {role.permissions.length} 个权限
+                    </span>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+
+                  {/* 角色标签 */}
+                  <div className="flex flex-wrap gap-1">
+                    <motion.div
+                      variants={badgeVariants}
+                      initial="initial"
+                      animate="animate"
+                      whileHover="hover"
+                    >
+                      <Badge
+                        className={`role-badge-enhanced ${getRoleColor(
+                          role.name
+                        )}`}
+                      >
+                        {role.alias || role.name}
+                      </Badge>
+                    </motion.div>
+                    {role.permissions
+                      .slice(0, 3)
+                      .map((permission, permIndex) => (
+                        <motion.div
+                          key={permission.id.toString()}
+                          variants={badgeVariants}
+                          initial="initial"
+                          animate="animate"
+                          whileHover="hover"
+                          transition={{ delay: permIndex * 0.05 }}
+                        >
+                          <Badge variant="outline" className="text-xs">
+                            {permission.name}{" "}
+                            {/* 假设 Permission 类型有 name 字段 */}
+                          </Badge>
+                        </motion.div>
+                      ))}
+                    {role.permissions.length > 3 && (
+                      <motion.div
+                        variants={badgeVariants}
+                        initial="initial"
+                        animate="animate"
+                        whileHover="hover"
+                        transition={{ delay: 0.15 }}
+                      >
+                        <Badge variant="outline" className="text-xs">
+                          +{role.permissions.length - 3}
+                        </Badge>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* 创建时间和更新时间 */}
+                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>创建于: {formatDateOnly(role.createdAt)}</span>
+                      {role.updatedAt && role.updatedAt !== role.createdAt && (
+                        <span>更新于: {formatDateOnly(role.updatedAt)}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* 权限管理对话框 */}
       <Dialog
         open={showPermissionsDialog}
         onOpenChange={setShowPermissionsDialog}
       >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto sm:max-w-[95vw] md:max-w-4xl lg:max-w-6xl">
+        <DialogContent className="role-permissions-scrollbar max-w-6xl max-h-[90vh] overflow-y-auto sm:max-w-[95vw] md:max-w-4xl lg:max-w-6xl">
           <DialogHeader>
             <DialogTitle>权限管理</DialogTitle>
             <DialogDescription>
@@ -383,6 +438,6 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
           </CardContent>
         </Card>
       )}
-    </div>
+    </motion.div>
   );
 }

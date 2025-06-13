@@ -392,3 +392,240 @@
     gap: 20px;
   }
 }
+
+/* 权限管理专用样式 */
+.role-permissions-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.4) transparent;
+}
+
+.role-permissions-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.role-permissions-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 3px;
+}
+
+.role-permissions-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.role-permissions-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+}
+
+.role-permissions-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 角色卡片增强样式 */
+.role-card-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background: hsl(var(--card));
+  border: 1.5px solid var(--admin-border);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.role-card-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary) / 0.8) 50%,
+    hsl(var(--primary)) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.role-card-enhanced:hover::before {
+  opacity: 1;
+}
+
+.role-card-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  border-color: var(--admin-border-hover);
+}
+
+.role-card-enhanced.selected {
+  border-color: var(--admin-border-selected);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.role-card-enhanced.selected::before {
+  opacity: 1;
+}
+
+/* 权限项增强样式 */
+.permission-item-enhanced {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  border-radius: calc(var(--radius) + 1px);
+  background: hsl(var(--card));
+  border: 1.5px solid var(--admin-border);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.permission-item-enhanced:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  border-color: var(--admin-border-hover);
+}
+
+.permission-item-enhanced.selected {
+  background: rgba(55, 65, 81, 0.05);
+  border-color: var(--admin-border-selected);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.permission-item-enhanced .permission-icon {
+  transition: all 0.2s ease;
+}
+
+.permission-item-enhanced:hover .permission-icon {
+  transform: scale(1.05);
+}
+
+.permission-item-enhanced.selected .permission-icon {
+  transform: scale(1.1);
+}
+
+/* 权限分组标题样式 */
+.permission-group-header {
+  position: relative;
+  padding: 16px 0;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  margin-bottom: 16px;
+}
+
+.permission-group-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: hsl(var(--primary));
+  border-radius: 1px;
+}
+
+/* 对话框内容优化 */
+.role-permissions-dialog {
+  max-height: 85vh;
+}
+
+.role-permissions-dialog .dialog-content {
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+/* Badge 增强样式 */
+.role-badge-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+.role-badge-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.role-badge-enhanced:hover::before {
+  left: 100%;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .role-card-enhanced {
+    margin-bottom: 12px;
+  }
+
+  .permission-item-enhanced {
+    padding: 12px;
+  }
+
+  .role-permissions-dialog {
+    max-height: 90vh;
+    margin: 8px;
+  }
+
+  .permission-group-header {
+    padding: 12px 0;
+    margin-bottom: 12px;
+  }
+}
+
+/* 深色模式优化 - 使用统一的边框变量系统 */
+.dark .role-card-enhanced {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .role-card-enhanced:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.dark .permission-item-enhanced {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark .permission-item-enhanced:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* 加载状态优化 */
+.role-skeleton-enhanced {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
