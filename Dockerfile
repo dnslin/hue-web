@@ -1,22 +1,23 @@
-# ---- 基础依赖阶段 ----
-# 使用官方 Node.js 20 Alpine 镜像作为基础
-FROM node:20-alpine AS deps
-# 设置工作目录
-WORKDIR /app
-
-# 安装 pnpm 包管理器
+# ---- 基础镜像阶段 ----
+# 定义一个包含 pnpm 的基础镜像，供所有后续阶段使用
+FROM node:20-alpine as base
+# 全局安装 pnpm
 RUN npm install -g pnpm
 
-# 复制 package.json 和 pnpm-lock.yaml 到工作目录
-# 使用通配符以兼容 pnpm-lock.yaml 可能不存在的情况
+# ---- 基础依赖阶段 ----
+# 从 base 镜像开始，它已经包含了 pnpm
+FROM base AS deps
+WORKDIR /app
+
+# 复制依赖描述文件
 COPY package.json pnpm-lock.yaml* ./
 
-# 使用 pnpm 安装项目依赖，--frozen-lockfile 确保使用锁定的版本
+# 安装项目依赖
 RUN pnpm install --frozen-lockfile
 
 # ---- 构建阶段 ----
-# 使用相同的 Node.js 镜像进行构建
-FROM node:20-alpine AS builder
+# 从 base 镜像开始
+FROM base AS builder
 WORKDIR /app
 
 # 从 'deps' 阶段复制已安装的依赖
@@ -28,11 +29,10 @@ COPY . .
 RUN pnpm build
 
 # ---- 生产镜像阶段 ----
-# 使用轻量的 Node.js 镜像作为最终运行环境
-FROM node:20-alpine AS runner
+# 从 base 镜像开始
+FROM base AS runner
 WORKDIR /app
 
-# 设置环境变量为生产模式
 ENV NODE_ENV=production
 
 # 从 'builder' 阶段复制构建产物和必要的生产依赖
