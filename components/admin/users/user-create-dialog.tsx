@@ -32,14 +32,14 @@ interface CreateUserForm {
   username: string;
   email: string;
   password: string;
-  role_id: number;
+  roleId: number;
 }
 
 interface CreateUserFormErrors {
   username?: string;
   email?: string;
   password?: string;
-  role_id?: string;
+  roleId?: string;
 }
 
 export function UserCreateDialog({ children }: UserCreateDialogProps) {
@@ -48,7 +48,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
     username: "",
     email: "",
     password: "",
-    role_id: ROLE_ID_MAP[UserRole.USER], // 默认设置为user角色 (ID: 2)
+    roleId: ROLE_ID_MAP[UserRole.USER], // 默认设置为user角色 (ID: 2)
   });
   const [errors, setErrors] = useState<CreateUserFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -87,8 +87,8 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
     }
 
     // 角色验证
-    if (!form.role_id) {
-      newErrors.role_id = "请选择用户角色";
+    if (!form.roleId) {
+      newErrors.roleId = "请选择用户角色";
     }
 
     setErrors(newErrors);
@@ -117,7 +117,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
       username: "",
       email: "",
       password: "",
-      role_id: ROLE_ID_MAP[UserRole.USER], // 重置时也设置默认角色
+      roleId: ROLE_ID_MAP[UserRole.USER], // 重置时也设置默认角色
     });
     setErrors({});
     setShowPassword(false); // 重置密码显示状态
@@ -138,7 +138,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
       username: form.username,
       email: form.email,
       password: form.password,
-      role_id: form.role_id,
+      roleId: form.roleId,
     };
 
     const result = await createUser(userData);
@@ -288,22 +288,22 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
 
             {/* 角色选择 */}
             <div
-              className={`space-y-2 ${errors.role_id ? "border-red-500" : ""}`}
+              className={`space-y-2 ${errors.roleId ? "border-red-500" : ""}`}
             >
               <RoleSelect
-                value={form.role_id}
+                value={form.roleId}
                 onValueChange={(roleId) =>
-                  setForm({ ...form, role_id: roleId })
+                  setForm({ ...form, roleId: roleId })
                 }
                 label="用户角色"
                 placeholder="请选择角色"
                 required
                 portalContainer={dialogContentRef.current}
               />
-              {errors.role_id && (
-                <p className="text-sm text-red-500">{errors.role_id}</p>
+              {errors.roleId && (
+                <p className="text-sm text-red-500">{errors.roleId}</p>
               )}
-              {form.role_id === ROLE_ID_MAP[UserRole.USER] && (
+              {form.roleId === ROLE_ID_MAP[UserRole.USER] && (
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   默认选择普通用户角色，可根据需要修改
                 </p>
