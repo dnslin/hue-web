@@ -115,7 +115,7 @@ export const useRoleStore = create<RoleStoreState>()(
         try {
           const response = await cacheManager.getOrSet(
             cacheKey,
-            () => getRolesAction({ page, pageSize }),
+            () => getRolesAction({ page, page_size: pageSize }),
             { ttl: 5 * 60 * 1000, storage: "memory" }
           );
 
@@ -254,16 +254,14 @@ export const useRoleStore = create<RoleStoreState>()(
         set({ isSubmitting: true, error: null });
         try {
           const response = await deleteRoleAction(id);
-          if (
-            !("code" in response) ||
-            (response.code >= 200 && response.code < 300)
-          ) {
+          if (response.code >= 200 && response.code < 300) {
             showToast.success("角色删除成功");
             cacheUtils.clearRoleCache(); // Invalidate cache
+            // Refresh list to reflect deletion
             await get().fetchRoles(
               get().pagination.page,
               get().pagination.pageSize
-            ); // Refresh list
+            );
             set((state) => ({
               selectedRole:
                 state.selectedRole?.id === id ? null : state.selectedRole,
@@ -338,7 +336,8 @@ export const useRoleStore = create<RoleStoreState>()(
         try {
           const response = await cacheManager.getOrSet(
             cacheKey,
-            () => getPermissionsAction({ groupName, pageSize: 1000 }),
+            () =>
+              getPermissionsAction({ group_name: groupName, page_size: 1000 }),
             { ttl: 5 * 60 * 1000, storage: "memory" }
           );
 
@@ -373,21 +372,11 @@ export const useRoleStore = create<RoleStoreState>()(
             roleId,
             permissionIds
           );
-          if ("data" in response && response.data) {
-            const updatedRole = (response as SuccessResponse<Role>)
-              .data as Role;
+          if (response.code >= 200 && response.code < 300) {
             showToast.success("权限同步成功");
             cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
-            set((state) => ({
-              roles: state.roles.map((r) =>
-                r.id === roleId ? updatedRole : r
-              ),
-              selectedRole:
-                state.selectedRole?.id === roleId
-                  ? updatedRole
-                  : state.selectedRole,
-              isSubmitting: false,
-            }));
+            const updatedRole = await get().fetchRoleById(roleId); // Re-fetch
+            set({ isSubmitting: false });
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
@@ -414,21 +403,11 @@ export const useRoleStore = create<RoleStoreState>()(
             roleId,
             permissionId
           );
-          if ("data" in response && response.data) {
-            const updatedRole = (response as SuccessResponse<Role>)
-              .data as Role;
+          if (response.code >= 200 && response.code < 300) {
             showToast.success("分配权限成功");
             cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
-            set((state) => ({
-              roles: state.roles.map((r) =>
-                r.id === roleId ? updatedRole : r
-              ),
-              selectedRole:
-                state.selectedRole?.id === roleId
-                  ? updatedRole
-                  : state.selectedRole,
-              isSubmitting: false,
-            }));
+            const updatedRole = await get().fetchRoleById(roleId); // Re-fetch
+            set({ isSubmitting: false });
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
@@ -455,32 +434,12 @@ export const useRoleStore = create<RoleStoreState>()(
             roleId,
             permissionId
           );
-          if (
-            !("code" in response) ||
-            (response.code >= 200 && response.code < 300)
-          ) {
+          if (response.code >= 200 && response.code < 300) {
             showToast.success("移除权限成功");
             cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
-            // Successfully removed, now fetch the updated role to reflect changes
-            const updatedRole = await get().fetchRoleById(roleId);
-            if (updatedRole) {
-              set((state) => ({
-                roles: state.roles.map((r) =>
-                  r.id === roleId ? updatedRole : r
-                ),
-                selectedRole:
-                  state.selectedRole?.id === roleId
-                    ? updatedRole
-                    : state.selectedRole,
-                isSubmitting: false,
-              }));
-            } else {
-              // Fallback: refresh all roles if fetching single role fails
-              await get().fetchRoles(
-                get().pagination.page,
-                get().pagination.pageSize
-              );
-            }
+            // Re-fetch the role to get updated permissions.
+            // fetchRoleById will handle state updates internally.
+            await get().fetchRoleById(roleId);
             set({ isSubmitting: false });
             return true;
           } else {
