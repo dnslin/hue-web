@@ -90,18 +90,39 @@ const initialState = {
 // Helper to group permissions by group_name
 const groupPermissions = (permissions: Permission[]): PermissionGroupFE[] => {
   const groups: Record<string, PermissionGroupFE> = {};
-  permissions.forEach((permission) => {
+  permissions.map(sanitizePermission).forEach((permission) => {
     // 使用蛇形命名的 group_name
     if (!groups[permission.group_name]) {
       groups[permission.group_name] = {
         name: permission.group_name,
-        description: permission.description, // Or a predefined description for the group
+        description: permission.description || "", // Or a predefined description for the group
         permissions: [],
       };
     }
     groups[permission.group_name].permissions.push(permission);
   });
   return Object.values(groups);
+};
+
+// Helper to ensure role.permissions is always an array
+const sanitizeRole = (role: Role): Role => {
+  if (!role) return role;
+  return {
+    ...role,
+    permissions: Array.isArray(role.permissions)
+      ? role.permissions.map(sanitizePermission)
+      : [],
+  };
+};
+
+const sanitizePermission = (permission: Permission): Permission => {
+  if (!permission) return permission;
+  return {
+    ...permission,
+    name: permission.name || "Unnamed Permission",
+    group_name: permission.group_name || "Default",
+    description: permission.description || "",
+  };
 };
 
 export const useRoleStore = create<RoleStoreState>()(
@@ -123,7 +144,7 @@ export const useRoleStore = create<RoleStoreState>()(
             const paginatedResponse =
               response as unknown as PaginatedResponse<Role>;
             set({
-              roles: paginatedResponse.data,
+              roles: paginatedResponse.data.map(sanitizeRole),
               pagination: {
                 page: paginatedResponse.meta.page,
                 pageSize: paginatedResponse.meta.pageSize,
@@ -157,13 +178,16 @@ export const useRoleStore = create<RoleStoreState>()(
 
           if ("data" in response && response.data) {
             const role = (response as SuccessResponse<Role>).data as Role;
+            const sanitizedRole = sanitizeRole(role);
             set((state) => ({
-              roles: state.roles.map((r) => (r.id === id ? role : r)),
+              roles: state.roles.map((r) => (r.id === id ? sanitizedRole : r)),
               selectedRole:
-                state.selectedRole?.id === id ? role : state.selectedRole,
+                state.selectedRole?.id === id
+                  ? sanitizedRole
+                  : state.selectedRole,
               isLoadingRoles: false,
             }));
-            return role;
+            return sanitizedRole;
           } else {
             const errorResponse = response as ErrorResponse;
             showToast.apiError(errorResponse, "获取角色详情失败");
@@ -195,7 +219,7 @@ export const useRoleStore = create<RoleStoreState>()(
               get().pagination.pageSize
             ); // Refresh list
             set({ isSubmitting: false });
-            return newRole;
+            return sanitizeRole(newRole);
           } else {
             const errorResponse = response as ErrorResponse;
             showToast.apiError(errorResponse, "创建角色失败");
@@ -221,17 +245,18 @@ export const useRoleStore = create<RoleStoreState>()(
           if ("data" in response && response.data) {
             const updatedRole = (response as SuccessResponse<Role>)
               .data as Role;
+            const sanitizedRole = sanitizeRole(updatedRole);
             showToast.success("角色更新成功");
             cacheUtils.clearRoleCache(); // Invalidate cache for list and detail
             set((state) => ({
-              roles: state.roles.map((r) => (r.id === id ? updatedRole : r)),
+              roles: state.roles.map((r) => (r.id === id ? sanitizedRole : r)),
               selectedRole:
                 state.selectedRole?.id === id
-                  ? updatedRole
+                  ? sanitizedRole
                   : state.selectedRole,
               isSubmitting: false,
             }));
-            return updatedRole;
+            return sanitizedRole;
           } else {
             const errorResponse = response as ErrorResponse;
             showToast.apiError(errorResponse, "更新角色失败");
@@ -342,8 +367,9 @@ export const useRoleStore = create<RoleStoreState>()(
           );
 
           if ("data" in response && response.data) {
-            const permissions = (response as PaginatedResponse<Permission>)
-              .data;
+            const permissions = (
+              response as PaginatedResponse<Permission>
+            ).data.map(sanitizePermission);
             set({
               permissions,
               permissionGroups: groupPermissions(permissions),
