@@ -1,0 +1,42 @@
+# GitHub Actions 工作流名称
+name: Docker Image CI for Dev Branch
+
+# 工作流触发条件
+on:
+  push:
+    branches:
+      - "dev" # 仅在代码推送到 'dev' 分支时触发
+
+# 定义工作流中的任务
+jobs:
+  build_and_push:
+    # 指定运行此任务的虚拟机环境
+    runs-on: ubuntu-latest
+    # 为此任务中的 GITHUB_TOKEN 设置权限
+    permissions:
+      contents: read # 允许检出代码
+      packages: write # 允许推送到 GitHub Packages
+
+    # 定义任务中的步骤
+    steps:
+      # 第一步：检出仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 第二步：登录到 GitHub Container Registry (ghcr.io)
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} # 使用触发工作流的用户名
+          password: ${{ secrets.GITHUB_TOKEN }} # 使用自动生成的 GITHUB_TOKEN 进行认证
+
+      # 第三步：构建并推送 Docker 镜像
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Docker 构建上下文为项目根目录
+          push: true # 构建后立即推送
+          tags: | # 为镜像设置多个标签
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest-dev
