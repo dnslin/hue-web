@@ -1,16 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Plus,
-  Shield,
-  Users,
-  Edit,
-  Trash2,
-  Copy,
-  MoreHorizontal,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Shield, Edit, Trash2, Copy, MoreHorizontal } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,11 +84,9 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
     if (storeSelectedRoleForDialog?.id === updatedRole.id) {
       storeSetSelectedRole(updatedRole); // 更新对话框中使用的角色信息
     }
-    // 如果 selectedRoleForDisplay 也需要更新
     if (selectedRoleForDisplay?.id === updatedRole.id) {
       setSelectedRoleForDisplay(updatedRole);
     }
-    // fetchRoles(); // 可选：强制刷新列表，但store内部通常会处理
   };
 
   // 处理角色删除
@@ -106,11 +96,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
       setShowDeleteDialog(null);
       if (selectedRoleForDisplay?.id === roleId) {
         setSelectedRoleForDisplay(null);
-        storeSetSelectedRole(null); // 如果删除的是当前选中的角色，也清空store中的
+        storeSetSelectedRole(null);
       }
-      // 列表刷新已在 storeDeleteRole 内部处理
-    } else {
-      // 错误已在store中处理并显示toast，这里无需额外处理
     }
   };
 
@@ -121,8 +108,6 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
     if (duplicatedRole) {
       // 列表刷新已在 storeDuplicateRole 内部处理
       console.log("角色复制成功:", duplicatedRole);
-    } else {
-      // 错误已在store中处理并显示toast，这里无需额外处理
     }
   };
 
@@ -303,23 +288,9 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                     </PopoverContent>
                   </Popover>
                 </div>
-                {/* {role.description && ( // Role类型没有description属性，暂时移除
-                <p className="text-sm text-muted-foreground">
-                  {role.description}
-                </p>
-              )} */}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {/* 用户数量 - Role类型没有user_count属性，暂时移除或后续通过其他方式获取
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {role.user_count} 个用户
-                  </span>
-                </div>
-                */}
-
                   {/* 权限数量 */}
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-muted-foreground" />
