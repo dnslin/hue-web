@@ -400,8 +400,8 @@ export const useRoleStore = create<RoleStoreState>()(
           );
           if (response.code >= 200 && response.code < 300) {
             showToast.success("权限同步成功");
-            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
-            const updatedRole = await get().fetchRoleById(roleId); // Re-fetch
+            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId));
+            const updatedRole = await get().fetchRoleById(roleId);
             set({ isSubmitting: false });
             return updatedRole;
           } else {
@@ -431,8 +431,8 @@ export const useRoleStore = create<RoleStoreState>()(
           );
           if (response.code >= 200 && response.code < 300) {
             showToast.success("分配权限成功");
-            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
-            const updatedRole = await get().fetchRoleById(roleId); // Re-fetch
+            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId));
+            const updatedRole = await get().fetchRoleById(roleId);
             set({ isSubmitting: false });
             return updatedRole;
           } else {
@@ -462,9 +462,7 @@ export const useRoleStore = create<RoleStoreState>()(
           );
           if (response.code >= 200 && response.code < 300) {
             showToast.success("移除权限成功");
-            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
-            // Re-fetch the role to get updated permissions.
-            // fetchRoleById will handle state updates internally.
+            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId));
             await get().fetchRoleById(roleId);
             set({ isSubmitting: false });
             return true;
