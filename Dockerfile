@@ -12,7 +12,7 @@ WORKDIR /app
 # 复制依赖描述文件
 COPY package.json pnpm-lock.yaml* ./
 
-# 安装项目依赖
+# 安装所有依赖（包括 devDependencies 用于构建）
 RUN pnpm install --frozen-lockfile
 
 # ---- 构建阶段 ----
@@ -28,18 +28,22 @@ COPY . .
 # 执行 Next.js 构建命令
 RUN pnpm build
 
-# ---- 生产镜像阶段 ----
+# ---- 生产镜像阶段 (优化后) ----
 # 从 base 镜像开始
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# 从 'builder' 阶段复制构建产物和必要的生产依赖
+# 复制 package.json 和 lockfile
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml* ./
+
+# 只安装生产依赖，大大减小 node_modules 体积
+RUN pnpm install --prod --frozen-lockfile
+
+# 从 'builder' 阶段只复制构建产物
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 
 # 暴露 Next.js 应用的默认端口 3000
 EXPOSE 3000
