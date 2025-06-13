@@ -33,6 +33,8 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+# 设置 HOSTNAME 为 0.0.0.0，以确保 Next.js 服务器能正确绑定到所有网络接口
+ENV HOSTNAME="0.0.0.0"
 # 如果需要，可以在这里设置其他生产环境变量
 # ENV NEXT_PUBLIC_API_BASE_URL=...
 
