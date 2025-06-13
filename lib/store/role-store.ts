@@ -89,19 +89,45 @@ const initialState = {
 
 // Helper to group permissions by group_name
 const groupPermissions = (permissions: Permission[]): PermissionGroupFE[] => {
+  console.log("🔍 权限分组处理开始，权限数量:", permissions.length);
+
   const groups: Record<string, PermissionGroupFE> = {};
-  permissions.map(sanitizePermission).forEach((permission) => {
-    // 使用蛇形命名的 group_name
-    if (!groups[permission.group_name]) {
-      groups[permission.group_name] = {
-        name: permission.group_name,
-        description: permission.description || "", // Or a predefined description for the group
+  const sanitizedPermissions = permissions.map(sanitizePermission);
+
+  sanitizedPermissions.forEach((permission, index) => {
+    console.log(`📋 处理权限 ${index + 1}:`, {
+      id: permission.id,
+      name: permission.name,
+      groupName: permission.groupName,
+      description: permission.description,
+    });
+
+    // 使用驼峰命名的 groupName
+    const groupName = permission.groupName || "Default";
+
+    if (!groups[groupName]) {
+      console.log(`🆕 创建新分组: ${groupName}`);
+      groups[groupName] = {
+        name: groupName,
+        description: `${groupName}相关权限`, // 动态生成描述，不使用硬编码
         permissions: [],
       };
     }
-    groups[permission.group_name].permissions.push(permission);
+    groups[groupName].permissions.push(permission);
   });
-  return Object.values(groups);
+
+  const result = Object.values(groups);
+  console.log("✅ 权限分组完成，分组数量:", result.length);
+  console.log(
+    "📊 分组详情:",
+    result.map((g) => ({
+      name: g.name,
+      count: g.permissions.length,
+      permissions: g.permissions.map((p) => p.name),
+    }))
+  );
+
+  return result;
 };
 
 // Helper to ensure role.permissions is always an array
@@ -120,7 +146,7 @@ const sanitizePermission = (permission: Permission): Permission => {
   return {
     ...permission,
     name: permission.name || "Unnamed Permission",
-    group_name: permission.group_name || "Default",
+    groupName: permission.groupName || "Default",
     description: permission.description || "",
   };
 };

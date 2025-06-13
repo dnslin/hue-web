@@ -49,7 +49,7 @@ export function UserActions({ user }: UserActionsProps) {
   const [editForm, setEditForm] = useState({
     username: user.username,
     email: user.email,
-    role_id: user.role_id,
+    roleId: user.roleId,
   });
 
   const {
@@ -157,7 +157,7 @@ export function UserActions({ user }: UserActionsProps) {
     const updateData: UserUpdateRequest = {
       username: editForm.username,
       email: editForm.email,
-      role_id: editForm.role_id,
+      roleId: editForm.roleId,
     };
 
     const result = await updateUser(user.id, updateData);
@@ -489,11 +489,11 @@ export function UserActions({ user }: UserActionsProps) {
                     />
                   </div>
                   <RoleSelect
-                    value={editForm.role_id}
+                    value={editForm.roleId}
                     onValueChange={(roleId) =>
                       setEditForm({
                         ...editForm,
-                        role_id: roleId,
+                        roleId: roleId,
                       })
                     }
                     label="用户角色"

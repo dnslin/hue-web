@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Role, Permission } from "@/lib/types/roles"; 
+import { Role, Permission } from "@/lib/types/roles";
 import { useRoleStore, PermissionGroupFE } from "@/lib/store/role-store";
 interface RolePermissionsProps {
   role: Role;
@@ -25,13 +25,13 @@ interface RolePermissionsProps {
 
 export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   const {
-    permissions, 
-    permissionGroups: storePermissionGroups, 
+    permissions,
+    permissionGroups: storePermissionGroups,
     isLoadingPermissions,
     isSubmitting,
     error,
     fetchPermissions,
-    syncPermissions, 
+    syncPermissions,
     // assignPermission, // Individual assignment might not be needed if using sync
     // removePermission, // Individual removal might not be needed if using sync
   } = useRoleStore();
@@ -249,10 +249,10 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                     {group.description}
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {group.permissions.map((permission) => {
                       // permission.id is number
-                      const Icon = getPermissionIcon(permission.group_name); // 修复：使用 group_name
+                      const Icon = getPermissionIcon(permission.groupName);
                       const isSelected = selectedPermissionIds.has(
                         permission.id
                       );
@@ -261,7 +261,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                         <div
                           key={permission.id} // ID is number
                           className={`
-                            p-4 rounded-lg border cursor-pointer transition-all
+                            p-3 sm:p-4 rounded-lg border cursor-pointer transition-all
                             ${
                               isSelected
                                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
@@ -270,10 +270,10 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                           `}
                           onClick={() => togglePermission(permission.id)}
                         >
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-start gap-2 sm:gap-3">
                             <div
                               className={`
-                              p-2 rounded-md transition-colors
+                              p-1.5 sm:p-2 rounded-md transition-colors flex-shrink-0
                               ${
                                 isSelected
                                   ? "bg-primary text-primary-foreground"
@@ -281,27 +281,23 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                               }
                             `}
                             >
-                              <Icon className="h-4 w-4" />
+                              <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <h4 className="font-medium text-sm">
+                                <h4 className="font-medium text-xs sm:text-sm truncate">
                                   {permission.name}
                                 </h4>
                                 {isSelected && (
-                                  <Check className="h-4 w-4 text-primary" />
+                                  <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                 {permission.description}
                               </p>
-                              <div className="flex items-center gap-1 mt-2">
+                              <div className="flex flex-wrap items-center gap-1 mt-2">
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.group_name || "N/A"}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                  {permission.name}{" "}
-                                  {/* Display permission name as action-like identifier */}
+                                  {permission.groupName || "N/A"}
                                 </Badge>
                               </div>
                             </div>
@@ -329,30 +325,30 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                 <p>暂未选择任何权限</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {permissions // Iterate over all fetched permissions
                   .filter((p) => selectedPermissionIds.has(p.id)) // Filter by selected IDs
                   .map((permission) => {
-                    const Icon = getPermissionIcon(permission.group_name); // 修复：使用 group_name
+                    const Icon = getPermissionIcon(permission.groupName); // 修复：使用 group_name
 
                     return (
                       <div
                         key={permission.id} // ID is number
-                        className="p-4 rounded-lg border border-primary bg-primary/5 ring-1 ring-primary/20"
+                        className="p-3 sm:p-4 rounded-lg border border-primary bg-primary/5 ring-1 ring-primary/20"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-md bg-primary text-primary-foreground">
-                            <Icon className="h-4 w-4" />
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <div className="p-1.5 sm:p-2 rounded-md bg-primary text-primary-foreground flex-shrink-0">
+                            <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-sm">
+                              <h4 className="font-medium text-xs sm:text-sm truncate">
                                 {permission.name}
                               </h4>
                               <Button
                                 variant="ghost"
                                 size="icon" // Make it an icon button
-                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-muted-foreground hover:text-destructive flex-shrink-0"
                                 onClick={() => togglePermission(permission.id)} // ID is number
                               >
                                 <X className="h-3 w-3" />
@@ -360,17 +356,14 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                               </Button>
                             </div>
                             <p
-                              className="text-xs text-muted-foreground mt-1 truncate"
+                              className="text-xs text-muted-foreground mt-1 line-clamp-2"
                               title={permission.description}
                             >
                               {permission.description}
                             </p>
-                            <div className="flex items-center gap-1 mt-2">
+                            <div className="flex flex-wrap items-center gap-1 mt-2">
                               <Badge variant="outline" className="text-xs">
-                                {permission.group_name || "N/A"}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {permission.name}
+                                {permission.groupName || "N/A"}
                               </Badge>
                             </div>
                           </div>

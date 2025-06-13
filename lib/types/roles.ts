@@ -1,14 +1,14 @@
 // lib/types/roles.ts
 // 角色和权限相关类型定义
 
-// 前端使用的权限类型（小写字段）
+// 前端使用的权限类型（驼峰命名，与 apiService 转换后的格式一致）
 export interface Permission {
   id: number;
   name: string;
   description: string;
-  group_name: string; // 权限分组名称
-  created_at: string;
-  updated_at: string;
+  groupName: string; // 权限分组名称
+  createdAt: string;
+  updatedAt: string;
 }
 
 // 前端使用的角色类型
@@ -16,8 +16,8 @@ export interface Role {
   id: number;
   name: string;
   alias?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   permissions: Permission[];
 }
 

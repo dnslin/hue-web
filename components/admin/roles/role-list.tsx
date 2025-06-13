@@ -31,6 +31,7 @@ import {
 import { RolePermissions } from "./role-permissions";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
+import { formatDateOnly } from "@/lib/utils/date-formatter";
 
 interface RoleListProps {
   onRoleSelect?: (role: Role) => void;
@@ -186,7 +187,9 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">{role.alias || role.name}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {role.alias || role.name}
+                  </CardTitle>
                 </div>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -247,7 +250,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                           <DialogHeader>
                             <DialogTitle>删除角色</DialogTitle>
                             <DialogDescription>
-                              确定要删除角色 {role.alias || role.name} ({role.name}) 吗？
+                              确定要删除角色 {role.alias || role.name} (
+                              {role.name}) 吗？
                               此操作不可撤销，已分配此角色的用户将失去相应权限。
                             </DialogDescription>
                           </DialogHeader>
@@ -299,7 +303,9 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
 
                 {/* 角色标签 */}
                 <div className="flex flex-wrap gap-1">
-                  <Badge className={getRoleColor(role.name)}>{role.alias || role.name}</Badge>
+                  <Badge className={getRoleColor(role.name)}>
+                    {role.alias || role.name}
+                  </Badge>
                   {role.permissions.slice(0, 3).map((permission) => (
                     <Badge
                       key={permission.id.toString()} // key 应该是 string 或 number
@@ -318,13 +324,11 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
 
                 {/* 创建时间 */}
                 <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
-                  创建于:{" "}
-                  {new Date(role.created_at).toLocaleDateString("zh-CN")}
+                  创建于: {formatDateOnly(role.createdAt)}
                 </div>
-                {role.updated_at && role.updated_at !== role.created_at && (
+                {role.updatedAt && role.updatedAt !== role.createdAt && (
                   <div className="text-xs text-muted-foreground">
-                    更新于:{" "}
-                    {new Date(role.updated_at).toLocaleDateString("zh-CN")}
+                    更新于: {formatDateOnly(role.updatedAt)}
                   </div>
                 )}
               </div>
@@ -338,13 +342,16 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
         open={showPermissionsDialog}
         onOpenChange={setShowPermissionsDialog}
       >
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto sm:max-w-[95vw] md:max-w-4xl lg:max-w-6xl">
           <DialogHeader>
             <DialogTitle>权限管理</DialogTitle>
             <DialogDescription>
               为角色{" "}
               {storeSelectedRoleForDialog
-                ? `"${storeSelectedRoleForDialog.alias || storeSelectedRoleForDialog.name}"`
+                ? `"${
+                    storeSelectedRoleForDialog.alias ||
+                    storeSelectedRoleForDialog.name
+                  }"`
                 : ""}{" "}
               分配和管理权限
             </DialogDescription>
