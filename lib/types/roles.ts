@@ -6,9 +6,9 @@ export interface Permission {
   id: number;
   name: string;
   description: string;
-  groupName: string; // 权限分组名称
-  createdAt: string;
-  updatedAt: string;
+  group_name: string; // 权限分组名称
+  created_at: string;
+  updated_at: string;
 }
 
 // 前端使用的角色类型
@@ -16,8 +16,8 @@ export interface Role {
   id: number;
   name: string;
   alias?: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
   permissions: Permission[];
 }
 

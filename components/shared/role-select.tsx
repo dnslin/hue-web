@@ -52,7 +52,7 @@ export function RoleSelect({
   const getSelectedRoleName = () => {
     if (!value) return undefined;
     const selectedRole = roles.find((role) => role.id === value);
-    return selectedRole?.name;
+    return selectedRole?.alias || selectedRole?.name;
   };
 
   if (isLoadingRoles) {
@@ -137,9 +137,9 @@ export function RoleSelect({
                   </span>
                   <SelectPrimitive.ItemText>
                     <div className="flex items-center gap-2">
-                      <span>{role.name}</span>
+                      <span>{role.alias || role.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        (ID: {role.id})
+                        ({role.name})
                       </span>
                     </div>
                   </SelectPrimitive.ItemText>

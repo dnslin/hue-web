@@ -29,7 +29,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { RolePermissions } from "./role-permissions";
-import { Role } from "@/lib/types/user";
+import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
 
 interface RoleListProps {
@@ -186,7 +186,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">{role.name}</CardTitle>
+                  <CardTitle className="text-lg">{role.alias || role.name}</CardTitle>
                 </div>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -247,7 +247,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                           <DialogHeader>
                             <DialogTitle>删除角色</DialogTitle>
                             <DialogDescription>
-                              确定要删除角色 {role.name} 吗？
+                              确定要删除角色 {role.alias || role.name} ({role.name}) 吗？
                               此操作不可撤销，已分配此角色的用户将失去相应权限。
                             </DialogDescription>
                           </DialogHeader>
@@ -299,7 +299,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
 
                 {/* 角色标签 */}
                 <div className="flex flex-wrap gap-1">
-                  <Badge className={getRoleColor(role.name)}>{role.name}</Badge>
+                  <Badge className={getRoleColor(role.name)}>{role.alias || role.name}</Badge>
                   {role.permissions.slice(0, 3).map((permission) => (
                     <Badge
                       key={permission.id.toString()} // key 应该是 string 或 number
@@ -343,8 +343,8 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
             <DialogTitle>权限管理</DialogTitle>
             <DialogDescription>
               为角色{" "}
-              {storeSelectedRoleForDialog?.name
-                ? `"${storeSelectedRoleForDialog.name}"`
+              {storeSelectedRoleForDialog
+                ? `"${storeSelectedRoleForDialog.alias || storeSelectedRoleForDialog.name}"`
                 : ""}{" "}
               分配和管理权限
             </DialogDescription>

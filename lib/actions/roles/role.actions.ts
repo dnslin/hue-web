@@ -28,7 +28,7 @@ const PERMISSIONS_API_BASE = "/permissions";
  */
 export async function getRolesAction(params?: {
   page?: number;
-  pageSize?: number;
+  page_size?: number;
 }): Promise<PaginatedResponse<Role> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
@@ -91,9 +91,9 @@ export async function getRoleByIdAction(
  * swagger 定义请求体是 dtos.RoleCreateDTO { name: string }
  * swagger 定义成功响应是 SuccessResponse，其 data 是 Role
  */
-export async function createRoleAction(roleData: {
-  name: string;
-}): Promise<SuccessResponse<Role> | ErrorResponse> {
+export async function createRoleAction(
+  roleData: CreateRoleRequest
+): Promise<SuccessResponse<Role> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.post<SuccessResponse<Role>>( // response is AxiosResponse<SuccessResponse<Role>>
@@ -126,7 +126,7 @@ export async function createRoleAction(roleData: {
  */
 export async function updateRoleAction(
   id: number,
-  roleData: { name: string }
+  roleData: UpdateRoleRequest
 ): Promise<SuccessResponse<Role> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
@@ -191,8 +191,8 @@ export async function deleteRoleAction(
  */
 export async function getPermissionsAction(params?: {
   page?: number;
-  pageSize?: number;
-  groupName?: string;
+  page_size?: number;
+  group_name?: string;
 }): Promise<PaginatedResponse<Permission> | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
@@ -229,11 +229,11 @@ export async function getPermissionsAction(params?: {
 export async function syncRolePermissionsAction(
   id: number,
   permissionIds: number[]
-): Promise<SuccessResponse<Role> | ErrorResponse> {
+): Promise<SuccessResponse | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestBody = { permissionIds: permissionIds };
-    const response = await apiService.put<SuccessResponse<Role>>( // response is AxiosResponse<SuccessResponse<Role>>
+    const requestBody = { permission_ids: permissionIds };
+    const response = await apiService.put<SuccessResponse>( // response is AxiosResponse<SuccessResponse>
       `${ROLES_API_BASE}/${id}/permissions`,
       requestBody
     );
@@ -270,13 +270,13 @@ export async function syncRolePermissionsAction(
 export async function assignPermissionToRoleAction(
   roleId: number,
   permissionId: number
-): Promise<SuccessResponse<Role> | ErrorResponse> {
+): Promise<SuccessResponse | ErrorResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
     // swagger 定义的路径是 /roles/{role_id}/permissions，方法是 POST，请求体是 dtos.AssignPermissionDTO
     // 注意：这与 PUT /roles/{id}/permissions (syncRolePermissionsAction) 不同
-    const requestBody = { permissionId: permissionId };
-    const response = await apiService.post<SuccessResponse<Role>>( // response is AxiosResponse<SuccessResponse<Role>>
+    const requestBody = { permission_id: permissionId };
+    const response = await apiService.post<SuccessResponse>( // response is AxiosResponse<SuccessResponse>
       `${ROLES_API_BASE}/${roleId}/permissions`,
       requestBody
     );

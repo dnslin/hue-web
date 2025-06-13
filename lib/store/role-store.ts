@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Role, Permission } from "@/lib/types/roles";
+import { Role, Permission } from "@/lib/types/roles"; // 统一使用 roles.ts 的类型
 import {
   PaginatedResponse,
   ErrorResponse,
   SuccessResponse,
-} from "@/lib/types/user";
+} from "@/lib/types/user"; // API响应类型保持不变
 import {
   getRolesAction,
   getRoleByIdAction,
@@ -18,6 +18,8 @@ import {
   removePermissionFromRoleAction,
 } from "@/lib/actions/roles/role.actions";
 import { handleError } from "@/lib/utils/error-handler";
+import { showToast } from "@/lib/utils/toast";
+import { cacheManager, CACHE_KEYS, cacheUtils } from "@/lib/utils/cacheManager";
 
 // 权限分组的本地类型，因为后端不直接返回这个聚合结构
 export interface PermissionGroupFE {
@@ -85,18 +87,19 @@ const initialState = {
   },
 };
 
-// Helper to group permissions by groupName
+// Helper to group permissions by group_name
 const groupPermissions = (permissions: Permission[]): PermissionGroupFE[] => {
   const groups: Record<string, PermissionGroupFE> = {};
   permissions.forEach((permission) => {
-    if (!groups[permission.groupName]) {
-      groups[permission.groupName] = {
-        name: permission.groupName,
+    // 使用蛇形命名的 group_name
+    if (!groups[permission.group_name]) {
+      groups[permission.group_name] = {
+        name: permission.group_name,
         description: permission.description, // Or a predefined description for the group
         permissions: [],
       };
     }
-    groups[permission.groupName].permissions.push(permission);
+    groups[permission.group_name].permissions.push(permission);
   });
   return Object.values(groups);
 };
@@ -108,8 +111,13 @@ export const useRoleStore = create<RoleStoreState>()(
 
       fetchRoles: async (page = 1, pageSize = 10) => {
         set({ isLoadingRoles: true, error: null });
+        const cacheKey = `${CACHE_KEYS.ROLES_LIST}:${page}:${pageSize}`;
         try {
-          const response = await getRolesAction({ page, pageSize });
+          const response = await cacheManager.getOrSet(
+            cacheKey,
+            () => getRolesAction({ page, pageSize }),
+            { ttl: 5 * 60 * 1000, storage: "memory" }
+          );
 
           if ("data" in response && response.data && response.meta) {
             const paginatedResponse =
@@ -126,26 +134,27 @@ export const useRoleStore = create<RoleStoreState>()(
           } else {
             const errorResponse = response as ErrorResponse;
             const errorMessage = errorResponse.message || "获取角色列表失败";
-            await handleError(new Error(errorMessage), "获取角色列表失败");
-            set({
-              error: errorMessage,
-              isLoadingRoles: false,
-            });
+            showToast.apiError(errorResponse, "获取角色列表失败");
+            set({ error: errorMessage, isLoadingRoles: false });
           }
         } catch (err: any) {
           const errorMessage = err.message || "获取角色列表时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "获取角色列表失败");
-          set({
-            error: errorMessage,
-            isLoadingRoles: false,
-          });
+          set({ error: errorMessage, isLoadingRoles: false });
         }
       },
 
       fetchRoleById: async (id) => {
         set({ isLoadingRoles: true, error: null });
+        const cacheKey = CACHE_KEYS.ROLE_DETAIL(id);
         try {
-          const response = await getRoleByIdAction(id);
+          const response = await cacheManager.getOrSet(
+            cacheKey,
+            () => getRoleByIdAction(id),
+            { ttl: 5 * 60 * 1000, storage: "memory" }
+          );
+
           if ("data" in response && response.data) {
             const role = (response as SuccessResponse<Role>).data as Role;
             set((state) => ({
@@ -157,21 +166,18 @@ export const useRoleStore = create<RoleStoreState>()(
             return role;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "获取角色详情失败";
-            await handleError(new Error(errorMessage), "获取角色详情失败");
+            showToast.apiError(errorResponse, "获取角色详情失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "获取角色详情失败",
               isLoadingRoles: false,
             });
             return null;
           }
         } catch (err: any) {
           const errorMessage = err.message || "获取角色详情时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "获取角色详情失败");
-          set({
-            error: errorMessage,
-            isLoadingRoles: false,
-          });
+          set({ error: errorMessage, isLoadingRoles: false });
           return null;
         }
       },
@@ -182,32 +188,28 @@ export const useRoleStore = create<RoleStoreState>()(
           const response = await createRoleAction({ name });
           if ("data" in response && response.data) {
             const newRole = (response as SuccessResponse<Role>).data as Role;
-            set((state) => ({
-              roles: [...state.roles, newRole],
-              isSubmitting: false,
-            }));
+            showToast.success("角色创建成功");
+            cacheUtils.clearRoleCache(); // Invalidate cache
             await get().fetchRoles(
               get().pagination.page,
               get().pagination.pageSize
             ); // Refresh list
+            set({ isSubmitting: false });
             return newRole;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "创建角色失败";
-            await handleError(new Error(errorMessage), "创建角色失败");
+            showToast.apiError(errorResponse, "创建角色失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "创建角色失败",
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
           const errorMessage = err.message || "创建角色时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "创建角色失败");
-          set({
-            error: errorMessage,
-            isSubmitting: false,
-          });
+          set({ error: errorMessage, isSubmitting: false });
           return null;
         }
       },
@@ -219,6 +221,8 @@ export const useRoleStore = create<RoleStoreState>()(
           if ("data" in response && response.data) {
             const updatedRole = (response as SuccessResponse<Role>)
               .data as Role;
+            showToast.success("角色更新成功");
+            cacheUtils.clearRoleCache(); // Invalidate cache for list and detail
             set((state) => ({
               roles: state.roles.map((r) => (r.id === id ? updatedRole : r)),
               selectedRole:
@@ -230,21 +234,18 @@ export const useRoleStore = create<RoleStoreState>()(
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "更新角色失败";
-            await handleError(new Error(errorMessage), "更新角色失败");
+            showToast.apiError(errorResponse, "更新角色失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "更新角色失败",
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
           const errorMessage = err.message || "更新角色时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "更新角色失败");
-          set({
-            error: errorMessage,
-            isSubmitting: false,
-          });
+          set({ error: errorMessage, isSubmitting: false });
           return null;
         }
       },
@@ -257,52 +258,90 @@ export const useRoleStore = create<RoleStoreState>()(
             !("code" in response) ||
             (response.code >= 200 && response.code < 300)
           ) {
-            // Success has no specific data, just success code
-            set((state) => ({
-              roles: state.roles.filter((r) => r.id !== id),
-              selectedRole:
-                state.selectedRole?.id === id ? null : state.selectedRole,
-              isSubmitting: false,
-            }));
+            showToast.success("角色删除成功");
+            cacheUtils.clearRoleCache(); // Invalidate cache
             await get().fetchRoles(
               get().pagination.page,
               get().pagination.pageSize
             ); // Refresh list
+            set((state) => ({
+              selectedRole:
+                state.selectedRole?.id === id ? null : state.selectedRole,
+              isSubmitting: false,
+            }));
             return true;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "删除角色失败";
-            await handleError(new Error(errorMessage), "删除角色失败");
+            showToast.apiError(errorResponse, "删除角色失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "删除角色失败",
               isSubmitting: false,
             });
             return false;
           }
         } catch (err: any) {
           const errorMessage = err.message || "删除角色时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "删除角色失败");
-          set({
-            error: errorMessage,
-            isSubmitting: false,
-          });
+          set({ error: errorMessage, isSubmitting: false });
           return false;
         }
       },
 
-      // TODO: Implement duplicateRole if needed, potentially by:
-      // 1. Fetching the role to duplicate (getRoleByIdAction)
-      // 2. Creating a new role with a modified name and the fetched permissions (createRoleAction, then syncPermissionsAction)
+      duplicateRole: async (roleId, newNameSuffix = "的副本") => {
+        set({ isSubmitting: true, error: null });
+        const { createRole, syncPermissions, fetchRoles, pagination } = get();
+        try {
+          // 1. 获取原始角色信息
+          const originalRole = await get().fetchRoleById(roleId);
+          if (!originalRole) {
+            throw new Error("未找到要复制的原始角色。");
+          }
+
+          // 2. 创建新角色
+          const newName = `${
+            originalRole.alias || originalRole.name
+          } ${newNameSuffix}`;
+          const newRole = await createRole(newName);
+
+          if (!newRole) {
+            throw new Error("创建新角色失败。");
+          }
+
+          // 3. 同步权限
+          const permissionIds = originalRole.permissions.map((p) => p.id);
+          const finalRole = await syncPermissions(newRole.id, permissionIds);
+
+          if (finalRole) {
+            showToast.success(`角色 "${newName}" 复制成功`);
+            cacheUtils.clearRoleCache();
+            await fetchRoles(pagination.page, pagination.pageSize); // 刷新列表
+            set({ isSubmitting: false });
+            return finalRole;
+          } else {
+            throw new Error("为新角色同步权限失败。");
+          }
+        } catch (err: any) {
+          const errorMessage = err.message || "复制角色时发生意外错误";
+          showToast.error(errorMessage);
+          await handleError(err, "复制角色失败");
+          set({ error: errorMessage, isSubmitting: false });
+          return null;
+        }
+      },
 
       fetchPermissions: async (groupName?: string) => {
         set({ isLoadingPermissions: true, error: null });
+        const cacheKey = groupName
+          ? `${CACHE_KEYS.PERMISSIONS_LIST}:${groupName}`
+          : CACHE_KEYS.PERMISSIONS_LIST;
         try {
-          // Fetch all pages of permissions if pagination is involved, or assume backend returns all if not paginated by default
-          // For simplicity, assuming getPermissionsAction can fetch all or by group
-          const response = await getPermissionsAction({
-            groupName: groupName,
-            pageSize: 1000,
-          }); // Fetch a large number to get all
+          const response = await cacheManager.getOrSet(
+            cacheKey,
+            () => getPermissionsAction({ groupName, pageSize: 1000 }),
+            { ttl: 5 * 60 * 1000, storage: "memory" }
+          );
+
           if ("data" in response && response.data) {
             const permissions = (response as PaginatedResponse<Permission>)
               .data;
@@ -313,20 +352,17 @@ export const useRoleStore = create<RoleStoreState>()(
             });
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "获取权限列表失败";
-            await handleError(new Error(errorMessage), "获取权限列表失败");
+            showToast.apiError(errorResponse, "获取权限列表失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "获取权限列表失败",
               isLoadingPermissions: false,
             });
           }
         } catch (err: any) {
           const errorMessage = err.message || "获取权限列表时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "获取权限列表失败");
-          set({
-            error: errorMessage,
-            isLoadingPermissions: false,
-          });
+          set({ error: errorMessage, isLoadingPermissions: false });
         }
       },
 
@@ -340,6 +376,8 @@ export const useRoleStore = create<RoleStoreState>()(
           if ("data" in response && response.data) {
             const updatedRole = (response as SuccessResponse<Role>)
               .data as Role;
+            showToast.success("权限同步成功");
+            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
             set((state) => ({
               roles: state.roles.map((r) =>
                 r.id === roleId ? updatedRole : r
@@ -353,21 +391,18 @@ export const useRoleStore = create<RoleStoreState>()(
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "同步权限失败";
-            await handleError(new Error(errorMessage), "同步权限失败");
+            showToast.apiError(errorResponse, "同步权限失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "同步权限失败",
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
           const errorMessage = err.message || "同步权限时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "同步权限失败");
-          set({
-            error: errorMessage,
-            isSubmitting: false,
-          });
+          set({ error: errorMessage, isSubmitting: false });
           return null;
         }
       },
@@ -382,6 +417,8 @@ export const useRoleStore = create<RoleStoreState>()(
           if ("data" in response && response.data) {
             const updatedRole = (response as SuccessResponse<Role>)
               .data as Role;
+            showToast.success("分配权限成功");
+            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
             set((state) => ({
               roles: state.roles.map((r) =>
                 r.id === roleId ? updatedRole : r
@@ -395,21 +432,18 @@ export const useRoleStore = create<RoleStoreState>()(
             return updatedRole;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "分配权限失败";
-            await handleError(new Error(errorMessage), "分配权限失败");
+            showToast.apiError(errorResponse, "分配权限失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "分配权限失败",
               isSubmitting: false,
             });
             return null;
           }
         } catch (err: any) {
           const errorMessage = err.message || "分配权限时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "分配权限失败");
-          set({
-            error: errorMessage,
-            isSubmitting: false,
-          });
+          set({ error: errorMessage, isSubmitting: false });
           return null;
         }
       },
@@ -425,6 +459,8 @@ export const useRoleStore = create<RoleStoreState>()(
             !("code" in response) ||
             (response.code >= 200 && response.code < 300)
           ) {
+            showToast.success("移除权限成功");
+            cacheManager.invalidate(CACHE_KEYS.ROLE_DETAIL(roleId)); // Invalidate specific role
             // Successfully removed, now fetch the updated role to reflect changes
             const updatedRole = await get().fetchRoleById(roleId);
             if (updatedRole) {
@@ -449,21 +485,18 @@ export const useRoleStore = create<RoleStoreState>()(
             return true;
           } else {
             const errorResponse = response as ErrorResponse;
-            const errorMessage = errorResponse.message || "移除权限失败";
-            await handleError(new Error(errorMessage), "移除权限失败");
+            showToast.apiError(errorResponse, "移除权限失败");
             set({
-              error: errorMessage,
+              error: errorResponse.message || "移除权限失败",
               isSubmitting: false,
             });
             return false;
           }
         } catch (err: any) {
           const errorMessage = err.message || "移除权限时发生意外错误";
+          showToast.error(errorMessage);
           await handleError(err, "移除权限失败");
-          set({
-            error: errorMessage,
-            isSubmitting: false,
-          });
+          set({ error: errorMessage, isSubmitting: false });
           return false;
         }
       },

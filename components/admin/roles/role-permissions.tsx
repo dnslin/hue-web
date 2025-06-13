@@ -16,12 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Role,
-  Permission,
-  PermissionGroup as PermissionGroupTypeFromUserTypes,
-} from "@/lib/types/user"; // Renamed to avoid conflict
-import { useRoleStore, PermissionGroupFE } from "@/lib/store/role-store"; // Use PermissionGroupFE from store
+import { Role, Permission } from "@/lib/types/roles"; 
+import { useRoleStore, PermissionGroupFE } from "@/lib/store/role-store";
 interface RolePermissionsProps {
   role: Role;
   onRoleUpdate: (role: Role) => void;
@@ -29,13 +25,13 @@ interface RolePermissionsProps {
 
 export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
   const {
-    permissions, // All permissions
-    permissionGroups: storePermissionGroups, // Grouped by FE logic in store
+    permissions, 
+    permissionGroups: storePermissionGroups, 
     isLoadingPermissions,
     isSubmitting,
     error,
     fetchPermissions,
-    syncPermissions, // Use syncPermissions for a more robust update
+    syncPermissions, 
     // assignPermission, // Individual assignment might not be needed if using sync
     // removePermission, // Individual removal might not be needed if using sync
   } = useRoleStore();
@@ -174,7 +170,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
               权限管理
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              为角色 {role.name} 分配权限
+              为角色 {role.alias || role.name} ({role.name}) 分配权限
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -256,7 +252,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {group.permissions.map((permission) => {
                       // permission.id is number
-                      const Icon = getPermissionIcon(permission.groupName); // 更新: group_name -> groupName
+                      const Icon = getPermissionIcon(permission.group_name); // 修复：使用 group_name
                       const isSelected = selectedPermissionIds.has(
                         permission.id
                       );
@@ -300,10 +296,8 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                                 {permission.description}
                               </p>
                               <div className="flex items-center gap-1 mt-2">
-                                {/* Assuming permission object has resource and action, or adjust as per actual Permission type */}
-                                {/* For now, using groupName as a placeholder if resource/action not directly on permission */}
                                 <Badge variant="outline" className="text-xs">
-                                  {permission.groupName || "N/A"}
+                                  {permission.group_name || "N/A"}
                                 </Badge>
                                 <Badge variant="outline" className="text-xs">
                                   {permission.name}{" "}
@@ -339,7 +333,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                 {permissions // Iterate over all fetched permissions
                   .filter((p) => selectedPermissionIds.has(p.id)) // Filter by selected IDs
                   .map((permission) => {
-                    const Icon = getPermissionIcon(permission.groupName); // 更新: group_name -> groupName
+                    const Icon = getPermissionIcon(permission.group_name); // 修复：使用 group_name
 
                     return (
                       <div
@@ -373,7 +367,7 @@ export function RolePermissions({ role, onRoleUpdate }: RolePermissionsProps) {
                             </p>
                             <div className="flex items-center gap-1 mt-2">
                               <Badge variant="outline" className="text-xs">
-                                {permission.groupName || "N/A"}
+                                {permission.group_name || "N/A"}
                               </Badge>
                               <Badge variant="outline" className="text-xs">
                                 {permission.name}
