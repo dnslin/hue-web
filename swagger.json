@@ -1955,8 +1955,7 @@
           "200": {
             "description": "登录成功，返回用户信息和JWT",
             "schema": {
-              "type": "object",
-              "additionalProperties": true
+              "$ref": "#/definitions/dtos.LoginResponse"
             }
           },
           "400": {
@@ -4303,10 +4302,15 @@
       ],
       "properties": {
         "code": {
-          "type": "string"
+          "description": "8位激活码",
+          "type": "string",
+          "minLength": 8,
+          "example": "12345678"
         },
         "email": {
-          "type": "string"
+          "description": "邮箱",
+          "type": "string",
+          "example": "user@example.com"
         }
       }
     },
@@ -4441,9 +4445,6 @@
             }
           ]
         },
-        "role_id": {
-          "type": "integer"
-        },
         "status": {
           "type": "integer"
         },
@@ -4520,7 +4521,7 @@
           }
         },
         "meta": {
-          "$ref": "#/definitions/dtos.PaginationMeta"
+          "$ref": "#/definitions/utils.PaginationMeta"
         }
       }
     },
@@ -4683,17 +4684,48 @@
         }
       }
     },
-    "dtos.PaginationMeta": {
+    "dtos.LoginResponse": {
       "type": "object",
       "properties": {
-        "page": {
-          "type": "integer"
+        "data": {
+          "$ref": "#/definitions/dtos.LoginResponseData"
         },
-        "page_size": {
-          "type": "integer"
+        "message": {
+          "type": "string",
+          "example": "登录成功"
+        }
+      }
+    },
+    "dtos.LoginResponseData": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         },
-        "total": {
-          "type": "integer"
+        "user": {
+          "$ref": "#/definitions/dtos.LoginResponseUser"
+        }
+      }
+    },
+    "dtos.LoginResponseUser": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        },
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "role": {
+          "type": "string",
+          "example": "user"
+        },
+        "username": {
+          "type": "string",
+          "example": "testuser"
         }
       }
     },
@@ -4786,7 +4818,8 @@
       ],
       "properties": {
         "email": {
-          "type": "string"
+          "type": "string",
+          "example": "user@example.com"
         }
       }
     },
@@ -4800,19 +4833,25 @@
       ],
       "properties": {
         "code": {
-          "description": "注意: len=8 只是示例，应遵循项目验证码策略",
-          "type": "string"
+          "description": "8位重置码",
+          "type": "string",
+          "minLength": 8,
+          "example": "87654321"
         },
         "confirm_password": {
-          "type": "string"
+          "description": "确认密码 (必须与新密码相同)",
+          "type": "string",
+          "example": "newpassword123"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "example": "user@example.com"
         },
         "password": {
-          "description": "注意: min=6 只是示例，应遵循项目密码策略",
+          "description": "新密码 (最小长度6)",
           "type": "string",
-          "minLength": 6
+          "minLength": 6,
+          "example": "newpassword123"
         }
       }
     },
@@ -4927,6 +4966,7 @@
         "email": {
           "description": "邮箱 (可选, 如果提供则校验格式)",
           "type": "string",
+          "format": "email",
           "example": "new.email@example.com"
         },
         "nickname": {
@@ -5351,6 +5391,10 @@
           "description": "最后登录IP",
           "type": "string"
         },
+        "minTokenIssueTime": {
+          "description": "新增字段",
+          "type": "string"
+        },
         "nickname": {
           "description": "用户昵称 (可选)",
           "type": "string"
@@ -5377,6 +5421,10 @@
         "status": {
           "description": "用户状态（0-正常, 1-禁用, 2-待审核, 3-已删除, 4-审核拒绝）",
           "type": "integer"
+        },
+        "suspiciousLoginNotifiedAt": {
+          "description": "新增字段",
+          "type": "string"
         },
         "updatedAt": {
           "description": "更新时间",

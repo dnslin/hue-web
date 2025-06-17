@@ -5,12 +5,23 @@ import {
   registerAction,
   logoutAction,
   getCurrentUserAction,
+  forgotPasswordAction,
+  resetPasswordAction,
+  activateAccountAction,
+  resendActivationEmailAction,
 } from "@/lib/actions/auth/auth.actions";
 import type { User } from "@/lib/types/user";
 import type {
   LoginRequest,
   RegisterRequest,
   AuthResponseData,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  AccountActivationRequest,
+  ResendActivationEmailRequest,
+  PasswordResetResponse,
+  AccountActivationResponse,
+  ResendActivationResponse,
 } from "@/lib/types/auth";
 import { cacheManager } from "@/lib/utils/cacheManager";
 
@@ -38,6 +49,17 @@ interface AuthState {
   clearError: () => void;
   initializeAuth: () => Promise<void>; // 新增：初始化认证状态
   setHydrated: () => void; // 新增：设置水合完成状态
+
+  // 新增：密码重置和激活相关方法
+  forgotPassword: (email: string) => Promise<boolean>;
+  resetPassword: (
+    email: string,
+    password: string,
+    confirmPassword: string,
+    code: string
+  ) => Promise<boolean>;
+  activateAccount: (email: string, code: string) => Promise<boolean>;
+  resendActivationEmail: (email: string) => Promise<boolean>;
 }
 
 /**
@@ -288,6 +310,188 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: "认证状态初始化失败，请稍后重试。",
           });
+        }
+      },
+
+      // 新增：密码重置和激活相关方法
+      forgotPassword: async (email: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await forgotPasswordAction(email);
+          if (response.success) {
+            console.log("✅ 忘记密码请求成功"); // 中文注释：忘记密码请求成功
+            set({ isLoading: false, error: null });
+            return true;
+          } else {
+            console.error("❌ 忘记密码请求失败:", response.message); // 中文注释：忘记密码请求失败
+            // 确保错误消息从response中正确传递
+            const errorMessage =
+              response.message || "忘记密码请求失败，请检查输入信息。";
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ 忘记密码时发生意外错误:", err); // 中文注释：忘记密码时发生意外错误
+          // 处理意外的客户端错误
+          let errorMessage = "忘记密码失败，请稍后重试。";
+
+          if (err && typeof err === "object") {
+            if (err.message && !err.message.includes("status code")) {
+              errorMessage = err.message;
+            } else if (err.code === 0) {
+              errorMessage = "网络连接失败，请检查网络后重试。";
+            }
+          } else if (typeof err === "string") {
+            errorMessage = err;
+          }
+
+          set({
+            isLoading: false,
+            error: errorMessage,
+          });
+          return false;
+        }
+      },
+
+      resetPassword: async (
+        email: string,
+        password: string,
+        confirmPassword: string,
+        code: string
+      ): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await resetPasswordAction(
+            email,
+            password,
+            confirmPassword,
+            code
+          );
+          if (response.success) {
+            console.log("✅ 密码重置成功"); // 中文注释：密码重置成功
+            set({ isLoading: false, error: null });
+            return true;
+          } else {
+            console.error("❌ 密码重置失败:", response.message); // 中文注释：密码重置失败
+            // 确保错误消息从response中正确传递
+            const errorMessage =
+              response.message || "密码重置失败，请检查输入信息。";
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ 密码重置时发生意外错误:", err); // 中文注释：密码重置时发生意外错误
+          // 处理意外的客户端错误
+          let errorMessage = "密码重置失败，请稍后重试。";
+
+          if (err && typeof err === "object") {
+            if (err.message && !err.message.includes("status code")) {
+              errorMessage = err.message;
+            } else if (err.code === 0) {
+              errorMessage = "网络连接失败，请检查网络后重试。";
+            }
+          } else if (typeof err === "string") {
+            errorMessage = err;
+          }
+
+          set({
+            isLoading: false,
+            error: errorMessage,
+          });
+          return false;
+        }
+      },
+
+      activateAccount: async (
+        email: string,
+        code: string
+      ): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await activateAccountAction(email, code);
+          if (response.success) {
+            console.log("✅ 账户激活成功"); // 中文注释：账户激活成功
+            set({ isLoading: false, error: null });
+            return true;
+          } else {
+            console.error("❌ 账户激活失败:", response.message); // 中文注释：账户激活失败
+            // 确保错误消息从response中正确传递
+            const errorMessage =
+              response.message || "账户激活失败，请检查输入信息。";
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ 账户激活时发生意外错误:", err); // 中文注释：账户激活时发生意外错误
+          // 处理意外的客户端错误
+          let errorMessage = "账户激活失败，请稍后重试。";
+
+          if (err && typeof err === "object") {
+            if (err.message && !err.message.includes("status code")) {
+              errorMessage = err.message;
+            } else if (err.code === 0) {
+              errorMessage = "网络连接失败，请检查网络后重试。";
+            }
+          } else if (typeof err === "string") {
+            errorMessage = err;
+          }
+
+          set({
+            isLoading: false,
+            error: errorMessage,
+          });
+          return false;
+        }
+      },
+
+      resendActivationEmail: async (email: string): Promise<boolean> => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await resendActivationEmailAction(email);
+          if (response.success) {
+            console.log("✅ 激活邮件重发成功"); // 中文注释：激活邮件重发成功
+            set({ isLoading: false, error: null });
+            return true;
+          } else {
+            console.error("❌ 激活邮件重发失败:", response.message); // 中文注释：激活邮件重发失败
+            // 确保错误消息从response中正确传递
+            const errorMessage =
+              response.message || "激活邮件重发失败，请检查输入信息。";
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ 激活邮件重发时发生意外错误:", err); // 中文注释：激活邮件重发时发生意外错误
+          // 处理意外的客户端错误
+          let errorMessage = "激活邮件重发失败，请稍后重试。";
+
+          if (err && typeof err === "object") {
+            if (err.message && !err.message.includes("status code")) {
+              errorMessage = err.message;
+            } else if (err.code === 0) {
+              errorMessage = "网络连接失败，请检查网络后重试。";
+            }
+          } else if (typeof err === "string") {
+            errorMessage = err;
+          }
+
+          set({
+            isLoading: false,
+            error: errorMessage,
+          });
+          return false;
         }
       },
     }),

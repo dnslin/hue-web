@@ -53,3 +53,41 @@ export interface ActionErrorResponse {
 export type ServerActionResponse<TSuccessData = AuthResponseData> =
   | ActionSuccessResponse<TSuccessData>
   | ActionErrorResponse;
+
+// 新增：忘记密码请求接口
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+// 新增：重置密码请求接口
+export interface ResetPasswordRequest {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  code: string;
+}
+
+// 新增：账户激活请求接口
+export interface AccountActivationRequest {
+  email: string;
+  code: string;
+}
+
+// 新增：重发激活邮件请求接口
+export interface ResendActivationEmailRequest {
+  email: string;
+}
+
+// 新增：密码重置和激活相关的响应类型
+export interface PasswordResetResponse {
+  message: string;
+}
+
+export interface AccountActivationResponse {
+  message: string;
+  user?: User;
+}
+
+export interface ResendActivationResponse {
+  message: string;
+}

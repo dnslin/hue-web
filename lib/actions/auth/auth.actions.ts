@@ -15,6 +15,13 @@ import type {
   AuthResponseData,
   ServerActionResponse,
   ActionErrorResponse,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  AccountActivationRequest,
+  ResendActivationEmailRequest,
+  PasswordResetResponse,
+  AccountActivationResponse,
+  ResendActivationResponse,
 } from "@/lib/types/auth";
 
 const AUTH_COOKIE_NAME = "auth_token";
@@ -283,4 +290,319 @@ export async function getCurrentUserAction(): Promise<User | null> {
 export async function isAuthenticatedCookieCheck(): Promise<boolean> {
   const cookieStore = await cookies(); // 尝试 await
   return !!cookieStore.get(AUTH_COOKIE_NAME)?.value;
+}
+
+/**
+ * 忘记密码 Action
+ * @param email 用户邮箱
+ * @returns ServerActionResponse 包含操作结果或错误信息
+ */
+export async function forgotPasswordAction(
+  email: string
+): Promise<ServerActionResponse<PasswordResetResponse>> {
+  try {
+    const requestData: ForgotPasswordRequest = { email };
+    const response = await publicApiService.post<PasswordResetResponse>(
+      "/auth/forgot-password",
+      requestData
+    );
+    const responseData = response.data;
+
+    if (responseData) {
+      return {
+        success: true,
+        data: responseData,
+        message: responseData.message || "密码重置邮件已发送",
+      };
+    }
+
+    return {
+      success: false,
+      message: "忘记密码请求失败：服务器响应格式不正确。",
+      code: 500,
+    };
+  } catch (error: any) {
+    console.error("[Auth Action] Forgot password error:", error);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: error.message || "忘记密码请求失败。",
+        code: error.status,
+      };
+    }
+
+    if (error && typeof error === "object") {
+      let userMessage = "忘记密码请求失败，请稍后重试。";
+
+      if (error.code === 400) {
+        userMessage = error.message || "请求参数有误，请检查邮箱地址。";
+      } else if (error.code === 404) {
+        userMessage = error.message || "该邮箱未注册或账户状态异常。";
+      } else if (error.code === 500) {
+        userMessage = "服务器繁忙，请稍后重试。";
+      } else if (error.code === 0) {
+        userMessage = error.message || "网络连接失败，请检查网络后重试。";
+      } else if (error.message && !error.message.includes("status code")) {
+        userMessage = error.message;
+      }
+
+      return {
+        success: false,
+        message: userMessage,
+        code: error.code || 500,
+        error: error.data || error,
+      };
+    }
+
+    const fallbackMessage =
+      typeof error === "string"
+        ? error
+        : "忘记密码时发生未知错误，请稍后重试。";
+    return {
+      success: false,
+      message: fallbackMessage,
+      code: 500,
+      error,
+    };
+  }
+}
+
+/**
+ * 重置密码 Action
+ * @param email 用户邮箱
+ * @param password 新密码
+ * @param confirmPassword 确认密码
+ * @param code 重置验证码
+ * @returns ServerActionResponse 包含操作结果或错误信息
+ */
+export async function resetPasswordAction(
+  email: string,
+  password: string,
+  confirmPassword: string,
+  code: string
+): Promise<ServerActionResponse<PasswordResetResponse>> {
+  try {
+    const requestData: ResetPasswordRequest = {
+      email,
+      password,
+      confirmPassword,
+      code,
+    };
+    const response = await publicApiService.post<PasswordResetResponse>(
+      "/auth/reset-password",
+      requestData
+    );
+    const responseData = response.data;
+
+    if (responseData) {
+      return {
+        success: true,
+        data: responseData,
+        message: responseData.message || "密码重置成功",
+      };
+    }
+
+    return {
+      success: false,
+      message: "密码重置失败：服务器响应格式不正确。",
+      code: 500,
+    };
+  } catch (error: any) {
+    console.error("[Auth Action] Reset password error:", error);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: error.message || "密码重置失败。",
+        code: error.status,
+      };
+    }
+
+    if (error && typeof error === "object") {
+      let userMessage = "密码重置失败，请稍后重试。";
+
+      if (error.code === 400) {
+        userMessage = error.message || "请求参数有误或验证码无效。";
+      } else if (error.code === 404) {
+        userMessage = error.message || "用户不存在或状态异常。";
+      } else if (error.code === 500) {
+        userMessage = "服务器繁忙，请稍后重试。";
+      } else if (error.code === 0) {
+        userMessage = error.message || "网络连接失败，请检查网络后重试。";
+      } else if (error.message && !error.message.includes("status code")) {
+        userMessage = error.message;
+      }
+
+      return {
+        success: false,
+        message: userMessage,
+        code: error.code || 500,
+        error: error.data || error,
+      };
+    }
+
+    const fallbackMessage =
+      typeof error === "string"
+        ? error
+        : "密码重置时发生未知错误，请稍后重试。";
+    return {
+      success: false,
+      message: fallbackMessage,
+      code: 500,
+      error,
+    };
+  }
+}
+
+/**
+ * 账户激活 Action
+ * @param email 用户邮箱
+ * @param code 激活验证码
+ * @returns ServerActionResponse 包含操作结果或错误信息
+ */
+export async function activateAccountAction(
+  email: string,
+  code: string
+): Promise<ServerActionResponse<AccountActivationResponse>> {
+  try {
+    const requestData: AccountActivationRequest = { email, code };
+    const response = await publicApiService.post<AccountActivationResponse>(
+      "/auth/activate",
+      requestData
+    );
+    const responseData = response.data;
+
+    if (responseData) {
+      return {
+        success: true,
+        data: responseData,
+        message: responseData.message || "账户激活成功",
+      };
+    }
+
+    return {
+      success: false,
+      message: "账户激活失败：服务器响应格式不正确。",
+      code: 500,
+    };
+  } catch (error: any) {
+    console.error("[Auth Action] Account activation error:", error);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: error.message || "账户激活失败。",
+        code: error.status,
+      };
+    }
+
+    if (error && typeof error === "object") {
+      let userMessage = "账户激活失败，请稍后重试。";
+
+      if (error.code === 400) {
+        userMessage = error.message || "请求参数有误或验证码无效。";
+      } else if (error.code === 500) {
+        userMessage = "服务器繁忙，请稍后重试。";
+      } else if (error.code === 0) {
+        userMessage = error.message || "网络连接失败，请检查网络后重试。";
+      } else if (error.message && !error.message.includes("status code")) {
+        userMessage = error.message;
+      }
+
+      return {
+        success: false,
+        message: userMessage,
+        code: error.code || 500,
+        error: error.data || error,
+      };
+    }
+
+    const fallbackMessage =
+      typeof error === "string"
+        ? error
+        : "账户激活时发生未知错误，请稍后重试。";
+    return {
+      success: false,
+      message: fallbackMessage,
+      code: 500,
+      error,
+    };
+  }
+}
+
+/**
+ * 重发激活邮件 Action
+ * @param email 用户邮箱
+ * @returns ServerActionResponse 包含操作结果或错误信息
+ */
+export async function resendActivationEmailAction(
+  email: string
+): Promise<ServerActionResponse<ResendActivationResponse>> {
+  try {
+    const requestData: ResendActivationEmailRequest = { email };
+    const response = await publicApiService.post<ResendActivationResponse>(
+      "/auth/resend-activation-email",
+      requestData
+    );
+    const responseData = response.data;
+
+    if (responseData) {
+      return {
+        success: true,
+        data: responseData,
+        message: responseData.message || "激活邮件已重新发送",
+      };
+    }
+
+    return {
+      success: false,
+      message: "重发激活邮件失败：服务器响应格式不正确。",
+      code: 500,
+    };
+  } catch (error: any) {
+    console.error("[Auth Action] Resend activation email error:", error);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        success: false,
+        message: error.message || "重发激活邮件失败。",
+        code: error.status,
+      };
+    }
+
+    if (error && typeof error === "object") {
+      let userMessage = "重发激活邮件失败，请稍后重试。";
+
+      if (error.code === 400) {
+        userMessage = error.message || "请求参数有误或账户状态不适用。";
+      } else if (error.code === 429) {
+        userMessage = error.message || "操作过于频繁，请稍后再试。";
+      } else if (error.code === 500) {
+        userMessage = "服务器繁忙，请稍后重试。";
+      } else if (error.code === 0) {
+        userMessage = error.message || "网络连接失败，请检查网络后重试。";
+      } else if (error.message && !error.message.includes("status code")) {
+        userMessage = error.message;
+      }
+
+      return {
+        success: false,
+        message: userMessage,
+        code: error.code || 500,
+        error: error.data || error,
+      };
+    }
+
+    const fallbackMessage =
+      typeof error === "string"
+        ? error
+        : "重发激活邮件时发生未知错误，请稍后重试。";
+    return {
+      success: false,
+      message: fallbackMessage,
+      code: 500,
+      error,
+    };
+  }
 }
