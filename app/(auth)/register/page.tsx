@@ -51,6 +51,7 @@ export default function RegisterPage() {
   const {
     register: registerUser,
     resendActivationEmail,
+    activateAccount,
     isLoading,
     error,
     clearError,
@@ -60,6 +61,8 @@ export default function RegisterPage() {
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [activationCode, setActivationCode] = useState("");
+  const [isActivationSuccess, setIsActivationSuccess] = useState(false);
 
   const {
     register,
@@ -112,99 +115,202 @@ export default function RegisterPage() {
   const handleBackToRegistration = () => {
     setIsRegistrationSuccess(false);
     setUserEmail("");
+    setActivationCode("");
+    setIsActivationSuccess(false);
     clearError();
+  };
+
+  // 处理激活账户
+  const handleActivateAccount = async () => {
+    if (!activationCode.trim()) {
+      return;
+    }
+
+    clearError();
+    try {
+      const success = await activateAccount(userEmail, activationCode);
+      if (success) {
+        setIsActivationSuccess(true);
+        // 3秒后跳转到登录页
+        setTimeout(() => {
+          router.push("/login");
+        }, 3000);
+      }
+    } catch (err) {
+      console.error("账户激活失败:", err);
+    }
   };
 
   // 如果注册成功，显示激活提示页面
   if (isRegistrationSuccess) {
+    // 激活成功页面
+    if (isActivationSuccess) {
+      return (
+        <ProtectedRoute requireAuth={false}>
+          <AuthLayout
+            title="激活成功！"
+            subtitle="您的账户已成功激活，即将跳转到登录页面"
+          >
+            <div className="space-y-6">
+              <div className="text-center py-8">
+                <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+                </div>
+                <Alert className="mb-4">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>
+                    欢迎加入！现在可以使用您的账户登录了
+                  </AlertDescription>
+                </Alert>
+              </div>
+              <Button asChild className="w-full">
+                <Link href="/login">立即登录</Link>
+              </Button>
+            </div>
+          </AuthLayout>
+        </ProtectedRoute>
+      );
+    }
+
+    // 激活提示和验证码输入页面
     return (
       <ProtectedRoute requireAuth={false}>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-          <Card className="w-full max-w-md mx-4">
-            <CardHeader className="text-center">
+        <AuthLayout
+          title="注册成功！"
+          subtitle="请查看您的邮箱并输入验证码来完成账户激活"
+        >
+          <div className="space-y-6">
+            <div className="text-center">
               <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
                 <Mail className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <CardTitle className="text-2xl font-bold text-blue-600">
-                注册成功！
-              </CardTitle>
-              <CardDescription>
-                请查看您的邮箱并点击激活链接来完成账户激活
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert>
+              <Alert className="mb-4">
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertDescription>
                   激活邮件已发送至 <strong>{userEmail}</strong>
                 </AlertDescription>
               </Alert>
+            </div>
 
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• 请检查您的邮箱（包括垃圾邮件箱）</p>
-                <p>• 点击邮件中的激活链接完成注册</p>
-                <p>• 激活链接有效期为24小时</p>
+            {/* 验证码输入表单 */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  激活验证码
+                </label>
+                <Input
+                  type="text"
+                  placeholder="请输入邮件中的6位验证码"
+                  value={activationCode}
+                  onChange={(e) => {
+                    setActivationCode(e.target.value);
+                    error && clearError();
+                  }}
+                  className="transition-all duration-300 sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)] text-center text-lg tracking-widest"
+                  maxLength={6}
+                />
               </div>
 
-              {/* 错误提示 */}
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+              <Button
+                onClick={handleActivateAccount}
+                disabled={isLoading || !activationCode.trim()}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    激活中...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    激活账户
+                  </>
+                )}
+              </Button>
+            </div>
 
-              {/* 重发激活邮件 */}
-              <div className="space-y-3">
-                <Button
-                  onClick={handleResendActivation}
-                  variant="outline"
-                  className="w-full"
-                  disabled={isLoading || resendCooldown > 0}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
-                      发送中...
-                    </>
-                  ) : resendCooldown > 0 ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      重发邮件 ({resendCooldown}s)
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      重发激活邮件
-                    </>
-                  )}
-                </Button>
-
-                <div className="flex flex-col gap-2">
-                  <Button asChild className="w-full">
-                    <Link href="/activate">手动激活账户</Link>
-                  </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleBackToRegistration}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      重新注册
-                    </Button>
-                    <Button asChild variant="outline" className="flex-1">
-                      <Link href="/login">去登录</Link>
-                    </Button>
-                  </div>
+            <div className="space-y-2 text-sm text-muted-foreground bg-muted/50 p-4 rounded-lg">
+              <p className="font-medium text-foreground mb-2">激活提示：</p>
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                  <span>请检查您的邮箱（包括垃圾邮件箱）</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                  <span>验证码通常为6位数字或字母</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                  <span>验证码有效期为24小时</span>
                 </div>
               </div>
+            </div>
 
-              <div className="text-center text-xs text-muted-foreground">
-                <p>没有收到邮件？请检查垃圾邮件箱或联系客服</p>
+            {/* 错误提示 */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative rounded-lg bg-gradient-to-r from-destructive/10 via-destructive/15 to-destructive/10 border border-destructive/20 p-4 text-sm text-destructive"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
+                  <span className="font-medium">{error}</span>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-destructive/5 to-transparent rounded-lg" />
+              </motion.div>
+            )}
+
+            {/* 重发激活邮件 */}
+            <div className="space-y-3">
+              <div className="text-center text-sm text-muted-foreground">
+                没有收到验证码？
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Button
+                onClick={handleResendActivation}
+                variant="outline"
+                className="w-full"
+                disabled={isLoading || resendCooldown > 0}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
+                    发送中...
+                  </>
+                ) : resendCooldown > 0 ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    重发验证码 ({resendCooldown}s)
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    重发验证码
+                  </>
+                )}
+              </Button>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleBackToRegistration}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  重新注册
+                </Button>
+                <Button asChild variant="outline" className="flex-1">
+                  <Link href="/login">去登录</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-center text-xs text-muted-foreground">
+              <p>没有收到邮件？请检查垃圾邮件箱或联系客服</p>
+            </div>
+          </div>
+        </AuthLayout>
       </ProtectedRoute>
     );
   }
