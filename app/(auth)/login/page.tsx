@@ -70,9 +70,13 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              className="relative rounded-lg bg-gradient-to-r from-destructive/10 via-destructive/15 to-destructive/10 border border-destructive/20 p-4 text-sm text-destructive"
             >
-              {error}
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
+                <span className="font-medium">{error}</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-destructive/5 to-transparent rounded-lg" />
             </motion.div>
           )}
 
@@ -91,19 +95,24 @@ export default function LoginPage() {
                 id="username_or_email"
                 type="text"
                 placeholder="请输入用户名或邮箱"
-                className={
+                className={`transition-all duration-300 text-base sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary ${
                   loginForm.formState.errors.username_or_email
-                    ? "border-destructive"
-                    : ""
-                }
+                    ? "border-destructive ring-destructive/20"
+                    : "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+                }`}
                 {...loginForm.register("username_or_email")}
                 autoComplete="username"
                 onChange={() => error && clearError()}
               />
               {loginForm.formState.errors.username_or_email && (
-                <p className="text-xs text-destructive">
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-destructive flex items-center gap-1"
+                >
+                  <span className="w-1 h-1 bg-destructive rounded-full" />
                   {loginForm.formState.errors.username_or_email.message}
-                </p>
+                </motion.p>
               )}
             </div>
 
@@ -118,19 +127,24 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="请输入密码"
-                className={
+                className={`transition-all duration-300 text-base sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary ${
                   loginForm.formState.errors.password
-                    ? "border-destructive"
-                    : ""
-                }
+                    ? "border-destructive ring-destructive/20"
+                    : "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+                }`}
                 {...loginForm.register("password")}
                 autoComplete="current-password"
                 onChange={() => error && clearError()}
               />
               {loginForm.formState.errors.password && (
-                <p className="text-xs text-destructive">
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-destructive flex items-center gap-1"
+                >
+                  <span className="w-1 h-1 bg-destructive rounded-full" />
                   {loginForm.formState.errors.password.message}
-                </p>
+                </motion.p>
               )}
             </div>
 
@@ -151,9 +165,13 @@ export default function LoginPage() {
             <ForgotPasswordDialog>
               <Button
                 variant="link"
-                className="px-0 text-sm text-primary hover:underline h-auto"
+                className="group relative px-0 text-sm text-muted-foreground hover:text-primary h-auto transition-all duration-300 hover:scale-105"
               >
-                忘记密码？
+                <span className="relative z-10 transition-colors duration-300">
+                  忘记密码？
+                </span>
+                <div className="absolute inset-0 -z-10 rounded-md bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="absolute -bottom-1 left-1/2 h-0.5 w-0 bg-gradient-to-r from-primary/60 via-primary to-primary/60 transition-all duration-300 -translate-x-1/2 group-hover:w-full" />
               </Button>
             </ForgotPasswordDialog>
           </div>

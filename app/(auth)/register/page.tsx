@@ -218,9 +218,13 @@ export default function RegisterPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-md bg-destructive/15 p-3 text-sm text-destructive"
+              className="relative rounded-lg bg-gradient-to-r from-destructive/10 via-destructive/15 to-destructive/10 border border-destructive/20 p-4 text-sm text-destructive"
             >
-              <p>{error}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
+                <span className="font-medium">{error}</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-destructive/5 to-transparent rounded-lg" />
             </motion.div>
           )}
 
@@ -231,13 +235,22 @@ export default function RegisterPage() {
               placeholder="用户名"
               {...register("username")}
               autoComplete="username"
-              className={errors.username ? "border-destructive" : ""}
+              className={`transition-all duration-300 text-base sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                errors.username
+                  ? "border-destructive ring-destructive/20"
+                  : "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+              }`}
               onChange={() => error && clearError()}
             />
             {errors.username && (
-              <p className="text-xs text-destructive">
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-destructive flex items-center gap-1"
+              >
+                <span className="w-1 h-1 bg-destructive rounded-full" />
                 {errors.username.message}
-              </p>
+              </motion.p>
             )}
           </div>
 
@@ -248,11 +261,22 @@ export default function RegisterPage() {
               placeholder="邮箱"
               {...register("email")}
               autoComplete="email"
-              className={errors.email ? "border-destructive" : ""}
+              className={`transition-all duration-300 text-base sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                errors.email
+                  ? "border-destructive ring-destructive/20"
+                  : "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+              }`}
               onChange={() => error && clearError()}
             />
             {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-destructive flex items-center gap-1"
+              >
+                <span className="w-1 h-1 bg-destructive rounded-full" />
+                {errors.email.message}
+              </motion.p>
             )}
           </div>
 
@@ -263,13 +287,22 @@ export default function RegisterPage() {
               placeholder="密码"
               {...register("password")}
               autoComplete="new-password"
-              className={errors.password ? "border-destructive" : ""}
+              className={`transition-all duration-300 text-base sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                errors.password
+                  ? "border-destructive ring-destructive/20"
+                  : "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+              }`}
               onChange={() => error && clearError()}
             />
             {errors.password && (
-              <p className="text-xs text-destructive">
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-destructive flex items-center gap-1"
+              >
+                <span className="w-1 h-1 bg-destructive rounded-full" />
                 {errors.password.message}
-              </p>
+              </motion.p>
             )}
           </div>
 
@@ -280,13 +313,22 @@ export default function RegisterPage() {
               placeholder="确认密码"
               {...register("confirm_password")}
               autoComplete="new-password"
-              className={errors.confirm_password ? "border-destructive" : ""}
+              className={`transition-all duration-300 text-base sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+                errors.confirm_password
+                  ? "border-destructive ring-destructive/20"
+                  : "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]"
+              }`}
               onChange={() => error && clearError()}
             />
             {errors.confirm_password && (
-              <p className="text-xs text-destructive">
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-destructive flex items-center gap-1"
+              >
+                <span className="w-1 h-1 bg-destructive rounded-full" />
                 {errors.confirm_password.message}
-              </p>
+              </motion.p>
             )}
           </div>
 
@@ -305,9 +347,13 @@ export default function RegisterPage() {
             <span className="text-muted-foreground">已有账号？</span>{" "}
             <Link
               href="/login"
-              className="font-medium text-primary underline-offset-4 hover:underline"
+              className="group relative font-medium text-primary transition-all duration-300 hover:scale-105 inline-flex items-center"
             >
-              立即登录
+              <span className="relative z-10 transition-colors duration-300">
+                立即登录
+              </span>
+              <div className="absolute inset-0 -z-10 rounded-md bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute -bottom-0.5 left-1/2 h-0.5 w-0 bg-gradient-to-r from-primary/60 via-primary to-primary/60 transition-all duration-300 -translate-x-1/2 group-hover:w-full" />
             </Link>
           </div>
         </form>
