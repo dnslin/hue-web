@@ -22,6 +22,13 @@ export class CacheManager {
   private defaultVersion = "1.0.0";
 
   /**
+   * 检测是否在浏览器环境中
+   */
+  private isBrowser(): boolean {
+    return typeof window !== "undefined";
+  }
+
+  /**
    * 设置缓存项
    */
   set<T>(key: string, data: T, options: CacheOptions = {}): void {
@@ -145,10 +152,22 @@ export class CacheManager {
           this.memoryCache.clear();
           break;
         case "session":
-          sessionStorage.clear();
+          if (this.isBrowser()) {
+            sessionStorage.clear();
+          } else {
+            console.log(
+              `🌐 [CacheManager] 跳过sessionStorage清理（非浏览器环境）`
+            );
+          }
           break;
         case "local":
-          localStorage.clear();
+          if (this.isBrowser()) {
+            localStorage.clear();
+          } else {
+            console.log(
+              `🌐 [CacheManager] 跳过localStorage清理（非浏览器环境）`
+            );
+          }
           break;
       }
     } catch (error) {
@@ -178,9 +197,15 @@ export class CacheManager {
 
     try {
       // 清理localStorage中的认证相关项
-      authKeys.forEach((key) => {
-        localStorage.removeItem(key);
-      });
+      if (this.isBrowser()) {
+        authKeys.forEach((key) => {
+          localStorage.removeItem(key);
+        });
+      } else {
+        console.log(
+          `🌐 [CacheManager] 跳过localStorage认证缓存清理（非浏览器环境）`
+        );
+      }
 
       // 清理内存缓存中的用户相关数据
       this.invalidate("^(users|roles|permissions|auth):");
@@ -218,11 +243,15 @@ export class CacheManager {
       local: 0,
     };
 
-    try {
-      stats.session = Object.keys(sessionStorage).length;
-      stats.local = Object.keys(localStorage).length;
-    } catch (error) {
-      console.warn("获取存储统计失败:", error);
+    if (this.isBrowser()) {
+      try {
+        stats.session = Object.keys(sessionStorage).length;
+        stats.local = Object.keys(localStorage).length;
+      } catch (error) {
+        console.warn("获取存储统计失败:", error);
+      }
+    } else {
+      console.log(`🌐 [CacheManager] 跳过存储统计获取（非浏览器环境）`);
     }
 
     return stats;
@@ -310,27 +339,37 @@ export class CacheManager {
     }
 
     // 清理sessionStorage
-    try {
-      for (let i = sessionStorage.length - 1; i >= 0; i--) {
-        const key = sessionStorage.key(i);
-        if (key && regex.test(key)) {
-          sessionStorage.removeItem(key);
+    if (this.isBrowser()) {
+      try {
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const key = sessionStorage.key(i);
+          if (key && regex.test(key)) {
+            sessionStorage.removeItem(key);
+          }
         }
+      } catch (error) {
+        console.warn("清理sessionStorage失败:", error);
       }
-    } catch (error) {
-      console.warn("清理sessionStorage失败:", error);
+    } else {
+      console.log(
+        `🌐 [CacheManager] 跳过sessionStorage模式清理（非浏览器环境）`
+      );
     }
 
     // 清理localStorage
-    try {
-      for (let i = localStorage.length - 1; i >= 0; i--) {
-        const key = localStorage.key(i);
-        if (key && regex.test(key)) {
-          localStorage.removeItem(key);
+    if (this.isBrowser()) {
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key && regex.test(key)) {
+            localStorage.removeItem(key);
+          }
         }
+      } catch (error) {
+        console.warn("清理localStorage失败:", error);
       }
-    } catch (error) {
-      console.warn("清理localStorage失败:", error);
+    } else {
+      console.log(`🌐 [CacheManager] 跳过localStorage模式清理（非浏览器环境）`);
     }
   }
 }

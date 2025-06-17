@@ -73,12 +73,16 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => {
         console.log("🚪 清除用户认证信息"); // 中文注释：清除用户认证信息
 
-        // 清理相关缓存
-        try {
-          cacheManager.clearAuthRelatedCache();
-          console.log("✅ 已清理认证相关缓存");
-        } catch (err) {
-          console.warn("清理认证相关缓存失败:", err);
+        // 清理相关缓存 - 添加环境检测保护
+        if (typeof window !== "undefined") {
+          try {
+            cacheManager.clearAuthRelatedCache();
+            console.log("✅ 已清理认证相关缓存");
+          } catch (err) {
+            console.warn("⚠️ [AuthStore] 清理认证相关缓存失败:", err);
+          }
+        } else {
+          console.log("🌐 [AuthStore] 服务端环境，跳过缓存清理");
         }
 
         set({

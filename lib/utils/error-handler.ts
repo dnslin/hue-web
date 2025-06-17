@@ -219,21 +219,22 @@ export class ErrorHandler {
   static async handleTokenExpired(): Promise<void> {
     console.log("🔥 [ErrorHandler] 开始处理Token过期");
 
-    // 清理缓存
-    cacheManager.clearAll();
-    console.log("✅ [ErrorHandler] 已清理所有缓存");
-
-    // 清理认证状态（动态导入避免循环依赖）
-    try {
-      const { useAuthStore } = await import("@/lib/store/auth-store");
-      useAuthStore.getState().clearAuth();
-      console.log("✅ [ErrorHandler] 已清理认证状态");
-    } catch (err) {
-      console.warn("⚠️ [ErrorHandler] 清理认证状态失败:", err);
-    }
-
-    // 立即跳转（去掉延迟，防止用户继续操作）
+    // 检查环境，只在浏览器环境中执行完整清理
     if (typeof window !== "undefined") {
+      // 清理缓存
+      cacheManager.clearAll();
+      console.log("✅ [ErrorHandler] 已清理所有缓存");
+
+      // 清理认证状态（动态导入避免循环依赖）
+      try {
+        const { useAuthStore } = await import("@/lib/store/auth-store");
+        useAuthStore.getState().clearAuth();
+        console.log("✅ [ErrorHandler] 已清理认证状态");
+      } catch (err) {
+        console.warn("⚠️ [ErrorHandler] 清理认证状态失败:", err);
+      }
+
+      // 立即跳转（去掉延迟，防止用户继续操作）
       const currentPath = window.location.pathname;
       const returnUrl = encodeURIComponent(currentPath);
       console.log(
@@ -246,7 +247,9 @@ export class ErrorHandler {
       console.log("🔄 [ErrorHandler] 跳转到:", loginUrl);
       window.location.href = loginUrl;
     } else {
-      console.warn("⚠️ [ErrorHandler] 不在浏览器环境，无法重定向");
+      console.log(
+        "🌐 [ErrorHandler] 服务端环境检测到Token过期，跳过客户端清理操作"
+      );
     }
   }
 
