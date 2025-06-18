@@ -83,7 +83,7 @@ export async function loginAction(
       } else if (error.code === 422) {
         userMessage = error.message || "输入信息格式有误，请重新检查。";
       } else if (error.code === 500) {
-        userMessage = "服务器繁忙，请稍后重试。";
+        userMessage = error.message || "服务器繁忙，请稍后重试。";
       } else if (error.code === 0) {
         userMessage = error.message || "网络连接失败，请检查网络后重试。";
       } else if (error.message && !error.message.includes("status code")) {
@@ -179,7 +179,7 @@ export async function registerAction(
       } else if (error.code === 409) {
         userMessage = error.message || "用户名或邮箱已存在，请使用其他信息。";
       } else if (error.code === 500) {
-        userMessage = "服务器繁忙，请稍后重试。";
+        userMessage = error.message || "服务器繁忙，请稍后重试。";
       } else if (error.code === 0) {
         userMessage = error.message || "网络连接失败，请检查网络后重试。";
       } else if (error.message && !error.message.includes("status code")) {
@@ -340,7 +340,7 @@ export async function forgotPasswordAction(
       } else if (error.code === 404) {
         userMessage = error.message || "该邮箱未注册或账户状态异常。";
       } else if (error.code === 500) {
-        userMessage = "服务器繁忙，请稍后重试。";
+        userMessage = error.message || "服务器繁忙，请稍后重试。";
       } else if (error.code === 0) {
         userMessage = error.message || "网络连接失败，请检查网络后重试。";
       } else if (error.message && !error.message.includes("status code")) {
@@ -427,7 +427,7 @@ export async function resetPasswordAction(
       } else if (error.code === 404) {
         userMessage = error.message || "用户不存在或状态异常。";
       } else if (error.code === 500) {
-        userMessage = "服务器繁忙，请稍后重试。";
+        userMessage = error.message || "服务器繁忙，请稍后重试。";
       } else if (error.code === 0) {
         userMessage = error.message || "网络连接失败，请检查网络后重试。";
       } else if (error.message && !error.message.includes("status code")) {
@@ -503,7 +503,7 @@ export async function activateAccountAction(
       if (error.code === 400) {
         userMessage = error.message || "请求参数有误或验证码无效。";
       } else if (error.code === 500) {
-        userMessage = "服务器繁忙，请稍后重试。";
+        userMessage = error.message || "服务器繁忙，请稍后重试。";
       } else if (error.code === 0) {
         userMessage = error.message || "网络连接失败，请检查网络后重试。";
       } else if (error.message && !error.message.includes("status code")) {
@@ -579,7 +579,7 @@ export async function resendActivationEmailAction(
       } else if (error.code === 429) {
         userMessage = error.message || "操作过于频繁，请稍后再试。";
       } else if (error.code === 500) {
-        userMessage = "服务器繁忙，请稍后重试。";
+        userMessage = error.message || "服务器繁忙，请稍后重试。";
       } else if (error.code === 0) {
         userMessage = error.message || "网络连接失败，请检查网络后重试。";
       } else if (error.message && !error.message.includes("status code")) {

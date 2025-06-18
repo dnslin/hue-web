@@ -555,10 +555,6 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
         } catch (err: any) {
-          console.error(
-            `❌ 密码重置时发生意外错误${silent ? "（静默模式）" : ""}:`,
-            err
-          ); // 中文注释：密码重置时发生意外错误
           // 处理意外的客户端错误
           let errorMessage = "密码重置失败，请稍后重试。";
 

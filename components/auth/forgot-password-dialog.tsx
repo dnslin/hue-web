@@ -158,13 +158,9 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
           setIsOpen(false);
           resetForgotPasswordState();
         }, 3000);
-      } else {
-        console.error("密码重置失败，但没有抛出异常");
-        // 错误信息已通过 Store 设置，不需要手动设置步骤
       }
     } catch (err) {
       console.error("密码重置失败:", err);
-      // 错误信息已通过 Store 设置，不需要手动设置步骤
     }
   };
 
