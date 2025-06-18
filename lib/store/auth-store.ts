@@ -52,12 +52,19 @@ interface AuthState {
 
   // 新增：密码重置和激活相关方法
   forgotPassword: (email: string) => Promise<boolean>;
+  forgotPasswordSilent: (email: string) => Promise<boolean>; // 不影响全局 isLoading 的版本
   resetPassword: (
     email: string,
     password: string,
     confirmPassword: string,
     code: string
   ) => Promise<boolean>;
+  resetPasswordSilent: (
+    email: string,
+    password: string,
+    confirmPassword: string,
+    code: string
+  ) => Promise<boolean>; // 不影响全局 isLoading 的版本
   activateAccount: (email: string, code: string) => Promise<boolean>;
   resendActivationEmail: (email: string) => Promise<boolean>;
 }
@@ -356,6 +363,24 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // 忘记密码（静默版本，不影响全局 isLoading）
+      forgotPasswordSilent: async (email: string) => {
+        try {
+          const response = await forgotPasswordAction(email);
+          if (response.success) {
+            console.log("✅ 忘记密码请求成功（静默模式）");
+            return true;
+          } else {
+            console.error("❌ 忘记密码请求失败（静默模式）:", response.message);
+            // 错误通过其他方式处理，不设置全局错误状态
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ 忘记密码时发生意外错误（静默模式）:", err);
+          return false;
+        }
+      },
+
       resetPassword: async (
         email: string,
         password: string,
@@ -404,6 +429,33 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: errorMessage,
           });
+          return false;
+        }
+      },
+
+      // 密码重置（静默版本，不影响全局 isLoading）
+      resetPasswordSilent: async (
+        email: string,
+        password: string,
+        confirmPassword: string,
+        code: string
+      ): Promise<boolean> => {
+        try {
+          const response = await resetPasswordAction(
+            email,
+            password,
+            confirmPassword,
+            code
+          );
+          if (response.success) {
+            console.log("✅ 密码重置成功（静默模式）");
+            return true;
+          } else {
+            console.error("❌ 密码重置失败（静默模式）:", response.message);
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ 密码重置时发生意外错误（静默模式）:", err);
           return false;
         }
       },

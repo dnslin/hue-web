@@ -16,6 +16,14 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
   Mail,
   CheckCircle2,
   AlertCircle,
@@ -33,10 +41,10 @@ const forgotPasswordSchema = z.object({
 // 重置密码表单验证模式
 const resetPasswordSchema = z.object({
   email: z.string().min(1, "请输入邮箱").email("请输入有效的邮箱地址"),
-  token: z.string().min(1, "请输入验证码"),
+  token: z.string().min(8, "验证码必须是8位").max(8, "验证码必须是8位"),
   newPassword: z
     .string()
-    .min(8, "密码长度至少8位")
+    .min(6, "密码长度至少6位")
     .regex(/(?=.*[a-z])/, "密码必须包含小写字母")
     .regex(/(?=.*[A-Z])/, "密码必须包含大写字母")
     .regex(/(?=.*\d)/, "密码必须包含数字")
@@ -51,8 +59,11 @@ interface ForgotPasswordDialogProps {
 }
 
 export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
-  const { forgotPassword, resetPassword, isLoading, error, clearError } =
+  const { forgotPasswordSilent, resetPasswordSilent, error, clearError } =
     useAuthStore();
+
+  // 使用独立的加载状态，避免全局 isLoading 影响页面渲染
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 状态管理
   const [isOpen, setIsOpen] = useState(false);
@@ -64,30 +75,68 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
   // 忘记密码表单
   const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
   });
 
   // 重置密码表单
   const resetPasswordForm = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: "",
+      token: "",
+      newPassword: "",
+    },
   });
 
+  // 当用户邮箱改变时，更新重置密码表单的邮箱字段
+  React.useEffect(() => {
+    if (userEmail) {
+      resetPasswordForm.setValue("email", userEmail);
+    }
+  }, [userEmail, resetPasswordForm]);
+
   // 提交忘记密码表单
-  const onForgotPasswordSubmit = async (data: ForgotPasswordFormValues) => {
+  const onForgotPasswordSubmit = async (
+    data: ForgotPasswordFormValues,
+    event?: React.BaseSyntheticEvent
+  ) => {
+    // 显式阻止表单默认提交行为
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    console.log("🔄 开始处理忘记密码请求:", data.email);
     clearError();
+    setIsSubmitting(true);
+
     try {
-      await forgotPassword(data.email);
-      setUserEmail(data.email);
-      setIsResetStep(true);
+      const result = await forgotPasswordSilent(data.email);
+      console.log("✅ 忘记密码请求结果:", result);
+
+      if (result) {
+        console.log("📧 验证码发送成功，切换到重置步骤");
+        setUserEmail(data.email);
+        setIsResetStep(true);
+      } else {
+        console.error("❌ 忘记密码请求失败，但没有抛出异常");
+      }
     } catch (err) {
-      console.error("忘记密码请求失败:", err);
+      console.error("❌ 忘记密码请求失败:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // 提交重置密码表单
   const onResetPasswordSubmit = async (data: ResetPasswordFormValues) => {
     clearError();
+    setIsSubmitting(true);
+
     try {
-      await resetPassword(
+      await resetPasswordSilent(
         userEmail,
         data.newPassword,
         data.newPassword,
@@ -101,6 +150,8 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
       }, 3000);
     } catch (err) {
       console.error("密码重置失败:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,8 +167,10 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
 
   // 处理对话框关闭
   const handleDialogClose = (open: boolean) => {
+    console.log("🔄 对话框状态变化:", { open, isResetStep, isSuccessStep });
     setIsOpen(open);
     if (!open) {
+      console.log("❌ 对话框关闭，重置状态");
       resetState();
     }
   };
@@ -186,146 +239,150 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
                 </div>
               </div>
 
-              <form
-                onSubmit={resetPasswordForm.handleSubmit(onResetPasswordSubmit)}
-                className="space-y-5"
-              >
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-foreground">
-                    确认邮箱
-                  </label>
-                  <Input
-                    type="email"
-                    value={userEmail}
-                    disabled
-                    className="bg-muted h-12"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-foreground">
-                    验证码
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="请输入邮箱收到的6位验证码"
-                    {...resetPasswordForm.register("token")}
-                    className={`h-12 text-center text-lg tracking-widest ${
-                      resetPasswordForm.formState.errors.token
-                        ? "border-destructive"
-                        : ""
-                    }`}
-                    maxLength={6}
-                  />
-                  {resetPasswordForm.formState.errors.token && (
-                    <p className="text-xs text-destructive">
-                      {resetPasswordForm.formState.errors.token.message}
-                    </p>
+              <Form {...resetPasswordForm}>
+                <form
+                  onSubmit={resetPasswordForm.handleSubmit(
+                    onResetPasswordSubmit
                   )}
-                </div>
+                  className="space-y-5"
+                >
+                  <FormField
+                    control={resetPasswordForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>确认邮箱</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            disabled
+                            className="bg-muted h-12"
+                            {...field}
+                            value={userEmail}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-foreground">
-                    新密码
-                  </label>
-                  <div className="relative">
-                    <Input
-                      type={showNewPassword ? "text" : "password"}
-                      placeholder="请输入新密码"
-                      {...resetPasswordForm.register("newPassword")}
-                      className={`pr-12 h-12 ${
-                        resetPasswordForm.formState.errors.newPassword
-                          ? "border-destructive"
-                          : ""
-                      }`}
-                    />
+                  <FormField
+                    control={resetPasswordForm.control}
+                    name="token"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>验证码</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="请输入邮箱收到的8位验证码"
+                            className="h-12 text-center text-lg tracking-widest"
+                            maxLength={8}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={resetPasswordForm.control}
+                    name="newPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>新密码</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showNewPassword ? "text" : "password"}
+                              placeholder="请输入新密码"
+                              className="pr-12 h-12"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-12 px-3 hover:bg-transparent"
+                              onClick={() =>
+                                setShowNewPassword(!showNewPassword)
+                              }
+                            >
+                              {showNewPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* 密码规则提示 */}
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-foreground mb-3">
+                      密码安全要求：
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                        <span>至少8位字符</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                        <span>包含大小写字母</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                        <span>包含数字</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                        <span>包含特殊字符</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-12 px-3 hover:bg-transparent"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      variant="outline"
+                      onClick={() => setIsResetStep(false)}
+                      className="flex-1 h-12"
                     >
-                      {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                      返回上一步
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-1 h-12"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          重置中...
+                        </>
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <>
+                          <Lock className="w-4 h-4 mr-2" />
+                          重置密码
+                        </>
                       )}
                     </Button>
                   </div>
-                  {resetPasswordForm.formState.errors.newPassword && (
-                    <p className="text-xs text-destructive">
-                      {resetPasswordForm.formState.errors.newPassword.message}
-                    </p>
-                  )}
-                </div>
-
-                <input
-                  type="hidden"
-                  {...resetPasswordForm.register("email")}
-                  value={userEmail}
-                />
-
-                {/* 密码规则提示 */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-foreground mb-3">
-                    密码安全要求：
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                      <span>至少8位字符</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                      <span>包含大小写字母</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                      <span>包含数字</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                      <span>包含特殊字符</span>
-                    </div>
-                  </div>
-                </div>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsResetStep(false)}
-                    className="flex-1 h-12"
-                  >
-                    返回上一步
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="flex-1 h-12"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        重置中...
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="w-4 h-4 mr-2" />
-                        重置密码
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
+                </form>
+              </Form>
             </div>
           )}
 
@@ -342,87 +399,87 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
                 </div>
               </div>
 
-              <form
-                onSubmit={forgotPasswordForm.handleSubmit(
-                  onForgotPasswordSubmit
-                )}
-                className="space-y-5"
-              >
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-foreground">
-                    邮箱地址
-                  </label>
-                  <Input
-                    type="email"
-                    placeholder="请输入注册时使用的邮箱"
-                    {...forgotPasswordForm.register("email")}
-                    className={`h-12 ${
-                      forgotPasswordForm.formState.errors.email
-                        ? "border-destructive"
-                        : ""
-                    }`}
-                  />
-                  {forgotPasswordForm.formState.errors.email && (
-                    <p className="text-xs text-destructive">
-                      {forgotPasswordForm.formState.errors.email.message}
-                    </p>
+              <Form {...forgotPasswordForm}>
+                <form
+                  onSubmit={forgotPasswordForm.handleSubmit(
+                    onForgotPasswordSubmit
                   )}
-                </div>
+                  className="space-y-5"
+                >
+                  <FormField
+                    control={forgotPasswordForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>邮箱地址</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="请输入注册时使用的邮箱"
+                            className="h-12"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* 提示信息 */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p className="font-medium text-foreground">
-                      重置密码流程：
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
-                        <span>输入注册邮箱</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                        <span>查收邮件中的验证码</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                        <span>设置新密码</span>
+                  {/* 提示信息 */}
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-sm text-muted-foreground space-y-2">
+                      <p className="font-medium text-foreground">
+                        重置密码流程：
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                          <span>输入注册邮箱</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                          <span>查收邮件中的验证码</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+                          <span>设置新密码</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-12"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      发送中...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4 mr-2" />
-                      发送验证码
-                    </>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                   )}
-                </Button>
 
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">
-                    验证码将在5分钟内发送到您的邮箱
-                  </p>
-                </div>
-              </form>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-12"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        发送中...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4 mr-2" />
+                        发送验证码
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">
+                      验证码将在5分钟内发送到您的邮箱
+                    </p>
+                  </div>
+                </form>
+              </Form>
             </div>
           )}
         </div>
