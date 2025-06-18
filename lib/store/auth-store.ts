@@ -15,13 +15,6 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponseData,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
-  AccountActivationRequest,
-  ResendActivationEmailRequest,
-  PasswordResetResponse,
-  AccountActivationResponse,
-  ResendActivationResponse,
 } from "@/lib/types/auth";
 import { cacheManager } from "@/lib/utils/cacheManager";
 
