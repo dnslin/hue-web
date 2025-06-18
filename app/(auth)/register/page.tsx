@@ -11,18 +11,11 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import AuthLayout from "@/components/layouts/auth-layout";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
-import { Mail, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
+import { Mail, CheckCircle2, RefreshCw } from "lucide-react";
 
 // 注册表单验证模式
 const registerSchema = z

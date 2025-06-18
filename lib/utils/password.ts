@@ -58,8 +58,6 @@ export function generatePassword(options: PasswordOptions = {}): string {
     throw new Error("至少需要选择一种字符类型");
   }
 
-  let password = "";
-
   // 确保至少包含每种要求的字符类型
   const requiredChars: string[] = [];
 

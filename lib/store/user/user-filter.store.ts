@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-import { UserListParams, UserRole, UserStatus } from "@/lib/types/user";
+import { UserListParams } from "@/lib/types/user";
 
 /**
  * @interface UserFilters
