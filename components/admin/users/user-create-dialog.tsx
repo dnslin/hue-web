@@ -13,11 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AdminUserCreateRequest,
-  ROLE_ID_MAP,
-  UserRole,
-} from "@/lib/types/user";
+import { AdminUserCreateRequest } from "@/lib/types/user";
 import { useUserActionStore } from "@/lib/store/user/user-action.store";
 import { showToast } from "@/lib/utils/toast";
 import { RoleSelect } from "@/components/shared/role-select";
@@ -48,7 +44,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
     username: "",
     email: "",
     password: "",
-    roleId: ROLE_ID_MAP[UserRole.USER], // 默认设置为user角色 (ID: 2)
+    roleId: 0, // Use 0 as an invalid ID, forcing user selection
   });
   const [errors, setErrors] = useState<CreateUserFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -117,7 +113,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
       username: "",
       email: "",
       password: "",
-      roleId: ROLE_ID_MAP[UserRole.USER], // 重置时也设置默认角色
+      roleId: 0, // Reset to invalid ID
     });
     setErrors({});
     setShowPassword(false); // 重置密码显示状态
@@ -303,11 +299,7 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
               {errors.roleId && (
                 <p className="text-sm text-red-500">{errors.roleId}</p>
               )}
-              {form.roleId === ROLE_ID_MAP[UserRole.USER] && (
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  默认选择普通用户角色，可根据需要修改
-                </p>
-              )}
+              {/* The default role message is removed as it's no longer tied to a hardcoded ID. */}
             </div>
 
             {/* 显示服务器错误 */}

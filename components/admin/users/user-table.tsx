@@ -7,12 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  User,
-  UserListParams,
-  UserRole,
-  getUserDisplayName,
-} from "@/lib/types/user";
+import { User, UserListParams, getUserDisplayName } from "@/lib/types/user";
+import { Role } from "@/lib/types/roles";
+import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { useUserSelectionStore } from "@/lib/store/user/user-selection.store";
 import { UserActions } from "./user-actions";
@@ -85,19 +82,6 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
-  };
-
-  const getRoleBadge = (role: UserRole) => {
-    switch (role) {
-      case UserRole.ADMIN:
-        return <Badge variant="destructive">管理员</Badge>;
-      case UserRole.MODERATOR:
-        return <Badge variant="secondary">封禁用户</Badge>;
-      case UserRole.USER:
-        return <Badge variant="outline">普通用户</Badge>;
-      default:
-        return <Badge variant="outline">未知</Badge>;
-    }
   };
 
   if (loading) {
@@ -230,7 +214,9 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   </div>
                 </td>
                 <td className="p-4">
-                  {getRoleBadge(user.role.name as UserRole)}
+                  <Badge variant={getRoleBadgeInfo(user.role).variant}>
+                    {getRoleBadgeInfo(user.role).text}
+                  </Badge>
                 </td>
                 <td className="p-4 text-sm text-muted-foreground">
                   {formatDate(user.createdAt)}

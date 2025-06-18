@@ -9,6 +9,7 @@ import {
   getUserInitials,
   getDiceBearUrl,
 } from "@/lib/utils/gravatar";
+import { getRoleBorderColor } from "@/lib/utils/role-helpers";
 import type { User } from "@/lib/types/user";
 
 // 头像尺寸配置
@@ -30,13 +31,6 @@ const sizeConfig = {
   },
 } as const;
 
-// 用户角色对应的边框颜色
-const roleColors = {
-  admin: "ring-red-500/20 ring-2",
-  moderator: "ring-blue-500/20 ring-2",
-  user: "ring-gray-300/20 ring-1",
-} as const;
-
 interface UserAvatarProps {
   user: User;
   size?: keyof typeof sizeConfig;
@@ -56,8 +50,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   const userInitials = getUserInitials(user.username);
 
   // 获取用户角色对应的边框样式
-  const roleColor =
-    roleColors[user.role.name as keyof typeof roleColors] || roleColors.user;
+  const roleColor = getRoleBorderColor(user.role.name);
 
   // 渐进式加载头像
   useEffect(() => {

@@ -7,26 +7,7 @@ export enum UserStatus {
   REJECTED = 4, // 审核拒绝 - 对应后端 StatusApprovalRejected = 4
 }
 
-// 用户角色枚举 - 保持字符串类型但添加ID映射
-export enum UserRole {
-  ADMIN = "admin",
-  USER = "user",
-  MODERATOR = "moderator",
-}
-
-// 角色ID映射 - 用于与后端role_id字段对应
-export const ROLE_ID_MAP: Record<UserRole, number> = {
-  [UserRole.ADMIN]: 1,
-  [UserRole.USER]: 2,
-  [UserRole.MODERATOR]: 3,
-};
-
-// 反向映射 - 从role_id获取角色名称
-export const ID_ROLE_MAP: Record<number, UserRole> = {
-  1: UserRole.ADMIN,
-  2: UserRole.USER,
-  3: UserRole.MODERATOR,
-};
+// UserRole enum and mappings are removed to rely on dynamic data from the backend.
 
 // 状态标签映射
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
@@ -114,7 +95,6 @@ export interface UserListParams {
   order?: "asc" | "desc";
   // 前端扩展字段
   search?: string; // 搜索关键词
-  role?: UserRole; // 角色筛选
   sortOrder?: "asc" | "desc"; // 排序方向别名
 }
 
@@ -252,15 +232,7 @@ export const USER_STATUS_TRANSITIONS: UserStatusTransition[] = [
   },
 ];
 
-// 工具函数：获取角色ID
-export function getRoleId(role: UserRole): number {
-  return ROLE_ID_MAP[role];
-}
-
-// 工具函数：从ID获取角色
-export function getRoleFromId(roleId: number): UserRole {
-  return ID_ROLE_MAP[roleId] || UserRole.USER;
-}
+// Deprecated role helper functions removed.
 
 // 工具函数：获取状态标签
 export function getUserStatusLabel(status: UserStatus): string {

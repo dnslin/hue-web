@@ -65,7 +65,7 @@ export interface UserFilterActions {
 const initialState: UserFilterState = {
   filters: {
     search: undefined,
-    role: undefined,
+    roleId: undefined,
     status: undefined,
     sortBy: undefined,
     order: undefined,

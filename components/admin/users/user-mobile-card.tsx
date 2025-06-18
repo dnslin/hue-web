@@ -3,8 +3,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, UserRole, getUserDisplayName } from "@/lib/types/user";
+import { User, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
+import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { UserActions } from "./user-actions";
 
 interface UserMobileCardProps {
@@ -27,34 +28,7 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  const getRoleBadge = (role: UserRole) => {
-    switch (role) {
-      case UserRole.ADMIN:
-        return (
-          <Badge variant="destructive" className="text-xs px-2 py-0.5">
-            管理员
-          </Badge>
-        );
-      case UserRole.MODERATOR:
-        return (
-          <Badge variant="secondary" className="text-xs px-2 py-0.5">
-            版主
-          </Badge>
-        );
-      case UserRole.USER:
-        return (
-          <Badge variant="outline" className="text-xs px-2 py-0.5">
-            普通用户
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="text-xs px-2 py-0.5">
-            未知
-          </Badge>
-        );
-    }
-  };
+  // This logic is now centralized in lib/utils/role-helpers.ts
 
   return (
     <Card className="admin-card mobile-user-card border-0 shadow-sm bg-card/50 backdrop-blur-sm">
@@ -80,7 +54,12 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
                   >
                     {getUserDisplayName(user)}
                   </h3>
-                  {getRoleBadge(user.role.name as UserRole)}
+                  <Badge
+                    variant={getRoleBadgeInfo(user.role).variant}
+                    className="text-xs px-2 py-0.5"
+                  >
+                    {getRoleBadgeInfo(user.role).text}
+                  </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground" title={user.email}>
                   {user.email}

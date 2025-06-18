@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "zustand";
 import { Search, Filter, X, Calendar, Users, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { UserStatus, UserRole } from "@/lib/types/user";
+import { UserStatus } from "@/lib/types/user";
 import {
   useUserFilterStore,
   UserFilters as UserFilterState,
 } from "@/lib/store/user/user-filter.store";
 import { userDataStore } from "@/lib/store/user/user-data.store";
+import { useRoleStore } from "@/lib/store/role-store";
+import { Role } from "@/lib/types/roles";
 
 interface UserFiltersProps {
   isMobile?: boolean;
@@ -32,7 +34,14 @@ interface UserFiltersProps {
 export function UserFilters({ isMobile = false }: UserFiltersProps) {
   const { filters, setFilters, resetFilters } = useUserFilterStore();
   const { total, users } = useStore(userDataStore);
+  const { roles, fetchRoles } = useRoleStore();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  useEffect(() => {
+    if (roles.length === 0) {
+      fetchRoles();
+    }
+  }, [fetchRoles, roles.length]);
 
   const updateFilters = (newFilters: Partial<UserFilterState>) => {
     setFilters(newFilters);
@@ -63,17 +72,9 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
     }
   };
 
-  const getRoleLabel = (role: UserRole) => {
-    switch (role) {
-      case UserRole.ADMIN:
-        return "管理员";
-      case UserRole.USER:
-        return "普通用户";
-      case UserRole.MODERATOR:
-        return "封禁用户";
-      default:
-        return "未知";
-    }
+  const getRoleLabel = (roleId: number) => {
+    const role = roles.find((r) => r.id === roleId);
+    return role ? role.alias || role.name : "未知";
   };
 
   return (
@@ -224,13 +225,11 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                     用户角色
                   </label>
                   <Select
-                    value={filters.role || "ALL_ROLES"}
+                    value={filters.roleId?.toString() || "ALL_ROLES"}
                     onValueChange={(value: string) =>
                       updateFilters({
-                        role:
-                          value === "ALL_ROLES"
-                            ? undefined
-                            : (value as UserRole),
+                        roleId:
+                          value === "ALL_ROLES" ? undefined : parseInt(value, 10),
                       })
                     }
                   >
@@ -239,9 +238,11 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ALL_ROLES">全部角色</SelectItem>
-                      <SelectItem value={UserRole.ADMIN}>管理员</SelectItem>
-                      <SelectItem value={UserRole.MODERATOR}>版主</SelectItem>
-                      <SelectItem value={UserRole.USER}>普通用户</SelectItem>
+                      {roles.map((role: Role) => (
+                        <SelectItem key={role.id} value={role.id.toString()}>
+                          {role.alias || role.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -361,7 +362,7 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
               />
             </Badge>
           )}
-          {filters.role && (
+          {filters.roleId && (
             <Badge
               variant="secondary"
               className={
@@ -370,12 +371,12 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                   : "gap-1 text-xs px-2 py-1"
               }
             >
-              角色: {getRoleLabel(filters.role as UserRole)}
+              角色: {getRoleLabel(filters.roleId)}
               <X
                 className={`${
                   isMobile ? "h-4 w-4" : "h-3 w-3"
                 } cursor-pointer hover:bg-muted-foreground/20 rounded-sm`}
-                onClick={() => updateFilters({ role: undefined })}
+                onClick={() => updateFilters({ roleId: undefined })}
               />
             </Badge>
           )}

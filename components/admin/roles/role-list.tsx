@@ -25,6 +25,7 @@ import { RolePermissions } from "./role-permissions";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
 import { formatDateOnly } from "@/lib/utils/date-formatter";
+import { getRoleColor } from "@/lib/utils/role-helpers";
 import {
   roleCardVariants,
   roleGridVariants,
@@ -111,23 +112,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
     }
   };
 
-  // 获取角色颜色
-  const getRoleColor = (roleName: string) => {
-    switch (roleName.toLowerCase()) {
-      case "admin":
-      case "管理员":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "moderator":
-      case "版主":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "user":
-      case "普通用户":
-      case "default": // 假设 "default" 也是普通用户的一种表示
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
+  // Role color logic is now centralized in lib/utils/role-helpers.ts
 
   if (isLoadingRoles && roles.length === 0) {
     // 初始加载时显示骨架屏
