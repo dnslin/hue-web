@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Role, Permission } from "@/lib/types/roles"; // 统一使用 roles.ts 的类型
+import { Role, Permission, CreateRoleRequest } from "@/lib/types/roles"; // 统一使用 roles.ts 的类型
 import {
   PaginatedResponse,
   ErrorResponse,
@@ -46,7 +46,7 @@ interface RoleStoreState {
   // 角色操作
   fetchRoles: (page?: number, pageSize?: number) => Promise<void>;
   fetchRoleById: (id: number) => Promise<Role | null>;
-  createRole: (name: string) => Promise<Role | null>;
+  createRole: (roleData: CreateRoleRequest) => Promise<Role | null>;
   updateRole: (id: number, name: string) => Promise<Role | null>;
   deleteRole: (id: number) => Promise<boolean>;
   duplicateRole: (
@@ -232,10 +232,10 @@ export const useRoleStore = create<RoleStoreState>()(
         }
       },
 
-      createRole: async (name: string) => {
+      createRole: async (roleData: CreateRoleRequest) => {
         set({ isSubmitting: true, error: null });
         try {
-          const response = await createRoleAction({ name });
+          const response = await createRoleAction(roleData);
           if ("data" in response && response.data) {
             const newRole = (response as SuccessResponse<Role>).data as Role;
             showToast.success("角色创建成功");
@@ -351,7 +351,7 @@ export const useRoleStore = create<RoleStoreState>()(
           const newName = `${
             originalRole.alias || originalRole.name
           } ${newNameSuffix}`;
-          const newRole = await createRole(newName);
+          const newRole = await createRole({ name: newName });
 
           if (!newRole) {
             throw new Error("创建新角色失败。");

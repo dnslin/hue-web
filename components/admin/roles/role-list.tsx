@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { RolePermissions } from "./role-permissions";
+import { RoleCreateDialog } from "./role-create-dialog";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
 import { formatDateOnly } from "@/lib/utils/date-formatter";
@@ -149,10 +150,7 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
           <Shield className="h-6 w-6" />
           <h1 className="text-2xl font-semibold">角色权限管理</h1>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          添加角色
-        </Button>
+        <RoleCreateDialog />
       </motion.div>
 
       {/* 角色卡片网格 */}
