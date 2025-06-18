@@ -95,7 +95,7 @@ export function RoleSelect({
         </Label>
       )}
       <SelectPrimitive.Root
-        value={value?.toString()}
+        value={value?.toString() ?? ""}
         onValueChange={handleValueChange}
         disabled={disabled}
       >

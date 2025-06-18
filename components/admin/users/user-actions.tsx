@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   MoreHorizontal,
   Edit,
@@ -44,6 +44,7 @@ export function UserActions({ user }: UserActionsProps) {
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const editDialogContentRef = useRef<HTMLDivElement>(null);
   const [targetStatus, setTargetStatus] = useState<UserStatus | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [editForm, setEditForm] = useState({
@@ -457,7 +458,7 @@ export function UserActions({ user }: UserActionsProps) {
 
             {/* 编辑用户弹窗 */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-              <DialogContent>
+              <DialogContent ref={editDialogContentRef}>
                 <DialogHeader>
                   <DialogTitle>编辑用户信息</DialogTitle>
                   <DialogDescription>
@@ -499,6 +500,7 @@ export function UserActions({ user }: UserActionsProps) {
                     label="用户角色"
                     placeholder="请选择角色"
                     required
+                    portalContainer={editDialogContentRef.current}
                   />
                 </div>
                 <DialogFooter>
