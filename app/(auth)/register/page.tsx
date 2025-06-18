@@ -200,20 +200,26 @@ export default function RegisterPage() {
                 </label>
                 <Input
                   type="text"
-                  placeholder="请输入邮件中的6位验证码"
+                  placeholder="请输入邮件中的8位验证码"
                   value={activationCode}
                   onChange={(e) => {
-                    setActivationCode(e.target.value);
+                    // 只允许输入数字，最多8位
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 8);
+                    setActivationCode(value);
                     error && clearError();
                   }}
                   className="transition-all duration-300 sm:text-sm min-h-[48px] sm:min-h-[36px] focus:ring-2 focus:ring-primary/20 focus:border-primary focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)] text-center text-lg tracking-widest"
-                  maxLength={6}
+                  maxLength={8}
                 />
               </div>
 
               <Button
                 onClick={handleActivateAccount}
-                disabled={isLoading || !activationCode.trim()}
+                disabled={
+                  isLoading ||
+                  !activationCode.trim() ||
+                  activationCode.length !== 8
+                }
                 className="w-full"
               >
                 {isLoading ? (
@@ -239,7 +245,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-                  <span>验证码通常为6位数字或字母</span>
+                  <span>验证码为8位数字</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
