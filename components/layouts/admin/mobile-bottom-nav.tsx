@@ -30,7 +30,7 @@ const bottomNavItems: BottomNavItem[] = [
   {
     id: "upload",
     label: "上传",
-    href: "/admin/upload",
+    href: "/upload",
     icon: Upload,
   },
   {
@@ -42,13 +42,13 @@ const bottomNavItems: BottomNavItem[] = [
   {
     id: "stats",
     label: "统计",
-    href: "/admin/statistics",
+    href: "/statistics",
     icon: BarChart3,
   },
   {
     id: "settings",
     label: "设置",
-    href: "/admin/settings",
+    href: "/settings",
     icon: Settings,
   },
 ];

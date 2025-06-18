@@ -151,7 +151,7 @@ export async function getDashboardDataAction(): Promise<
         title: "批量上传",
         description: "上传多个图片文件",
         icon: Upload,
-        href: "/admin/images/upload",
+        href: "/images/upload",
         variant: "primary",
       },
       {
@@ -167,7 +167,7 @@ export async function getDashboardDataAction(): Promise<
         title: "系统设置",
         description: "配置系统参数",
         icon: Settings,
-        href: "/admin/settings",
+        href: "/settings",
         variant: "default",
       },
       {
@@ -175,7 +175,7 @@ export async function getDashboardDataAction(): Promise<
         title: "数据统计",
         description: "查看详细统计",
         icon: BarChart3,
-        href: "/admin/analytics",
+        href: "/analytics",
         variant: "default",
       },
     ];
