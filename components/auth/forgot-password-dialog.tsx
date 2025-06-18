@@ -59,18 +59,23 @@ interface ForgotPasswordDialogProps {
 }
 
 export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
-  const { forgotPasswordSilent, resetPasswordSilent, error, clearError } =
-    useAuthStore();
+  const {
+    forgotPassword,
+    resetPassword,
+    clearError,
+    forgotPasswordState,
+    resetForgotPasswordState,
+    setForgotPasswordStep,
+  } = useAuthStore();
 
-  // 使用独立的加载状态，避免全局 isLoading 影响页面渲染
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 状态管理
+  // 状态管理 - 使用 Store 状态
   const [isOpen, setIsOpen] = useState(false);
-  const [isResetStep, setIsResetStep] = useState(false);
-  const [isSuccessStep, setIsSuccessStep] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
+
+  // 从 Store 状态中获取当前步骤和用户邮箱
+  const { isLoading, error, currentStep, userEmail } = forgotPasswordState;
+  const isResetStep = currentStep === "reset";
+  const isSuccessStep = currentStep === "success";
 
   // 忘记密码表单
   const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
@@ -110,59 +115,57 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
 
     console.log("🔄 开始处理忘记密码请求:", data.email);
     clearError();
-    setIsSubmitting(true);
 
     try {
-      const result = await forgotPasswordSilent(data.email);
+      const result = await forgotPassword(data.email, { silent: true });
       console.log("✅ 忘记密码请求结果:", result);
 
-      if (result) {
+      // 检查结果是否为 AuthActionResult 对象
+      const isSuccess = typeof result === "boolean" ? result : result.success;
+
+      if (isSuccess) {
         console.log("📧 验证码发送成功，切换到重置步骤");
-        setUserEmail(data.email);
-        setIsResetStep(true);
+        // 成功时会自动通过 Store 更新到 'reset' 步骤
       } else {
         console.error("❌ 忘记密码请求失败，但没有抛出异常");
+        // 错误信息已通过 Store 设置，不需要手动设置步骤
       }
     } catch (err) {
       console.error("❌ 忘记密码请求失败:", err);
-    } finally {
-      setIsSubmitting(false);
+      // 错误信息已通过 Store 设置，不需要手动设置步骤
     }
   };
 
   // 提交重置密码表单
   const onResetPasswordSubmit = async (data: ResetPasswordFormValues) => {
     clearError();
-    setIsSubmitting(true);
 
     try {
-      await resetPasswordSilent(
+      const result = await resetPassword(
         userEmail,
         data.newPassword,
         data.newPassword,
-        data.token
+        data.token,
+        { silent: true }
       );
-      setIsSuccessStep(true);
 
-      setTimeout(() => {
-        setIsOpen(false);
-        resetState();
-      }, 3000);
+      // 检查结果是否为 AuthActionResult 对象
+      const isSuccess = typeof result === "boolean" ? result : result.success;
+
+      if (isSuccess) {
+        // 成功时会自动通过 Store 更新到 'success' 步骤
+        setTimeout(() => {
+          setIsOpen(false);
+          resetForgotPasswordState();
+        }, 3000);
+      } else {
+        console.error("密码重置失败，但没有抛出异常");
+        // 错误信息已通过 Store 设置，不需要手动设置步骤
+      }
     } catch (err) {
       console.error("密码重置失败:", err);
-    } finally {
-      setIsSubmitting(false);
+      // 错误信息已通过 Store 设置，不需要手动设置步骤
     }
-  };
-
-  // 重置状态
-  const resetState = () => {
-    setIsResetStep(false);
-    setIsSuccessStep(false);
-    setUserEmail("");
-    forgotPasswordForm.reset();
-    resetPasswordForm.reset();
-    clearError();
   };
 
   // 处理对话框关闭
@@ -171,14 +174,37 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
     setIsOpen(open);
     if (!open) {
       console.log("❌ 对话框关闭，重置状态");
-      resetState();
+      resetForgotPasswordState();
+      // 清空所有表单数据
+      forgotPasswordForm.reset();
+      resetPasswordForm.reset();
+    } else if (open && !isOpen) {
+      // 对话框从关闭状态变为打开状态时，重置状态和表单
+      console.log("🔄 对话框打开，重置状态和表单");
+      resetForgotPasswordState();
+      forgotPasswordForm.reset();
+      resetPasswordForm.reset();
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          // 防止在重置密码或成功步骤时意外关闭对话框
+          if (isResetStep || isSuccessStep) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // 防止在重置密码或成功步骤时按 ESC 关闭对话框
+          if (isResetStep || isSuccessStep) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 justify-center text-center">
             {isSuccessStep ? (
@@ -236,6 +262,9 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
                 <div className="text-sm text-muted-foreground">
                   <p>我们已向您的邮箱发送了验证码</p>
                   <p className="mt-1">请查收并输入验证码来重置密码</p>
+                  <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                    💡 提示：此对话框在重置过程中不会意外关闭
+                  </p>
                 </div>
               </div>
 
@@ -358,17 +387,21 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setIsResetStep(false)}
+                      onClick={() => {
+                        setForgotPasswordStep("email");
+                        // 清空重置密码表单数据
+                        resetPasswordForm.reset();
+                      }}
                       className="flex-1 h-12"
                     >
                       返回上一步
                     </Button>
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                       className="flex-1 h-12"
                     >
-                      {isSubmitting ? (
+                      {isLoading ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                           重置中...
@@ -457,10 +490,10 @@ export function ForgotPasswordDialog({ children }: ForgotPasswordDialogProps) {
 
                   <Button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                     className="w-full h-12"
                   >
-                    {isSubmitting ? (
+                    {isLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                         发送中...

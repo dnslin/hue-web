@@ -26,6 +26,25 @@ import type {
 import { cacheManager } from "@/lib/utils/cacheManager";
 
 /**
+ * 认证操作结果接口
+ */
+interface AuthActionResult {
+  success: boolean;
+  error?: string;
+  data?: any;
+}
+
+/**
+ * 忘记密码状态接口
+ */
+interface ForgotPasswordState {
+  isLoading: boolean;
+  error: string | null;
+  currentStep: "email" | "reset" | "success";
+  userEmail: string;
+}
+
+/**
  * 认证状态接口
  */
 interface AuthState {
@@ -34,6 +53,9 @@ interface AuthState {
   isLoading: boolean;
   isHydrated: boolean; // 新增：标识状态是否已从持久化存储中恢复
   error: string | null;
+
+  // 新增：忘记密码专门状态
+  forgotPasswordState: ForgotPasswordState;
 
   // 操作方法
   setAuth: (user: User) => void;
@@ -51,22 +73,23 @@ interface AuthState {
   setHydrated: () => void; // 新增：设置水合完成状态
 
   // 新增：密码重置和激活相关方法
-  forgotPassword: (email: string) => Promise<boolean>;
-  forgotPasswordSilent: (email: string) => Promise<boolean>; // 不影响全局 isLoading 的版本
+  forgotPassword: (
+    email: string,
+    options?: { silent?: boolean }
+  ) => Promise<boolean | AuthActionResult>;
   resetPassword: (
     email: string,
     password: string,
     confirmPassword: string,
-    code: string
-  ) => Promise<boolean>;
-  resetPasswordSilent: (
-    email: string,
-    password: string,
-    confirmPassword: string,
-    code: string
-  ) => Promise<boolean>; // 不影响全局 isLoading 的版本
+    code: string,
+    options?: { silent?: boolean }
+  ) => Promise<boolean | AuthActionResult>;
   activateAccount: (email: string, code: string) => Promise<boolean>;
   resendActivationEmail: (email: string) => Promise<boolean>;
+
+  // 新增：忘记密码状态管理方法
+  resetForgotPasswordState: () => void;
+  setForgotPasswordStep: (step: ForgotPasswordState["currentStep"]) => void;
 }
 
 /**
@@ -81,6 +104,14 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isHydrated: false, // 初始状态为未水合
       error: null,
+
+      // 新增：忘记密码专门状态
+      forgotPasswordState: {
+        isLoading: false,
+        error: null,
+        currentStep: "email",
+        userEmail: "",
+      },
 
       // 设置水合完成状态
       setHydrated: () => {
@@ -321,28 +352,88 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // 新增：密码重置和激活相关方法
-      forgotPassword: async (email: string) => {
-        set({ isLoading: true, error: null });
+      forgotPassword: async (email: string, options?: { silent?: boolean }) => {
+        const silent = options?.silent || false;
+
+        // 更新忘记密码专门状态
+        set({
+          forgotPasswordState: {
+            ...get().forgotPasswordState,
+            isLoading: true,
+            error: null,
+            userEmail: email,
+          },
+        });
+
+        if (!silent) {
+          set({ isLoading: true, error: null });
+        }
+
         try {
           const response = await forgotPasswordAction(email);
           if (response.success) {
-            console.log("✅ 忘记密码请求成功"); // 中文注释：忘记密码请求成功
-            set({ isLoading: false, error: null });
+            console.log(`✅ 忘记密码请求成功${silent ? "（静默模式）" : ""}`);
+
+            // 更新忘记密码专门状态
+            set({
+              forgotPasswordState: {
+                ...get().forgotPasswordState,
+                isLoading: false,
+                error: null,
+                currentStep: "reset",
+              },
+            });
+
+            if (!silent) {
+              set({ isLoading: false, error: null });
+            }
+
+            // 根据是否静默模式返回不同格式的结果
+            if (silent) {
+              return {
+                success: true,
+                data: response.data,
+              } as AuthActionResult;
+            }
             return true;
           } else {
-            console.error("❌ 忘记密码请求失败:", response.message); // 中文注释：忘记密码请求失败
-            // 确保错误消息从response中正确传递
+            console.error(
+              `❌ 忘记密码请求失败${silent ? "（静默模式）" : ""}:`,
+              response.message
+            );
             const errorMessage =
               response.message || "忘记密码请求失败，请检查输入信息。";
+
+            // 更新忘记密码专门状态
             set({
-              isLoading: false,
-              error: errorMessage,
+              forgotPasswordState: {
+                ...get().forgotPasswordState,
+                isLoading: false,
+                error: errorMessage,
+              },
             });
+
+            if (!silent) {
+              set({
+                isLoading: false,
+                error: errorMessage,
+              });
+            }
+
+            // 根据是否静默模式返回不同格式的结果
+            if (silent) {
+              return {
+                success: false,
+                error: errorMessage,
+              } as AuthActionResult;
+            }
             return false;
           }
         } catch (err: any) {
-          console.error("❌ 忘记密码时发生意外错误:", err); // 中文注释：忘记密码时发生意外错误
-          // 处理意外的客户端错误
+          console.error(
+            `❌ 忘记密码时发生意外错误${silent ? "（静默模式）" : ""}:`,
+            err
+          );
           let errorMessage = "忘记密码失败，请稍后重试。";
 
           if (err && typeof err === "object") {
@@ -355,28 +446,29 @@ export const useAuthStore = create<AuthState>()(
             errorMessage = err;
           }
 
+          // 更新忘记密码专门状态
           set({
-            isLoading: false,
-            error: errorMessage,
+            forgotPasswordState: {
+              ...get().forgotPasswordState,
+              isLoading: false,
+              error: errorMessage,
+            },
           });
-          return false;
-        }
-      },
 
-      // 忘记密码（静默版本，不影响全局 isLoading）
-      forgotPasswordSilent: async (email: string) => {
-        try {
-          const response = await forgotPasswordAction(email);
-          if (response.success) {
-            console.log("✅ 忘记密码请求成功（静默模式）");
-            return true;
-          } else {
-            console.error("❌ 忘记密码请求失败（静默模式）:", response.message);
-            // 错误通过其他方式处理，不设置全局错误状态
-            return false;
+          if (!silent) {
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
           }
-        } catch (err: any) {
-          console.error("❌ 忘记密码时发生意外错误（静默模式）:", err);
+
+          // 根据是否静默模式返回不同格式的结果
+          if (silent) {
+            return {
+              success: false,
+              error: errorMessage,
+            } as AuthActionResult;
+          }
           return false;
         }
       },
@@ -385,9 +477,24 @@ export const useAuthStore = create<AuthState>()(
         email: string,
         password: string,
         confirmPassword: string,
-        code: string
-      ): Promise<boolean> => {
-        set({ isLoading: true, error: null });
+        code: string,
+        options?: { silent?: boolean }
+      ): Promise<boolean | AuthActionResult> => {
+        const silent = options?.silent || false;
+
+        // 更新忘记密码专门状态
+        set({
+          forgotPasswordState: {
+            ...get().forgotPasswordState,
+            isLoading: true,
+            error: null,
+          },
+        });
+
+        if (!silent) {
+          set({ isLoading: true, error: null });
+        }
+
         try {
           const response = await resetPasswordAction(
             email,
@@ -396,22 +503,69 @@ export const useAuthStore = create<AuthState>()(
             code
           );
           if (response.success) {
-            console.log("✅ 密码重置成功"); // 中文注释：密码重置成功
-            set({ isLoading: false, error: null });
+            console.log(`✅ 密码重置成功${silent ? "（静默模式）" : ""}`); // 中文注释：密码重置成功
+
+            // 更新忘记密码专门状态
+            set({
+              forgotPasswordState: {
+                ...get().forgotPasswordState,
+                isLoading: false,
+                error: null,
+                currentStep: "success",
+              },
+            });
+
+            if (!silent) {
+              set({ isLoading: false, error: null });
+            }
+
+            // 根据是否静默模式返回不同格式的结果
+            if (silent) {
+              return {
+                success: true,
+                data: response.data,
+              } as AuthActionResult;
+            }
             return true;
           } else {
-            console.error("❌ 密码重置失败:", response.message); // 中文注释：密码重置失败
+            console.error(
+              `❌ 密码重置失败${silent ? "（静默模式）" : ""}:`,
+              response.message
+            ); // 中文注释：密码重置失败
             // 确保错误消息从response中正确传递
             const errorMessage =
               response.message || "密码重置失败，请检查输入信息。";
+
+            // 更新忘记密码专门状态
             set({
-              isLoading: false,
-              error: errorMessage,
+              forgotPasswordState: {
+                ...get().forgotPasswordState,
+                isLoading: false,
+                error: errorMessage,
+              },
             });
+
+            if (!silent) {
+              set({
+                isLoading: false,
+                error: errorMessage,
+              });
+            }
+
+            // 根据是否静默模式返回不同格式的结果
+            if (silent) {
+              return {
+                success: false,
+                error: errorMessage,
+              } as AuthActionResult;
+            }
             return false;
           }
         } catch (err: any) {
-          console.error("❌ 密码重置时发生意外错误:", err); // 中文注释：密码重置时发生意外错误
+          console.error(
+            `❌ 密码重置时发生意外错误${silent ? "（静默模式）" : ""}:`,
+            err
+          ); // 中文注释：密码重置时发生意外错误
           // 处理意外的客户端错误
           let errorMessage = "密码重置失败，请稍后重试。";
 
@@ -425,37 +579,29 @@ export const useAuthStore = create<AuthState>()(
             errorMessage = err;
           }
 
+          // 更新忘记密码专门状态
           set({
-            isLoading: false,
-            error: errorMessage,
+            forgotPasswordState: {
+              ...get().forgotPasswordState,
+              isLoading: false,
+              error: errorMessage,
+            },
           });
-          return false;
-        }
-      },
 
-      // 密码重置（静默版本，不影响全局 isLoading）
-      resetPasswordSilent: async (
-        email: string,
-        password: string,
-        confirmPassword: string,
-        code: string
-      ): Promise<boolean> => {
-        try {
-          const response = await resetPasswordAction(
-            email,
-            password,
-            confirmPassword,
-            code
-          );
-          if (response.success) {
-            console.log("✅ 密码重置成功（静默模式）");
-            return true;
-          } else {
-            console.error("❌ 密码重置失败（静默模式）:", response.message);
-            return false;
+          if (!silent) {
+            set({
+              isLoading: false,
+              error: errorMessage,
+            });
           }
-        } catch (err: any) {
-          console.error("❌ 密码重置时发生意外错误（静默模式）:", err);
+
+          // 根据是否静默模式返回不同格式的结果
+          if (silent) {
+            return {
+              success: false,
+              error: errorMessage,
+            } as AuthActionResult;
+          }
           return false;
         }
       },
@@ -545,6 +691,27 @@ export const useAuthStore = create<AuthState>()(
           });
           return false;
         }
+      },
+
+      // 新增：忘记密码状态管理方法
+      resetForgotPasswordState: () => {
+        set({
+          forgotPasswordState: {
+            isLoading: false,
+            error: null,
+            currentStep: "email",
+            userEmail: "",
+          },
+        });
+      },
+
+      setForgotPasswordStep: (step: ForgotPasswordState["currentStep"]) => {
+        set({
+          forgotPasswordState: {
+            ...get().forgotPasswordState,
+            currentStep: step,
+          },
+        });
       },
     }),
     {

@@ -4,7 +4,12 @@ import React from "react";
 
 interface AuthLoadingScreenProps {
   message?: string;
-  type?: "auth" | "hydration" | "loading";
+  type?:
+    | "auth"
+    | "hydration"
+    | "loading"
+    | "forgot-password"
+    | "reset-password";
 }
 
 /**
@@ -20,6 +25,8 @@ export const AuthLoadingScreen: React.FC<AuthLoadingScreenProps> = ({
     auth: "正在验证身份...",
     hydration: "正在恢复用户状态...",
     loading: "正在加载...",
+    "forgot-password": "正在发送密码重置邮件...",
+    "reset-password": "正在重置密码...",
   }[type];
 
   const displayMessage = message || defaultMessage;
@@ -34,7 +41,9 @@ export const AuthLoadingScreen: React.FC<AuthLoadingScreenProps> = ({
 
         {/* 加载文字 */}
         <div className="text-center space-y-2">
-          <p className="text-sm font-medium text-foreground">{displayMessage}</p>
+          <p className="text-sm font-medium text-foreground">
+            {displayMessage}
+          </p>
           <p className="text-xs text-muted-foreground">请稍候...</p>
         </div>
       </div>
