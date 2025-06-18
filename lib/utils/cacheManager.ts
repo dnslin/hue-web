@@ -399,6 +399,14 @@ export const CACHE_KEYS = {
   // 配置信息
   SYSTEM_CONFIG: "system:config",
   USER_PREFERENCES: (id: number) => `users:preferences:${id}`,
+
+  // 设置相关
+  SETTINGS_BASE: "settings",
+  SETTINGS_ALL: "settings:all",
+  SETTINGS_BASIC: "settings:basic",
+  SETTINGS_EMAIL: "settings:email",
+  SETTINGS_IMAGE: "settings:image",
+  SETTINGS_SECURITY: "settings:security",
 } as const;
 
 // 缓存工具函数

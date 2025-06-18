@@ -56,6 +56,7 @@ export function isAdminRoute(pathname: string): boolean {
     "/dashboard", // 控制台首页
     "/admin", // 管理后台根路径
     "/users", // 用户管理页面
+    "/settings", // 系统设置页面
   ];
 
   // 管理后台路径前缀

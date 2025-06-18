@@ -145,28 +145,34 @@ export const adminNavigation: NavigationGroup[] = [
       {
         id: "settings",
         label: "系统设置",
-        href: "/admin/settings",
+        href: "/settings",
         icon: Settings,
         description: "基础配置和参数设置",
-        defaultHref: "/admin/settings/general", // 折叠状态下跳转到基础设置
+        defaultHref: "/settings", // 使用主设置页面
         children: [
           {
-            id: "settings-general",
+            id: "settings-basic",
             label: "基础设置",
-            href: "/admin/settings/general",
+            href: "/settings?tab=basic",
             icon: Settings,
           },
           {
             id: "settings-email",
-            label: "邮件配置",
-            href: "/admin/settings/email",
+            label: "邮件设置",
+            href: "/settings?tab=email",
             icon: Mail,
           },
           {
-            id: "settings-api",
-            label: "API 设置",
-            href: "/admin/settings/api",
+            id: "settings-image",
+            label: "图片设置",
+            href: "/settings?tab=image",
             icon: Globe,
+          },
+          {
+            id: "settings-security",
+            label: "安全设置",
+            href: "/settings?tab=security",
+            icon: Shield,
           },
         ],
       },
