@@ -63,7 +63,7 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
       response.data = deepConvertToCamelCase(response.data);
       return response;
     },
-    (error: AxiosError<any>) => {
+    (error: AxiosError<unknown>) => {
       console.error("[API Response Error] Full error object:", error); // 中文注释：完整错误对象日志
 
       // 优先从响应数据中获取错误信息

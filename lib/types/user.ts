@@ -5,6 +5,7 @@ export enum UserStatus {
   PENDING = 2, // 待审核 - 对应后端 StatusPendingApproval = 2
   DELETED = 3, // 已删除 (逻辑删除) - 对应后端 StatusDeleted = 3
   REJECTED = 4, // 审核拒绝 - 对应后端 StatusApprovalRejected = 4
+  EMAIL_PENDING = 5, // 待邮件激活 - 对应后端 StatusEmailPending = 5
 }
 
 // UserRole enum and mappings are removed to rely on dynamic data from the backend.
@@ -16,6 +17,7 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   [UserStatus.PENDING]: "待审核",
   [UserStatus.DELETED]: "已删除",
   [UserStatus.REJECTED]: "审核拒绝",
+  [UserStatus.EMAIL_PENDING]: "待邮件激活",
 };
 
 // 基础用户信息接口
