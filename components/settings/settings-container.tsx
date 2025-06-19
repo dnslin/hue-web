@@ -7,15 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useSettingsStore,
   useSettingsData,
   useSettingsActions,
 } from "@/lib/store/settings.store";
 import { SettingType } from "@/lib/types/settings";
 import { BasicSettingsForm } from "./basic-settings-form";
 import { EmailSettingsForm } from "./email-settings-form";
-// import { ImageSettingsForm } from "./image-settings-form";
-// import { SecuritySettingsForm } from "./security-settings-form";
+import { ImageSettingsForm } from "./image-settings-form";
+import { SecuritySettingsForm } from "./security-settings-form";
 import {
   Settings,
   Mail,
@@ -330,21 +329,12 @@ export const SettingsContainer = ({
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-muted-foreground/25 rounded-lg">
-                    <div className="text-center space-y-2">
-                      <Image className="h-8 w-8 mx-auto text-muted-foreground" />
-                      <p className="text-muted-foreground">
-                        图片设置表单开发中...
-                      </p>
-                    </div>
-                  </div>
-                  {/* TODO: Replace with ImageSettingsForm when implemented */}
-                  {/* <ImageSettingsForm
+                  <ImageSettingsForm
                     data={settings.image}
                     onSubmit={updateImageSettings}
                     isSubmitting={isSubmitting}
                     error={error}
-                  /> */}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -370,21 +360,12 @@ export const SettingsContainer = ({
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-muted-foreground/25 rounded-lg">
-                    <div className="text-center space-y-2">
-                      <Shield className="h-8 w-8 mx-auto text-muted-foreground" />
-                      <p className="text-muted-foreground">
-                        安全设置表单开发中...
-                      </p>
-                    </div>
-                  </div>
-                  {/* TODO: Replace with SecuritySettingsForm when implemented */}
-                  {/* <SecuritySettingsForm
+                  <SecuritySettingsForm
                     data={settings.security}
                     onSubmit={updateSecuritySettings}
                     isSubmitting={isSubmitting}
                     error={error}
-                  /> */}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
