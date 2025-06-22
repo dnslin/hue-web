@@ -76,10 +76,8 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
         error.response.data = responseData; // 更新错误对象中的数据
         if (typeof responseData === "string") {
           errorMessage = responseData;
-        } else if (responseData.message) {
-          errorMessage = responseData.message;
-        } else if (responseData.error) {
-          errorMessage = responseData.error;
+        } else if (responseData.msg) {
+          errorMessage = responseData.msg;
         } else if (responseData.detail) {
           errorMessage = responseData.detail;
         }
