@@ -15,8 +15,13 @@ import {
   ImageSettingsFormData,
   SecuritySettingsFormData,
   SettingType,
+  SettingsActionResponse,
 } from "@/lib/types/settings";
-import { ErrorResponse, SuccessResponse } from "@/lib/types/user";
+import type {
+  ApiResponse,
+  SuccessApiResponse,
+  ErrorApiResponse,
+} from "@/lib/types/common";
 import { cacheManager, CACHE_KEYS } from "@/lib/utils/cache-manager";
 
 // 设置相关API路径

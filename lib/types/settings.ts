@@ -1,6 +1,11 @@
 import { z } from "zod";
+import type { SuccessApiResponse, ErrorApiResponse } from "./common";
 
 // ========== 基础站点设置 ==========
+
+/**
+ * 基础站点设置 - 对应后端 models.BasicSiteSetting
+ */
 export interface BasicSiteSetting {
   id: number;
   appName: string;
@@ -18,6 +23,47 @@ export interface BasicSiteSetting {
   updatedAt: string;
 }
 
+/**
+ * 管理员基础站点设置DTO - 对应后端 dtos.AdminBasicSiteSettingsDTO
+ */
+export interface AdminBasicSiteSettingsDTO {
+  id: number;
+  appName: string;
+  siteDescription: string;
+  seoKeywords: string;
+  logoUrl: string;
+  faviconUrl: string;
+  siteAnnouncement: string;
+  userRegistrationEnabled: boolean;
+  adminApprovalRequired: boolean;
+  emailVerificationRequired: boolean;
+  guestUploadEnabled: boolean;
+  userInitialStorageCapacityMb: number;
+  emailNotifyEnabled: boolean;
+  fromEmailAddress: string;
+  fromEmailName: string;
+  smtpServer: string;
+  smtpPort: number;
+  smtpUsername: string;
+  isSmtpPasswordSet: boolean; // 指示SMTP密码是否已设置
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 公共站点设置DTO - 对应后端 dtos.PublicSiteDetailsDTO
+ */
+export interface PublicSiteDetailsDTO {
+  appName: string;
+  logoUrl: string;
+  faviconUrl: string;
+  siteDescription: string;
+  siteAnnouncement: string;
+}
+
+/**
+ * 基础设置表单验证Schema - 根据swagger.yaml约束更新
+ */
 export const basicSettingSchema = z.object({
   appName: z
     .string()
@@ -55,6 +101,35 @@ export const basicSettingSchema = z.object({
 export type BasicSettingFormData = z.infer<typeof basicSettingSchema>;
 
 // ========== 邮件设置 ==========
+
+/**
+ * 邮件设置更新DTO - 对应后端 dtos.UpdateEmailSettingsDTO
+ */
+export interface UpdateEmailSettingsDTO {
+  emailNotifyEnabled?: boolean;
+  fromEmailAddress?: string;
+  fromEmailName?: string;
+  smtpServer?: string;
+  smtpPort?: number;
+  smtpUsername?: string;
+  smtpPassword?: string; // 注意：密码应由后端加密处理
+}
+
+/**
+ * 基础站点公共设置DTO - 对应后端 dtos.BasicSitePublicSettingsDTO
+ */
+export interface BasicSitePublicSettingsDTO {
+  emailNotifyEnabledPublic: boolean;
+  fromEmailAddressPublic: string;
+  fromEmailNamePublic: string;
+  smtpServerPublic: string;
+  smtpPortPublic: number;
+  smtpUsernamePublic: string;
+}
+
+/**
+ * 邮件设置接口（前端使用）
+ */
 export interface EmailSettings {
   id: number;
   fromEmailAddress: string;
@@ -68,6 +143,9 @@ export interface EmailSettings {
   updatedAt: string;
 }
 
+/**
+ * 邮件设置表单验证Schema
+ */
 export const emailSettingsSchema = z.object({
   fromEmailAddress: z.string().email("请输入有效的邮箱地址"),
   fromEmailName: z
@@ -270,3 +348,14 @@ export interface SettingTab {
   description: string;
   icon: React.ComponentType<{ className?: string }>;
 }
+
+// ========== API响应类型 ==========
+
+/**
+ * 设置相关API响应类型
+ */
+export type SettingsActionResponse = SuccessApiResponse<any> | ErrorApiResponse;
+export type BasicSettingsResponse =
+  SuccessApiResponse<AdminBasicSiteSettingsDTO>;
+export type PublicSettingsResponse = SuccessApiResponse<PublicSiteDetailsDTO>;
+export type EmailSettingsResponse = SuccessApiResponse<UpdateEmailSettingsDTO>;

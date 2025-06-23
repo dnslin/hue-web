@@ -2,7 +2,7 @@
 
 import { StateCreator } from "zustand";
 import { shallow } from "zustand/shallow";
-import { User, UserListParams } from "@/lib/types/user";
+import { AdminUserResponse, UserListParams } from "@/lib/types/user";
 import { useUserFilterStore } from "./user-filter.store";
 import { getUsersAction } from "@/lib/actions/users/user.actions";
 import { handleError } from "@/lib/utils/error-handler";
@@ -15,7 +15,7 @@ export interface UserDataState {
   /**
    * 当前页的用户列表
    */
-  users: User[];
+  users: AdminUserResponse[];
   /**
    * 用户总数
    */
@@ -94,23 +94,19 @@ export const createUserDataSlice: StateCreator<
     try {
       const response = await getUsersAction(apiParams);
 
-      // 首先检查成功的响应结构
-      if ("data" in response && "meta" in response) {
+      // 检查API响应结构
+      if ("data" in response && "meta" in response && response.code === 0) {
         set({
           users: response.data,
           total: response.meta.total,
           loading: false,
         });
-      } else if ("error" in response) {
-        // 处理已知的 API 错误响应
-        const errorToHandle = new Error(response.message || "获取用户列表失败");
-        await handleError(errorToHandle, "获取用户列表失败");
-        set({ loading: false, error: response.message || "获取用户列表失败" });
       } else {
-        // 处理任何其他意外的响应格式
-        const errorToHandle = new Error("API响应格式不正确或未知");
+        // 处理API错误响应
+        const errorMessage = response.message || "获取用户列表失败";
+        const errorToHandle = new Error(errorMessage);
         await handleError(errorToHandle, "获取用户列表失败");
-        set({ loading: false, error: "API响应格式不正确或未知" });
+        set({ loading: false, error: errorMessage });
       }
     } catch (error) {
       const errorMessage =
