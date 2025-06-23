@@ -15,10 +15,7 @@ import {
   TrendDirection, // 导入 TrendDirection
   SystemStatus as SystemStatusEnum, // 导入 SystemStatus 枚举以用于状态字段
 } from "@/lib/types/dashboard";
-import {
-  UserListResponse,
-  ErrorResponse as ApiErrorResponse,
-} from "@/lib/types/user";
+import { UserListResponse } from "@/lib/types/user";
 import { getUsersAction } from "@/lib/actions/users/user.actions";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
 
@@ -73,12 +70,6 @@ export async function getDashboardDataAction(): Promise<
       typeof usersResponse.meta.total === "number"
     ) {
       totalUsers = usersResponse.meta.total;
-    } else {
-      console.warn(
-        "Could not fetch total users for dashboard:",
-        (usersResponse as ApiErrorResponse).message ||
-          "Unknown error fetching users"
-      );
     }
 
     const imagesCount = await getImagesCount(apiService);

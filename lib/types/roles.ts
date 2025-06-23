@@ -8,7 +8,13 @@ import type {
 } from "./common";
 
 // 重新导出用户模块中的类型，避免重复定义
-export type { Permission, Role, PermissionGroup } from "./user";
+export type {
+  Permission,
+  Role,
+  PermissionGroup,
+  CreateRoleRequest,
+  UpdateRoleRequest,
+} from "./user";
 
 /**
  * 权限创建请求 - 对应后端 dtos.PermissionCreateDTO
