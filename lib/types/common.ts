@@ -46,7 +46,8 @@ export type SuccessApiResponse<TData = any> = ApiResponse<TData> & {
 /**
  * 错误API响应类型 (code !== 0)
  */
-export interface ErrorApiResponse extends Omit<ApiResponse<null>, 'data' | 'meta'> {
+export interface ErrorApiResponse
+  extends Omit<ApiResponse<null>, "data" | "meta"> {
   code: number; // 非0的业务错误码
   message: string;
   error?: any; // 更详细的原始错误信息
@@ -68,27 +69,27 @@ export interface BatchOperationResult {
  * 审计日志操作类型 - 对应后端 models.AuditLogActionType
  */
 export enum AuditLogActionType {
-  USER_REGISTER = 'USER_REGISTER',
-  USER_LOGIN = 'USER_LOGIN',
-  USER_LOGOUT = 'USER_LOGOUT',
-  USER_UPDATE_PROFILE = 'USER_UPDATE_PROFILE',
-  USER_CHANGE_PASSWORD = 'USER_CHANGE_PASSWORD',
-  USER_REQUEST_RESET_PWD = 'USER_REQUEST_RESET_PWD',
-  USER_RESET_PASSWORD = 'USER_RESET_PASSWORD',
-  USER_VERIFY_EMAIL = 'USER_VERIFY_EMAIL',
-  USER_REQUEST_ACTIVATION_EMAIL = 'USER_REQUEST_ACTIVATION_EMAIL',
-  USER_REQUEST_RESET_PWD_EMAIL = 'USER_REQUEST_RESET_PWD_EMAIL',
-  ADMIN_USER_CREATE = 'ADMIN_USER_CREATE',
-  ADMIN_USER_UPDATE = 'ADMIN_USER_UPDATE',
-  ADMIN_USER_DELETE = 'ADMIN_USER_DELETE',
-  ADMIN_USER_STATUS_CHANGE = 'ADMIN_USER_STATUS_CHANGE',
-  ADMIN_USER_ROLE_CHANGE = 'ADMIN_USER_ROLE_CHANGE',
-  ADMIN_USER_PASSWORD_RESET = 'ADMIN_USER_PASSWORD_RESET',
-  ADMIN_BATCH_USER_APPROVE = 'ADMIN_BATCH_USER_APPROVE',
-  ADMIN_BATCH_USER_REJECT = 'ADMIN_BATCH_USER_REJECT',
-  ADMIN_BATCH_USER_BAN = 'ADMIN_BATCH_USER_BAN',
-  ADMIN_BATCH_USER_UNBAN = 'ADMIN_BATCH_USER_UNBAN',
-  SYSTEM_EMAIL_SEND_SKIPPED = 'SYSTEM_EMAIL_SEND_SKIPPED',
+  USER_REGISTER = "USER_REGISTER",
+  USER_LOGIN = "USER_LOGIN",
+  USER_LOGOUT = "USER_LOGOUT",
+  USER_UPDATE_PROFILE = "USER_UPDATE_PROFILE",
+  USER_CHANGE_PASSWORD = "USER_CHANGE_PASSWORD",
+  USER_REQUEST_RESET_PWD = "USER_REQUEST_RESET_PWD",
+  USER_RESET_PASSWORD = "USER_RESET_PASSWORD",
+  USER_VERIFY_EMAIL = "USER_VERIFY_EMAIL",
+  USER_REQUEST_ACTIVATION_EMAIL = "USER_REQUEST_ACTIVATION_EMAIL",
+  USER_REQUEST_RESET_PWD_EMAIL = "USER_REQUEST_RESET_PWD_EMAIL",
+  ADMIN_USER_CREATE = "ADMIN_USER_CREATE",
+  ADMIN_USER_UPDATE = "ADMIN_USER_UPDATE",
+  ADMIN_USER_DELETE = "ADMIN_USER_DELETE",
+  ADMIN_USER_STATUS_CHANGE = "ADMIN_USER_STATUS_CHANGE",
+  ADMIN_USER_ROLE_CHANGE = "ADMIN_USER_ROLE_CHANGE",
+  ADMIN_USER_PASSWORD_RESET = "ADMIN_USER_PASSWORD_RESET",
+  ADMIN_BATCH_USER_APPROVE = "ADMIN_BATCH_USER_APPROVE",
+  ADMIN_BATCH_USER_REJECT = "ADMIN_BATCH_USER_REJECT",
+  ADMIN_BATCH_USER_BAN = "ADMIN_BATCH_USER_BAN",
+  ADMIN_BATCH_USER_UNBAN = "ADMIN_BATCH_USER_UNBAN",
+  SYSTEM_EMAIL_SEND_SKIPPED = "SYSTEM_EMAIL_SEND_SKIPPED",
 }
 
 /**
@@ -121,7 +122,7 @@ export interface AuditLogQueryResponse {
 /**
  * 排序方向
  */
-export type SortOrder = 'asc' | 'desc';
+export type SortOrder = "asc" | "desc";
 
 /**
  * 基础查询参数
@@ -151,7 +152,7 @@ export interface IdParam {
 /**
  * 通用状态
  */
-export type Status = 'success' | 'error' | 'warning' | 'info';
+export type Status = "success" | "error" | "warning" | "info";
 
 /**
  * 加载状态
@@ -275,3 +276,22 @@ export type DeepPartial<T> = {
 export type DeepRequired<T> = {
   [P in keyof T]-?: T[P] extends object ? DeepRequired<T[P]> : T[P];
 };
+
+/**
+ * 类型守卫：检查是否为成功响应
+ */
+export function isSuccessApiResponse<T>(
+  response: SuccessApiResponse<T> | ErrorApiResponse
+): response is SuccessApiResponse<T> {
+  return response.code === 0;
+}
+
+/**
+ * 类型守卫：检查是否为错误响应
+ */
+export function isErrorApiResponse(
+  response: SuccessApiResponse<any> | ErrorApiResponse
+): response is ErrorApiResponse {
+  return response.code !== 0;
+}
+

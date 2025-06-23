@@ -5,10 +5,8 @@ import {
   UserUpdateRequest,
   AdminUserCreateRequest,
 } from "@/lib/types/user";
-import {
-  SuccessResponse,
-  ErrorResponse as ApiErrorResponse,
-} from "@/lib/types/user";
+import type { SuccessApiResponse, ErrorApiResponse } from "@/lib/types/common";
+import { isSuccessApiResponse } from "@/lib/types/common";
 import {
   approveUserAction,
   rejectUserAction,
@@ -123,7 +121,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
       },
     }));
 
-    let actionResponse: SuccessResponse<User> | ApiErrorResponse | null = null;
+    let actionResponse: SuccessApiResponse<User> | ErrorApiResponse | null =
+      null;
 
     try {
       switch (toStatus) {
@@ -150,15 +149,9 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           return await handleStoreError(error, "更改用户状态");
       }
 
-      if (
-        actionResponse &&
-        "code" in actionResponse &&
-        actionResponse.code !== 200
-      ) {
-        const error = new Error(
-          (actionResponse as ApiErrorResponse).message || "更改用户状态失败"
-        );
-        const result = await handleStoreError(error, "更改用户状态");
+      if (actionResponse && !isSuccessApiResponse(actionResponse)) {
+        console.error("❌ 更改用户状态失败:", actionResponse.message);
+        const result = await handleStoreError(actionResponse, "更改用户状态");
         set((state) => ({
           error: {
             ...state.error,
@@ -215,15 +208,9 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
 
     try {
       const actionResponse = await deleteAdminUserAction(userId);
-      if (
-        actionResponse &&
-        "code" in actionResponse &&
-        actionResponse.code !== 200
-      ) {
-        const error = new Error(
-          (actionResponse as ApiErrorResponse).message || "删除用户失败"
-        );
-        const result = await handleStoreError(error, "删除用户");
+      if (actionResponse && !isSuccessApiResponse(actionResponse)) {
+        console.error("❌ 删除用户失败:", actionResponse.message);
+        const result = await handleStoreError(actionResponse, "删除用户");
         set((state) => ({
           error: {
             ...state.error,
@@ -337,16 +324,9 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
     try {
       const actionResponse = await updateAdminUserAction(userId, updateData);
 
-      // 检查响应是否成功 (200-299)
-      if (
-        actionResponse &&
-        "code" in actionResponse &&
-        (actionResponse.code < 200 || actionResponse.code >= 300)
-      ) {
-        const error = new Error(
-          (actionResponse as ApiErrorResponse).message || "更新用户信息失败"
-        );
-        const result = await handleStoreError(error, "更新用户信息");
+      if (actionResponse && !isSuccessApiResponse(actionResponse)) {
+        console.error("❌ 更新用户信息失败:", actionResponse.message);
+        const result = await handleStoreError(actionResponse, "更新用户信息");
         set((state) => ({
           error: {
             ...state.error,
@@ -395,16 +375,9 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
     try {
       const actionResponse = await createAdminUserAction(userData);
 
-      // 检查响应是否成功 (code = 201 for creation)
-      if (
-        actionResponse &&
-        "code" in actionResponse &&
-        (actionResponse.code < 200 || actionResponse.code >= 300)
-      ) {
-        const error = new Error(
-          (actionResponse as ApiErrorResponse).message || "创建用户失败"
-        );
-        const result = await handleStoreError(error, "创建用户");
+      if (actionResponse && !isSuccessApiResponse(actionResponse)) {
+        console.error("❌ 创建用户失败:", actionResponse.message);
+        const result = await handleStoreError(actionResponse, "创建用户");
         set((state) => ({
           error: {
             ...state.error,
@@ -416,21 +389,23 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
 
       // 操作成功，刷新数据
       await userDataStore.getState().refreshUsers();
-      const createdUser = (actionResponse as SuccessResponse<User>).data;
-      if (createdUser) {
-        useUserCacheStore.getState().invalidateUserCache(createdUser.id);
-        return { success: true, user: createdUser };
-      } else {
-        const error = new Error("创建用户成功但未返回用户数据");
-        const result = await handleStoreError(error, "创建用户");
-        set((state) => ({
-          error: {
-            ...state.error,
-            createError: result.error,
-          },
-        }));
-        return result;
+      if (actionResponse && isSuccessApiResponse(actionResponse)) {
+        const createdUser = actionResponse.data as User;
+        if (createdUser) {
+          useUserCacheStore.getState().invalidateUserCache(createdUser.id);
+          return { success: true, user: createdUser };
+        }
       }
+
+      const error = new Error("创建用户成功但未返回用户数据");
+      const result = await handleStoreError(error, "创建用户");
+      set((state) => ({
+        error: {
+          ...state.error,
+          createError: result.error,
+        },
+      }));
+      return result;
     } catch (e) {
       const result = await handleStoreError(e, "创建用户");
       set((state) => ({

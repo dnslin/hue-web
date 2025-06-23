@@ -20,6 +20,7 @@ import type {
   ErrorApiResponse,
   PaginatedApiResponse,
 } from "@/lib/types/common";
+import { cacheManager, CACHE_KEYS } from "@/lib/utils/cache-manager";
 
 // swagger中定义的角色相关基础路径
 const ROLES_API_BASE = "/roles";
@@ -300,10 +301,6 @@ export async function getPermissionsAction(params?: {
   }
 }
 
-// 注意：剩余的权限管理函数（syncRolePermissionsAction, assignPermissionToRoleAction, removePermissionFromRoleAction）
-// 需要按照相同的模式进行重构，使用新的API响应类型和错误处理模式。
-// 由于篇幅限制，这里仅展示了核心的CRUD操作重构示例。
-
 /**
  * 同步角色的权限列表 (覆盖)
  */
@@ -353,5 +350,105 @@ export async function syncRolePermissionsAction(
   }
 }
 
-// 其他权限管理函数（assignPermissionToRoleAction, removePermissionFromRoleAction）
-// 可以按照相同的模式进行重构...
+/**
+ * 为角色分配权限
+ */
+export async function assignPermissionToRoleAction(
+  roleId: number,
+  permissionId: number
+): Promise<SuccessApiResponse<any> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.post<ApiResponse<any>>(
+      `/roles/${roleId}/permissions`,
+      { permission_id: permissionId }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(CACHE_KEYS.ROLE_DETAIL(roleId));
+      cacheManager.delete(CACHE_KEYS.ROLES_LIST);
+
+      return {
+        code: 0,
+        message: apiResponse.message || "权限分配成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "权限分配失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("assignPermissionToRoleAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      message: error.message || "分配权限失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 从角色移除权限
+ */
+export async function removePermissionFromRoleAction(
+  roleId: number,
+  permissionId: number
+): Promise<SuccessApiResponse<any> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.delete<ApiResponse<any>>(
+      `/roles/${roleId}/permissions/${permissionId}`
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(CACHE_KEYS.ROLE_DETAIL(roleId));
+      cacheManager.delete(CACHE_KEYS.ROLES_LIST);
+
+      return {
+        code: 0,
+        message: apiResponse.message || "权限移除成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "权限移除失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("removePermissionFromRoleAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      message: error.message || "移除权限失败",
+      error,
+    };
+  }
+}

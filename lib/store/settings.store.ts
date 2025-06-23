@@ -17,7 +17,9 @@ import {
   SecuritySettingsFormData,
   SettingType,
 } from "@/lib/types/settings";
-import { ErrorResponse } from "@/lib/types/user";
+import type { SuccessApiResponse, ErrorApiResponse } from "@/lib/types/common";
+import { isSuccessApiResponse } from "@/lib/types/common";
+import { handleStoreError } from "@/lib/utils/error-handler";
 
 /**
  * 设置页面状态接口
@@ -107,18 +109,19 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           const result = await getSettingsAction();
 
+          // getSettingsAction 返回 AllSettingsData | ErrorApiResponse
           if ("code" in result) {
             // 错误响应
-            const errorMsg = result.message || "加载设置失败";
+            console.error("❌ 加载设置失败:", result.message);
+            const errorResult = await handleStoreError(result, "加载设置");
             set({
               isLoading: false,
-              error: errorMsg,
+              error: errorResult.error,
               settings: initialSettings,
             });
-            console.error("❌ 加载设置失败:", errorMsg);
             return false;
           } else {
-            // 成功响应
+            // 成功响应 - 直接是 AllSettingsData
             set({
               isLoading: false,
               settings: result,
@@ -129,13 +132,13 @@ export const useSettingsStore = create<SettingsState>()(
             return true;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "加载设置时发生未知错误";
+          console.error("❌ 加载设置异常:", error);
+          const errorResult = await handleStoreError(error, "加载设置");
           set({
             isLoading: false,
-            error: errorMsg,
+            error: errorResult.error,
             settings: initialSettings,
           });
-          console.error("❌ 加载设置异常:", error);
           return false;
         }
       },
@@ -149,30 +152,31 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           const result = await updateBasicSettingsAction(data);
 
-          if ("code" in result) {
-            // 错误响应
-            const errorMsg = result.message || "更新基础设置失败";
-            set({ isSubmitting: false, error: errorMsg });
-            return false;
-          } else {
+          if (isSuccessApiResponse(result)) {
             // 成功响应
             const currentSettings = get().settings;
             set({
               isSubmitting: false,
               settings: {
                 ...currentSettings,
-                basic: (result as any).data,
+                basic: result.data,
               },
               lastUpdated: Date.now(),
               hasUnsavedChanges: false,
             });
             console.log("✅ 基础设置更新成功");
             return true;
+          } else {
+            // 错误响应
+            console.error("❌ 更新基础设置失败:", result.message);
+            const errorResult = await handleStoreError(result, "更新基础设置");
+            set({ isSubmitting: false, error: errorResult.error });
+            return false;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "更新基础设置时发生未知错误";
-          set({ isSubmitting: false, error: errorMsg });
           console.error("❌ 更新基础设置异常:", error);
+          const errorResult = await handleStoreError(error, "更新基础设置");
+          set({ isSubmitting: false, error: errorResult.error });
           return false;
         }
       },
@@ -186,28 +190,29 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           const result = await updateEmailSettingsAction(data);
 
-          if ("code" in result) {
-            const errorMsg = result.message || "更新邮件设置失败";
-            set({ isSubmitting: false, error: errorMsg });
-            return false;
-          } else {
+          if (isSuccessApiResponse(result)) {
             const currentSettings = get().settings;
             set({
               isSubmitting: false,
               settings: {
                 ...currentSettings,
-                email: (result as any).data,
+                email: result.data,
               },
               lastUpdated: Date.now(),
               hasUnsavedChanges: false,
             });
             console.log("✅ 邮件设置更新成功");
             return true;
+          } else {
+            console.error("❌ 更新邮件设置失败:", result.message);
+            const errorResult = await handleStoreError(result, "更新邮件设置");
+            set({ isSubmitting: false, error: errorResult.error });
+            return false;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "更新邮件设置时发生未知错误";
-          set({ isSubmitting: false, error: errorMsg });
           console.error("❌ 更新邮件设置异常:", error);
+          const errorResult = await handleStoreError(error, "更新邮件设置");
+          set({ isSubmitting: false, error: errorResult.error });
           return false;
         }
       },
@@ -221,28 +226,29 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           const result = await updateImageSettingsAction(data);
 
-          if ("code" in result) {
-            const errorMsg = result.message || "更新图片设置失败";
-            set({ isSubmitting: false, error: errorMsg });
-            return false;
-          } else {
+          if (isSuccessApiResponse(result)) {
             const currentSettings = get().settings;
             set({
               isSubmitting: false,
               settings: {
                 ...currentSettings,
-                image: (result as any).data,
+                image: result.data,
               },
               lastUpdated: Date.now(),
               hasUnsavedChanges: false,
             });
             console.log("✅ 图片设置更新成功");
             return true;
+          } else {
+            console.error("❌ 更新图片设置失败:", result.message);
+            const errorResult = await handleStoreError(result, "更新图片设置");
+            set({ isSubmitting: false, error: errorResult.error });
+            return false;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "更新图片设置时发生未知错误";
-          set({ isSubmitting: false, error: errorMsg });
           console.error("❌ 更新图片设置异常:", error);
+          const errorResult = await handleStoreError(error, "更新图片设置");
+          set({ isSubmitting: false, error: errorResult.error });
           return false;
         }
       },
@@ -256,28 +262,29 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           const result = await updateSecuritySettingsAction(data);
 
-          if ("code" in result) {
-            const errorMsg = result.message || "更新安全设置失败";
-            set({ isSubmitting: false, error: errorMsg });
-            return false;
-          } else {
+          if (isSuccessApiResponse(result)) {
             const currentSettings = get().settings;
             set({
               isSubmitting: false,
               settings: {
                 ...currentSettings,
-                security: (result as any).data,
+                security: result.data,
               },
               lastUpdated: Date.now(),
               hasUnsavedChanges: false,
             });
             console.log("✅ 安全设置更新成功");
             return true;
+          } else {
+            console.error("❌ 更新安全设置失败:", result.message);
+            const errorResult = await handleStoreError(result, "更新安全设置");
+            set({ isSubmitting: false, error: errorResult.error });
+            return false;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "更新安全设置时发生未知错误";
-          set({ isSubmitting: false, error: errorMsg });
           console.error("❌ 更新安全设置异常:", error);
+          const errorResult = await handleStoreError(error, "更新安全设置");
+          set({ isSubmitting: false, error: errorResult.error });
           return false;
         }
       },
@@ -329,19 +336,20 @@ export const useSettingsStore = create<SettingsState>()(
             testRecipient
           );
 
-          if ("code" in result) {
-            const errorMsg = result.message || "邮件配置测试失败";
-            set({ isTestingEmail: false, error: errorMsg });
-            return false;
-          } else {
+          if (isSuccessApiResponse(result)) {
             set({ isTestingEmail: false });
             console.log("✅ 邮件配置测试成功");
             return true;
+          } else {
+            console.error("❌ 邮件配置测试失败:", result.message);
+            const errorResult = await handleStoreError(result, "邮件配置测试");
+            set({ isTestingEmail: false, error: errorResult.error });
+            return false;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "邮件配置测试时发生未知错误";
-          set({ isTestingEmail: false, error: errorMsg });
           console.error("❌ 邮件配置测试异常:", error);
+          const errorResult = await handleStoreError(error, "邮件配置测试");
+          set({ isTestingEmail: false, error: errorResult.error });
           return false;
         }
       },

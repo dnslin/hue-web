@@ -15,17 +15,12 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponseData,
+  AuthActionResponse,
 } from "@/lib/types/auth";
+import type { SuccessApiResponse, ErrorApiResponse } from "@/lib/types/common";
+import { isSuccessApiResponse } from "@/lib/types/common";
 import { cacheManager } from "@/lib/utils/cache-manager";
-
-/**
- * 认证操作结果接口
- */
-interface AuthActionResult {
-  success: boolean;
-  error?: string;
-  data?: any;
-}
+import { handleStoreError } from "@/lib/utils/error-handler";
 
 /**
  * 忘记密码状态接口
@@ -38,16 +33,32 @@ interface ForgotPasswordState {
 }
 
 /**
+ * 认证操作结果接口 - 用于静默模式返回
+ */
+interface AuthOperationResult {
+  success: boolean;
+  error?: string;
+  data?: any;
+}
+
+/**
  * 认证状态接口
  */
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  isHydrated: boolean; // 新增：标识状态是否已从持久化存储中恢复
+
+  // 细化的加载状态管理
+  isLoadingLogin: boolean;
+  isLoadingRegister: boolean;
+  isLoadingLogout: boolean;
+  isLoadingInitAuth: boolean;
+  isLoadingOther: boolean; // 其他操作的加载状态（如激活、重发邮件等）
+  isHydrated: boolean; // 标识状态是否已从持久化存储中恢复
+
   error: string | null;
 
-  // 新增：忘记密码专门状态
+  // 忘记密码专门状态
   forgotPasswordState: ForgotPasswordState;
 
   // 操作方法
@@ -62,25 +73,25 @@ interface AuthState {
   ) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
-  initializeAuth: () => Promise<void>; // 新增：初始化认证状态
-  setHydrated: () => void; // 新增：设置水合完成状态
+  initializeAuth: () => Promise<void>; // 初始化认证状态
+  setHydrated: () => void; // 设置水合完成状态
 
-  // 新增：密码重置和激活相关方法
+  // 密码重置和激活相关方法
   forgotPassword: (
     email: string,
     options?: { silent?: boolean }
-  ) => Promise<boolean | AuthActionResult>;
+  ) => Promise<boolean | AuthOperationResult>;
   resetPassword: (
     email: string,
     password: string,
     confirmPassword: string,
     code: string,
     options?: { silent?: boolean }
-  ) => Promise<boolean | AuthActionResult>;
+  ) => Promise<boolean | AuthOperationResult>;
   activateAccount: (email: string, code: string) => Promise<boolean>;
   resendActivationEmail: (email: string) => Promise<boolean>;
 
-  // 新增：忘记密码状态管理方法
+  // 忘记密码状态管理方法
   resetForgotPasswordState: () => void;
   setForgotPasswordStep: (step: ForgotPasswordState["currentStep"]) => void;
 }
@@ -94,11 +105,18 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
-      isLoading: false,
+
+      // 细化的加载状态管理
+      isLoadingLogin: false,
+      isLoadingRegister: false,
+      isLoadingLogout: false,
+      isLoadingInitAuth: false,
+      isLoadingOther: false,
       isHydrated: false, // 初始状态为未水合
+
       error: null,
 
-      // 新增：忘记密码专门状态
+      // 忘记密码专门状态
       forgotPasswordState: {
         isLoading: false,
         error: null,
@@ -160,49 +178,40 @@ export const useAuthStore = create<AuthState>()(
         usernameOrEmail: string,
         password: string
       ): Promise<boolean> => {
-        set({ isLoading: true, error: null });
+        set({ isLoadingLogin: true, error: null });
         try {
           const credentials: LoginRequest = { usernameOrEmail, password };
           const response = await loginAction(credentials);
 
-          if (response.success && response.data?.user) {
-            console.log("✅ 登录成功:", response.data.user); // 中文注释：登录成功
-            set({
-              user: response.data.user,
-              isAuthenticated: true,
-              isLoading: false,
-              error: null,
-            });
-            return true;
-          } else {
-            console.error("❌ 登录失败:", response.message); // 中文注释：登录失败
-            // 确保错误消息从response中正确传递
-            const errorMessage =
-              response.message || "登录失败，请检查您的凭据。";
-            set({
-              isLoading: false,
-              error: errorMessage,
-            });
-            return false;
-          }
-        } catch (err: any) {
-          console.error("❌ 登录时发生意外错误:", err); // 中文注释：登录时发生意外错误
-          // 处理意外的客户端错误
-          let errorMessage = "登录失败，请稍后重试。";
-
-          if (err && typeof err === "object") {
-            if (err.message && !err.message.includes("status code")) {
-              errorMessage = err.message;
-            } else if (err.code === 0) {
-              errorMessage = "网络连接失败，请检查网络后重试。";
+          // 使用类型守卫检查业务成功 (code === 0)
+          if (isSuccessApiResponse(response)) {
+            const authData = response.data as AuthResponseData;
+            if (authData?.user) {
+              console.log("✅ 登录成功:", authData.user);
+              set({
+                user: authData.user,
+                isAuthenticated: true,
+                isLoadingLogin: false,
+                error: null,
+              });
+              return true;
             }
-          } else if (typeof err === "string") {
-            errorMessage = err;
           }
 
+          // 业务失败或数据不完整
+          console.error("❌ 登录失败:", response.message);
+          const errorResult = await handleStoreError(response, "登录");
           set({
-            isLoading: false,
-            error: errorMessage,
+            isLoadingLogin: false,
+            error: errorResult.error,
+          });
+          return false;
+        } catch (err: any) {
+          console.error("❌ 登录时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "登录");
+          set({
+            isLoadingLogin: false,
+            error: errorResult.error,
           });
           return false;
         }
@@ -214,64 +223,44 @@ export const useAuthStore = create<AuthState>()(
         email: string,
         password: string
       ): Promise<boolean> => {
-        set({ isLoading: true, error: null });
+        set({ isLoadingRegister: true, error: null });
         try {
           const userData: RegisterRequest = { username, email, password };
           const response = await registerAction(userData);
 
-          if (response.success) {
-            // 注册成功，后端可能返回用户信息（自动登录）或仅返回消息（如需邮箱验证）
-            const responseData = response.data as
-              | AuthResponseData
-              | { message: string };
-            if ("user" in responseData && responseData.user) {
-              console.log("✅ 注册成功并自动登录:", responseData.user); // 中文注释：注册成功并自动登录
+          // 使用类型守卫检查业务成功 (code === 0)
+          if (isSuccessApiResponse(response)) {
+            const authData = response.data as AuthResponseData;
+            if (authData?.user) {
+              console.log("✅ 注册成功并自动登录:", authData.user);
               set({
-                user: responseData.user,
+                user: authData.user,
                 isAuthenticated: true,
-                isLoading: false,
+                isLoadingRegister: false,
                 error: null,
               });
             } else {
               // 注册成功但未自动登录 (例如需要邮箱验证)
-              console.log(
-                "📝 注册请求成功:",
-                response.message ||
-                  (responseData as { message: string }).message
-              ); // 中文注释：注册请求成功
-              set({ isLoading: false, error: null });
-              // 可以在这里设置一个临时消息给UI提示用户检查邮箱等
+              console.log("📝 注册请求成功:", response.message);
+              set({ isLoadingRegister: false, error: null });
             }
-            return true; // Action本身是成功的
-          } else {
-            console.error("❌ 注册失败:", response.message); // 中文注释：注册失败
-            // 确保错误消息从response中正确传递
-            const errorMessage =
-              response.message || "注册失败，请检查输入信息。";
-            set({
-              isLoading: false,
-              error: errorMessage,
-            });
-            return false;
-          }
-        } catch (err: any) {
-          console.error("❌ 注册时发生意外错误:", err); // 中文注释：注册时发生意外错误
-          // 处理意外的客户端错误
-          let errorMessage = "注册失败，请稍后重试。";
-
-          if (err && typeof err === "object") {
-            if (err.message && !err.message.includes("status code")) {
-              errorMessage = err.message;
-            } else if (err.code === 0) {
-              errorMessage = "网络连接失败，请检查网络后重试。";
-            }
-          } else if (typeof err === "string") {
-            errorMessage = err;
+            return true;
           }
 
+          // 业务失败
+          console.error("❌ 注册失败:", response.message);
+          const errorResult = await handleStoreError(response, "注册");
           set({
-            isLoading: false,
-            error: errorMessage,
+            isLoadingRegister: false,
+            error: errorResult.error,
+          });
+          return false;
+        } catch (err: any) {
+          console.error("❌ 注册时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "注册");
+          set({
+            isLoadingRegister: false,
+            error: errorResult.error,
           });
           return false;
         }
@@ -279,26 +268,26 @@ export const useAuthStore = create<AuthState>()(
 
       // 用户登出
       logout: async () => {
-        set({ isLoading: true });
+        set({ isLoadingLogout: true });
         try {
           const response = await logoutAction();
-          if (response.success) {
-            console.log("🚪 用户已成功登出"); // 中文注释：用户已成功登出
+          if (isSuccessApiResponse(response)) {
+            console.log("🚪 用户已成功登出");
           } else {
             console.warn(
               "⚠️ 登出操作在服务端可能未完全成功:",
               response.message
-            ); // 中文注释：登出操作在服务端可能未完全成功
+            );
             // 即使服务端失败，客户端也应清除状态
           }
         } catch (err: any) {
-          console.error("❌ 登出时发生意外错误:", err); // 中文注释：登出时发生意外错误
+          console.error("❌ 登出时发生意外错误:", err);
           // 即使捕获到错误，也应清除客户端状态
         } finally {
           // 使用clearAuth来确保清理缓存
           get().clearAuth();
           set({
-            isLoading: false,
+            isLoadingLogout: false,
             error: null, // 清除登出相关的错误，避免影响下次操作
           });
         }
@@ -311,35 +300,35 @@ export const useAuthStore = create<AuthState>()(
 
       // 初始化认证状态 - 验证服务端状态
       initializeAuth: async () => {
-        console.log("🔄 开始初始化认证状态"); // 中文注释：开始初始化认证状态
-        set({ isLoading: true });
+        console.log("🔄 开始初始化认证状态");
+        set({ isLoadingInitAuth: true });
         try {
           const currentUser = await getCurrentUserAction();
           if (currentUser) {
-            console.log("✅ 服务端认证状态验证成功:", currentUser); // 中文注释：服务端认证状态验证成功
+            console.log("✅ 服务端认证状态验证成功:", currentUser);
             set({
               user: currentUser,
               isAuthenticated: true,
-              isLoading: false,
+              isLoadingInitAuth: false,
               error: null,
             });
           } else {
-            console.log("❌ 服务端认证状态无效或未登录，清除本地状态"); // 中文注释：服务端认证状态无效或未登录，清除本地状态
+            console.log("❌ 服务端认证状态无效或未登录，清除本地状态");
             set({
               user: null,
               isAuthenticated: false,
-              isLoading: false,
+              isLoadingInitAuth: false,
               error: null,
             });
           }
         } catch (error: any) {
-          console.error("❌ 认证状态初始化失败:", error); // 中文注释：认证状态初始化失败
-          // 网络错误或其他错误时，也清除本地状态以保持一致性
+          console.error("❌ 认证状态初始化失败:", error);
+          const errorResult = await handleStoreError(error, "认证状态初始化");
           set({
             user: null,
             isAuthenticated: false,
-            isLoading: false,
-            error: "认证状态初始化失败，请稍后重试。",
+            isLoadingInitAuth: false,
+            error: errorResult.error,
           });
         }
       },
@@ -358,13 +347,9 @@ export const useAuthStore = create<AuthState>()(
           },
         });
 
-        if (!silent) {
-          set({ isLoading: true, error: null });
-        }
-
         try {
           const response = await forgotPasswordAction(email);
-          if (response.success) {
+          if (isSuccessApiResponse(response)) {
             console.log(`✅ 忘记密码请求成功${silent ? "（静默模式）" : ""}`);
 
             // 更新忘记密码专门状态
@@ -377,16 +362,12 @@ export const useAuthStore = create<AuthState>()(
               },
             });
 
-            if (!silent) {
-              set({ isLoading: false, error: null });
-            }
-
             // 根据是否静默模式返回不同格式的结果
             if (silent) {
               return {
                 success: true,
                 data: response.data,
-              } as AuthActionResult;
+              } as AuthOperationResult;
             }
             return true;
           } else {
@@ -406,19 +387,12 @@ export const useAuthStore = create<AuthState>()(
               },
             });
 
-            if (!silent) {
-              set({
-                isLoading: false,
-                error: errorMessage,
-              });
-            }
-
             // 根据是否静默模式返回不同格式的结果
             if (silent) {
               return {
                 success: false,
                 error: errorMessage,
-              } as AuthActionResult;
+              } as AuthOperationResult;
             }
             return false;
           }
@@ -427,40 +401,23 @@ export const useAuthStore = create<AuthState>()(
             `❌ 忘记密码时发生意外错误${silent ? "（静默模式）" : ""}:`,
             err
           );
-          let errorMessage = "忘记密码失败，请稍后重试。";
-
-          if (err && typeof err === "object") {
-            if (err.message && !err.message.includes("status code")) {
-              errorMessage = err.message;
-            } else if (err.code === 0) {
-              errorMessage = "网络连接失败，请检查网络后重试。";
-            }
-          } else if (typeof err === "string") {
-            errorMessage = err;
-          }
+          const errorResult = await handleStoreError(err, "忘记密码");
 
           // 更新忘记密码专门状态
           set({
             forgotPasswordState: {
               ...get().forgotPasswordState,
               isLoading: false,
-              error: errorMessage,
+              error: errorResult.error,
             },
           });
-
-          if (!silent) {
-            set({
-              isLoading: false,
-              error: errorMessage,
-            });
-          }
 
           // 根据是否静默模式返回不同格式的结果
           if (silent) {
             return {
               success: false,
-              error: errorMessage,
-            } as AuthActionResult;
+              error: errorResult.error,
+            } as AuthOperationResult;
           }
           return false;
         }
@@ -472,7 +429,7 @@ export const useAuthStore = create<AuthState>()(
         confirmPassword: string,
         code: string,
         options?: { silent?: boolean }
-      ): Promise<boolean | AuthActionResult> => {
+      ): Promise<boolean | AuthOperationResult> => {
         const silent = options?.silent || false;
 
         // 更新忘记密码专门状态
@@ -484,10 +441,6 @@ export const useAuthStore = create<AuthState>()(
           },
         });
 
-        if (!silent) {
-          set({ isLoading: true, error: null });
-        }
-
         try {
           const response = await resetPasswordAction(
             email,
@@ -495,8 +448,8 @@ export const useAuthStore = create<AuthState>()(
             confirmPassword,
             code
           );
-          if (response.success) {
-            console.log(`✅ 密码重置成功${silent ? "（静默模式）" : ""}`); // 中文注释：密码重置成功
+          if (isSuccessApiResponse(response)) {
+            console.log(`✅ 密码重置成功${silent ? "（静默模式）" : ""}`);
 
             // 更新忘记密码专门状态
             set({
@@ -508,24 +461,19 @@ export const useAuthStore = create<AuthState>()(
               },
             });
 
-            if (!silent) {
-              set({ isLoading: false, error: null });
-            }
-
             // 根据是否静默模式返回不同格式的结果
             if (silent) {
               return {
                 success: true,
                 data: response.data,
-              } as AuthActionResult;
+              } as AuthOperationResult;
             }
             return true;
           } else {
             console.error(
               `❌ 密码重置失败${silent ? "（静默模式）" : ""}:`,
               response.message
-            ); // 中文注释：密码重置失败
-            // 确保错误消息从response中正确传递
+            );
             const errorMessage =
               response.message || "密码重置失败，请检查输入信息。";
 
@@ -538,58 +486,37 @@ export const useAuthStore = create<AuthState>()(
               },
             });
 
-            if (!silent) {
-              set({
-                isLoading: false,
-                error: errorMessage,
-              });
-            }
-
             // 根据是否静默模式返回不同格式的结果
             if (silent) {
               return {
                 success: false,
                 error: errorMessage,
-              } as AuthActionResult;
+              } as AuthOperationResult;
             }
             return false;
           }
         } catch (err: any) {
-          // 处理意外的客户端错误
-          let errorMessage = "密码重置失败，请稍后重试。";
-
-          if (err && typeof err === "object") {
-            if (err.message && !err.message.includes("status code")) {
-              errorMessage = err.message;
-            } else if (err.code === 0) {
-              errorMessage = "网络连接失败，请检查网络后重试。";
-            }
-          } else if (typeof err === "string") {
-            errorMessage = err;
-          }
+          console.error(
+            `❌ 密码重置时发生意外错误${silent ? "（静默模式）" : ""}:`,
+            err
+          );
+          const errorResult = await handleStoreError(err, "密码重置");
 
           // 更新忘记密码专门状态
           set({
             forgotPasswordState: {
               ...get().forgotPasswordState,
               isLoading: false,
-              error: errorMessage,
+              error: errorResult.error,
             },
           });
-
-          if (!silent) {
-            set({
-              isLoading: false,
-              error: errorMessage,
-            });
-          }
 
           // 根据是否静默模式返回不同格式的结果
           if (silent) {
             return {
               success: false,
-              error: errorMessage,
-            } as AuthActionResult;
+              error: errorResult.error,
+            } as AuthOperationResult;
           }
           return false;
         }
@@ -599,84 +526,59 @@ export const useAuthStore = create<AuthState>()(
         email: string,
         code: string
       ): Promise<boolean> => {
-        set({ isLoading: true, error: null });
+        set({ isLoadingOther: true, error: null });
         try {
           const response = await activateAccountAction(email, code);
-          if (response.success) {
-            console.log("✅ 账户激活成功"); // 中文注释：账户激活成功
-            set({ isLoading: false, error: null });
+          if (isSuccessApiResponse(response)) {
+            console.log("✅ 账户激活成功");
+            set({ isLoadingOther: false, error: null });
             return true;
           } else {
-            console.error("❌ 账户激活失败:", response.message); // 中文注释：账户激活失败
-            // 确保错误消息从response中正确传递
-            const errorMessage =
-              response.message || "账户激活失败，请检查输入信息。";
+            console.error("❌ 账户激活失败:", response.message);
+            const errorResult = await handleStoreError(response, "账户激活");
             set({
-              isLoading: false,
-              error: errorMessage,
+              isLoadingOther: false,
+              error: errorResult.error,
             });
             return false;
           }
         } catch (err: any) {
-          console.error("❌ 账户激活时发生意外错误:", err); // 中文注释：账户激活时发生意外错误
-          // 处理意外的客户端错误
-          let errorMessage = "账户激活失败，请稍后重试。";
-
-          if (err && typeof err === "object") {
-            if (err.message && !err.message.includes("status code")) {
-              errorMessage = err.message;
-            } else if (err.code === 0) {
-              errorMessage = "网络连接失败，请检查网络后重试。";
-            }
-          } else if (typeof err === "string") {
-            errorMessage = err;
-          }
-
+          console.error("❌ 账户激活时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "账户激活");
           set({
-            isLoading: false,
-            error: errorMessage,
+            isLoadingOther: false,
+            error: errorResult.error,
           });
           return false;
         }
       },
 
       resendActivationEmail: async (email: string): Promise<boolean> => {
-        set({ isLoading: true, error: null });
+        set({ isLoadingOther: true, error: null });
         try {
           const response = await resendActivationEmailAction(email);
-          if (response.success) {
-            console.log("✅ 激活邮件重发成功"); // 中文注释：激活邮件重发成功
-            set({ isLoading: false, error: null });
+          if (isSuccessApiResponse(response)) {
+            console.log("✅ 激活邮件重发成功");
+            set({ isLoadingOther: false, error: null });
             return true;
           } else {
-            console.error("❌ 激活邮件重发失败:", response.message); // 中文注释：激活邮件重发失败
-            // 确保错误消息从response中正确传递
-            const errorMessage =
-              response.message || "激活邮件重发失败，请检查输入信息。";
+            console.error("❌ 激活邮件重发失败:", response.message);
+            const errorResult = await handleStoreError(
+              response,
+              "激活邮件重发"
+            );
             set({
-              isLoading: false,
-              error: errorMessage,
+              isLoadingOther: false,
+              error: errorResult.error,
             });
             return false;
           }
         } catch (err: any) {
-          console.error("❌ 激活邮件重发时发生意外错误:", err); // 中文注释：激活邮件重发时发生意外错误
-          // 处理意外的客户端错误
-          let errorMessage = "激活邮件重发失败，请稍后重试。";
-
-          if (err && typeof err === "object") {
-            if (err.message && !err.message.includes("status code")) {
-              errorMessage = err.message;
-            } else if (err.code === 0) {
-              errorMessage = "网络连接失败，请检查网络后重试。";
-            }
-          } else if (typeof err === "string") {
-            errorMessage = err;
-          }
-
+          console.error("❌ 激活邮件重发时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "激活邮件重发");
           set({
-            isLoading: false,
-            error: errorMessage,
+            isLoadingOther: false,
+            error: errorResult.error,
           });
           return false;
         }
