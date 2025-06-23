@@ -1,0 +1,3513 @@
+basePath: /api/v1
+definitions:
+  dtos.AccountActivationRequest:
+    properties:
+      code:
+        description: 8位激活码
+        example: "12345678"
+        minLength: 8
+        type: string
+      email:
+        description: 邮箱
+        example: user@example.com
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  dtos.AdminBasicSiteSettingsDTO:
+    properties:
+      admin_approval_required:
+        type: boolean
+      app_name:
+        type: string
+      created_at:
+        type: string
+      email_notify_enabled:
+        type: boolean
+      email_verification_required:
+        type: boolean
+      favicon_url:
+        type: string
+      from_email_address:
+        type: string
+      from_email_name:
+        type: string
+      guest_upload_enabled:
+        type: boolean
+      id:
+        type: integer
+      is_smtp_password_set:
+        description: 指示SMTP密码是否已设置
+        type: boolean
+      logo_url:
+        type: string
+      seo_keywords:
+        type: string
+      site_announcement:
+        type: string
+      site_description:
+        type: string
+      smtp_port:
+        type: integer
+      smtp_server:
+        type: string
+      smtp_username:
+        type: string
+      updated_at:
+        type: string
+      user_initial_storage_capacity_mb:
+        type: integer
+      user_registration_enabled:
+        type: boolean
+    type: object
+  dtos.AdminUserCreateRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 100
+        minLength: 8
+        type: string
+      role_id:
+        type: integer
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - role_id
+    - username
+    type: object
+  dtos.AdminUserResponseDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login_at:
+        description: omitempty 如果为 nil 则不显示
+        type: string
+      last_login_ip:
+        description: omitempty 如果为空字符串则不显示
+        type: string
+      nickname:
+        type: string
+      original_role_id:
+        description: omitempty 如果为0则不显示
+        type: integer
+      role:
+        allOf:
+        - $ref: '#/definitions/dtos.RoleResponseDTO'
+        description: 使用 RoleResponseDTO
+      status:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  dtos.AlbumResponseDTO:
+    properties:
+      cover_image_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dtos.AssignPermissionDTO:
+    properties:
+      permission_id:
+        description: 要分配的权限ID
+        example: 101
+        type: integer
+    required:
+    - permission_id
+    type: object
+  dtos.AssignRoleDTO:
+    properties:
+      role_id:
+        description: 要分配的角色ID
+        example: 1
+        type: integer
+    required:
+    - role_id
+    type: object
+  dtos.AuditLogQueryResponse:
+    properties:
+      logs:
+        items:
+          $ref: '#/definitions/dtos.AuditLogResponseItem'
+        type: array
+      meta:
+        $ref: '#/definitions/utils.PaginationMeta'
+    type: object
+  dtos.AuditLogResponseItem:
+    properties:
+      action_type:
+        $ref: '#/definitions/models.AuditLogActionType'
+      description:
+        type: string
+      details:
+        description: 使用 interface{} 以便灵活处理 JSON 数据
+      failure_reason:
+        type: string
+      id:
+        type: integer
+      operator_id:
+        type: integer
+      operator_ip:
+        type: string
+      operator_name:
+        type: string
+      status:
+        type: string
+      target_user_id:
+        type: integer
+      target_username:
+        type: string
+      timestamp:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  dtos.BasicSitePublicSettingsDTO:
+    properties:
+      email_notify_enabled_public:
+        type: boolean
+      from_email_address_public:
+        type: string
+      from_email_name_public:
+        type: string
+      smtp_port_public:
+        type: integer
+      smtp_server_public:
+        type: string
+      smtp_username_public:
+        type: string
+    type: object
+  dtos.BatchUserIDsRequest:
+    properties:
+      user_ids:
+        description: 用户ID列表，必需且至少包含一个ID
+        items:
+          type: integer
+        type: array
+    required:
+    - user_ids
+    type: object
+  dtos.BatchUserRejectRequest:
+    properties:
+      reason:
+        description: 拒绝理由，可选
+        type: string
+      user_ids:
+        description: 用户ID列表，必需且至少包含一个ID
+        items:
+          type: integer
+        type: array
+    required:
+    - user_ids
+    type: object
+  dtos.CreateShareLinkRequest:
+    properties:
+      expire_days:
+        description: 可选，分享有效天数
+        type: integer
+      resource_id:
+        type: integer
+      type:
+        description: '"image" 或 "album"'
+        enum:
+        - image
+        - album
+        type: string
+    required:
+    - resource_id
+    - type
+    type: object
+  dtos.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  dtos.ImageResponseDTO:
+    properties:
+      album_id:
+        type: integer
+      created_at:
+        type: string
+      filename:
+        type: string
+      height:
+        type: integer
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      mime_type:
+        type: string
+      size:
+        type: integer
+      status:
+        type: integer
+      storage_strategy_id:
+        type: integer
+      updated_at:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: integer
+      width:
+        type: integer
+    type: object
+  dtos.LoginRequest:
+    properties:
+      password:
+        type: string
+      username_or_email:
+        type: string
+    required:
+    - password
+    - username_or_email
+    type: object
+  dtos.PermissionCreateDTO:
+    properties:
+      description:
+        description: 权限的详细描述
+        example: 允许创建新用户
+        type: string
+      group_name:
+        description: 权限所属的分组名称，便于管理和展示
+        example: User Management
+        type: string
+      name:
+        description: 权限名称，通常是唯一的动作标识符
+        example: create_user
+        type: string
+    required:
+    - group_name
+    - name
+    type: object
+  dtos.PermissionResponseDTO:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      group_name:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dtos.PermissionUpdateDTO:
+    properties:
+      description:
+        description: 权限的详细描述 (可选)
+        example: 更新后的权限描述
+        type: string
+      group_name:
+        description: 权限所属的分组名称 (可选)
+        example: Admin Group
+        type: string
+    type: object
+  dtos.PublicSiteDetailsDTO:
+    properties:
+      app_name:
+        type: string
+      favicon_url:
+        type: string
+      logo_url:
+        type: string
+      site_announcement:
+        type: string
+      site_description:
+        type: string
+    type: object
+  dtos.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  dtos.ResendActivationEmailRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+    required:
+    - email
+    type: object
+  dtos.ResetPasswordRequest:
+    properties:
+      code:
+        description: 8位重置码
+        example: "87654321"
+        minLength: 8
+        type: string
+      confirm_password:
+        description: 确认密码 (必须与新密码相同)
+        example: newpassword123
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      password:
+        description: 新密码 (最小长度6)
+        example: newpassword123
+        minLength: 6
+        type: string
+    required:
+    - code
+    - confirm_password
+    - email
+    - password
+    type: object
+  dtos.RoleCreateDTO:
+    properties:
+      alias:
+        description: 角色别名，可选
+        example: 管理员
+        type: string
+      name:
+        description: 角色名称，必须唯一
+        example: administrator
+        type: string
+    required:
+    - name
+    type: object
+  dtos.RoleResponseDTO:
+    properties:
+      alias:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/dtos.PermissionResponseDTO'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  dtos.RoleUpdateDTO:
+    properties:
+      alias:
+        description: 新的角色别名
+        example: 超级管理员
+        type: string
+      name:
+        description: 新的角色名称
+        example: super_admin
+        type: string
+    type: object
+  dtos.ShareResponseDTO:
+    properties:
+      created_at:
+        type: string
+      created_by_id:
+        type: integer
+      expire_at:
+        type: string
+      id:
+        type: integer
+      resource_id:
+        type: integer
+      token:
+        type: string
+      type:
+        type: string
+      view_count:
+        type: integer
+    type: object
+  dtos.SyncPermissionsDTO:
+    properties:
+      permission_ids:
+        description: 权限ID列表，将覆盖角色当前所有权限
+        example:
+        - 101
+        - 102
+        - 103
+        items:
+          type: integer
+        type: array
+    type: object
+  dtos.UpdateEmailSettingsDTO:
+    properties:
+      email_notify_enabled:
+        description: 使用指针以区分未提供和提供false的情况
+        type: boolean
+      from_email_address:
+        type: string
+      from_email_name:
+        type: string
+      smtp_password:
+        description: 注意：密码应由后端加密处理
+        type: string
+      smtp_port:
+        description: 使用指针以支持清空或设为0
+        type: integer
+      smtp_server:
+        type: string
+      smtp_username:
+        type: string
+    type: object
+  dtos.UpdateMeDTO:
+    properties:
+      email:
+        description: 邮箱 (可选, 如果提供则校验格式)
+        example: new.email@example.com
+        format: email
+        type: string
+      nickname:
+        description: 昵称 (可选)
+        example: NewNickname
+        type: string
+      password:
+        description: 新密码 (可选, 如果提供则至少6位)
+        example: newpassword123
+        minLength: 6
+        type: string
+    type: object
+  dtos.UploadResponseDTO:
+    properties:
+      filename:
+        type: string
+      id:
+        type: integer
+      mime_type:
+        type: string
+      size:
+        type: integer
+      url:
+        type: string
+    type: object
+  dtos.UserApprovalRequest:
+    properties:
+      reason:
+        description: 拒绝理由，可选
+        type: string
+    type: object
+  dtos.UserResponseDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login_at:
+        type: string
+      last_login_ip:
+        type: string
+      nickname:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/dtos.RoleResponseDTO'
+        description: 替换 RoleID
+      status:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  models.AuditLogActionType:
+    enum:
+    - USER_REGISTER
+    - USER_LOGIN
+    - USER_LOGOUT
+    - USER_UPDATE_PROFILE
+    - USER_CHANGE_PASSWORD
+    - USER_REQUEST_RESET_PWD
+    - USER_RESET_PASSWORD
+    - USER_VERIFY_EMAIL
+    - USER_REQUEST_ACTIVATION_EMAIL
+    - USER_REQUEST_RESET_PWD_EMAIL
+    - ADMIN_USER_CREATE
+    - ADMIN_USER_UPDATE
+    - ADMIN_USER_DELETE
+    - ADMIN_USER_STATUS_CHANGE
+    - ADMIN_USER_ROLE_CHANGE
+    - ADMIN_USER_PASSWORD_RESET
+    - ADMIN_BATCH_USER_APPROVE
+    - ADMIN_BATCH_USER_REJECT
+    - ADMIN_BATCH_USER_BAN
+    - ADMIN_BATCH_USER_UNBAN
+    - SYSTEM_EMAIL_SEND_SKIPPED
+    type: string
+    x-enum-comments:
+      ActionSystemEmailSendSkipped: 邮件发送因配置或开关被跳过
+    x-enum-varnames:
+    - ActionUserRegister
+    - ActionUserLogin
+    - ActionUserLogout
+    - ActionUserUpdateProfile
+    - ActionUserChangePassword
+    - ActionUserRequestResetPwd
+    - ActionUserResetPassword
+    - ActionUserVerifyEmail
+    - ActionUserRequestActivationEmail
+    - ActionUserRequestResetPwdEmail
+    - ActionAdminUserCreate
+    - ActionAdminUserUpdate
+    - ActionAdminUserDelete
+    - ActionAdminUserStatusChange
+    - ActionAdminUserRoleChange
+    - ActionAdminUserPasswordReset
+    - ActionAdminBatchUserApprove
+    - ActionAdminBatchUserReject
+    - ActionAdminBatchUserBan
+    - ActionAdminBatchUserUnban
+    - ActionSystemEmailSendSkipped
+  models.BasicSiteSetting:
+    properties:
+      adminApprovalRequired:
+        type: boolean
+      appName:
+        type: string
+      createdAt:
+        type: string
+      emailNotifyEnabled:
+        type: boolean
+      emailVerificationRequired:
+        type: boolean
+      faviconURL:
+        type: string
+      fromEmailAddress:
+        type: string
+      fromEmailName:
+        type: string
+      guestUploadEnabled:
+        type: boolean
+      id:
+        type: integer
+      logoURL:
+        type: string
+      seoKeywords:
+        type: string
+      siteAnnouncement:
+        type: string
+      siteDescription:
+        type: string
+      smtppassword:
+        type: string
+      smtpport:
+        type: integer
+      smtpserver:
+        type: string
+      smtpusername:
+        type: string
+      updatedAt:
+        type: string
+      userInitialStorageCapacityMB:
+        description: '校验: e.g., 10-102400'
+        type: integer
+      userRegistrationEnabled:
+        type: boolean
+    type: object
+  models.ImageProcessingSetting:
+    properties:
+      allowedImageFormats:
+        type: string
+      autoCompressEnabled:
+        type: boolean
+      batchUploadLimit:
+        description: '校验: e.g., 1-100'
+        type: integer
+      compressionQuality:
+        description: '校验: 1-100'
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: integer
+      thumbnailEnabled:
+        type: boolean
+      thumbnailHeight:
+        description: '校验: e.g., 0-8000'
+        type: integer
+      thumbnailWidth:
+        description: '校验: e.g., 0-8000'
+        type: integer
+      updatedAt:
+        type: string
+      uploadMaxSizeMB:
+        description: '校验: e.g., 1-100'
+        type: integer
+      watermarkEnabled:
+        type: boolean
+      watermarkMarginX:
+        type: integer
+      watermarkMarginY:
+        type: integer
+      watermarkOpacity:
+        description: '校验: 0.0-1.0'
+        type: number
+      watermarkPosition:
+        type: string
+      watermarkScaleRatio:
+        description: '校验: e.g., 0.01-1.0'
+        type: number
+      watermarkSourceFile:
+        type: string
+    type: object
+  models.Permission:
+    properties:
+      createdAt:
+        type: string
+      description:
+        description: 权限描述
+        type: string
+      groupName:
+        description: 权限分组, e.g., "用户管理", "图片管理"
+        type: string
+      id:
+        type: integer
+      name:
+        description: 权限名称, 如 user:create
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Role:
+    properties:
+      alias:
+        description: 别名
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        description: 角色名称
+        type: string
+      permissions:
+        description: 角色拥有的权限
+        items:
+          $ref: '#/definitions/models.Permission'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  models.SecuritySetting:
+    properties:
+      accountLockoutDurationMinutes:
+        description: '校验: e.g., 5-1440'
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: integer
+      ipblacklist:
+        type: string
+      ipwhitelist:
+        type: string
+      loginMaxAttempts:
+        description: '校验: e.g., 3-20'
+        type: integer
+      passwordMinLength:
+        description: '校验: e.g., 6-64'
+        type: integer
+      passwordRequiresLowercase:
+        type: boolean
+      passwordRequiresNumber:
+        type: boolean
+      passwordRequiresSpecialChar:
+        type: boolean
+      passwordRequiresUppercase:
+        type: boolean
+      updatedAt:
+        type: string
+    type: object
+  models.StorageStrategy:
+    properties:
+      config:
+        description: 存储配置详情 (JSON)
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        type: integer
+      isEnabled:
+        description: 是否启用
+        type: boolean
+      name:
+        description: 策略名称
+        type: string
+      type:
+        description: 存储类型标识
+        type: string
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        description: 注册时间
+        type: string
+      email:
+        description: 用户邮箱
+        type: string
+      id:
+        type: integer
+      lastLoginAt:
+        description: 最后登录时间
+        type: string
+      lastLoginIP:
+        description: 最后登录IP
+        type: string
+      minTokenIssueTime:
+        description: 新增字段
+        type: string
+      nickname:
+        description: 用户昵称 (可选)
+        type: string
+      originalRoleID:
+        type: integer
+      passwordHash:
+        description: 密码哈希
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.Role'
+        description: 关联角色
+      roleID:
+        description: 用户角色ID
+        type: integer
+      status:
+        description: 用户状态（0-正常, 1-禁用, 2-待审核, 3-已删除, 4-审核拒绝, 5-待邮件激活）
+        type: integer
+      suspiciousLoginNotifiedAt:
+        description: 新增字段
+        type: string
+      updatedAt:
+        description: 更新时间
+        type: string
+      username:
+        description: 用户名/登录名
+        type: string
+    type: object
+  models.UserUpdateRequest:
+    properties:
+      email:
+        type: string
+      password:
+        description: 可选，用于修改密码
+        type: string
+      role_id:
+        description: 可选，用于修改角色
+        type: integer
+      status:
+        description: 可选，用于修改状态
+        type: integer
+      username:
+        type: string
+    type: object
+  services.CreateAlbumInput:
+    properties:
+      cover_image_id:
+        type: integer
+      description:
+        maxLength: 1024
+        type: string
+      is_public:
+        type: boolean
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  services.UpdateAlbumInput:
+    properties:
+      cover_image_id:
+        description: 允许设为 null
+        type: integer
+      description:
+        maxLength: 1024
+        type: string
+      is_public:
+        type: boolean
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+  utils.PaginationMeta:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  utils.Response:
+    properties:
+      code:
+        description: 业务状态码, 0表示成功, 其他为各类错误
+        type: integer
+      data:
+        description: 成功时返回的业务数据, 失败时可为 null
+      meta:
+        allOf:
+        - $ref: '#/definitions/utils.PaginationMeta'
+        description: 分页元数据, 仅在分页查询时出现
+      msg:
+        description: 简短、清晰的提示信息
+        type: string
+      request_id:
+        description: 用于追踪和日志记录的唯一请求ID
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 这是 LskyPro-Go 的 API 文档.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: LskyPro-Go API
+  version: "1.0"
+paths:
+  /admin/audit-logs:
+    get:
+      consumes:
+      - application/json
+      description: 管理员查询审计日志，支持筛选、分页和排序
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - description: 操作员ID
+        in: query
+        minimum: 1
+        name: operator_id
+        type: integer
+      - description: 操作员名称 (模糊查询)
+        in: query
+        name: operator_name
+        type: string
+      - description: 被操作用户ID
+        in: query
+        minimum: 1
+        name: target_user_id
+        type: integer
+      - description: 被操作用户名 (模糊查询)
+        in: query
+        name: target_username
+        type: string
+      - description: 操作类型 (精确匹配)
+        enum:
+        - USER_REGISTER
+        - USER_LOGIN
+        - USER_LOGOUT
+        - USER_UPDATE_PROFILE
+        - USER_CHANGE_PASSWORD
+        - USER_REQUEST_RESET_PWD
+        - USER_RESET_PASSWORD
+        - USER_VERIFY_EMAIL
+        - ADMIN_USER_CREATE
+        - ADMIN_USER_UPDATE
+        - ADMIN_USER_DELETE
+        - ADMIN_USER_STATUS_CHANGE
+        - ADMIN_USER_ROLE_CHANGE
+        - ADMIN_USER_PASSWORD_RESET
+        - ADMIN_BATCH_USER_APPROVE
+        - ADMIN_BATCH_USER_REJECT
+        - ADMIN_BATCH_USER_BAN
+        - ADMIN_BATCH_USER_UNBAN
+        in: query
+        name: action_type
+        type: string
+      - description: 开始时间 (RFC3339, e.g., 2006-01-02T15:04:05Z07:00)
+        format: date-time
+        in: query
+        name: start_time
+        type: string
+      - description: 结束时间 (RFC3339, e.g., 2006-01-02T15:04:05Z07:00)
+        format: date-time
+        in: query
+        name: end_time
+        type: string
+      - default: timestamp
+        description: 排序字段
+        enum:
+        - timestamp
+        - operator_name
+        - target_username
+        - action_type
+        - operator_id
+        - target_user_id
+        - status
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        description: 排序顺序
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.AuditLogQueryResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 未经授权
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 查询审计日志
+      tags:
+      - Admin - Audit
+  /admin/storage-strategies:
+    get:
+      description: 管理员获取存储策略列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.StorageStrategy'
+                  type: array
+                meta:
+                  $ref: '#/definitions/utils.PaginationMeta'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取存储策略列表
+      tags:
+      - Storage
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建新的存储策略
+      parameters:
+      - description: 存储策略信息
+        in: body
+        name: strategy
+        required: true
+        schema:
+          $ref: '#/definitions/models.StorageStrategy'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.StorageStrategy'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建存储策略
+      tags:
+      - Storage
+  /admin/storage-strategies/{id}:
+    delete:
+      description: 管理员删除指定的存储策略
+      parameters:
+      - description: 存储策略ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 资源未找到或无法删除
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除存储策略
+      tags:
+      - Storage
+    get:
+      description: 管理员根据ID获取单个存储策略
+      parameters:
+      - description: 存储策略ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.StorageStrategy'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 资源未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取单个存储策略
+      tags:
+      - Storage
+    put:
+      consumes:
+      - application/json
+      description: 管理员更新指定的存储策略
+      parameters:
+      - description: 存储策略ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 存储策略信息
+        in: body
+        name: strategy
+        required: true
+        schema:
+          $ref: '#/definitions/models.StorageStrategy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.StorageStrategy'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 资源未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新存储策略
+      tags:
+      - Storage
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: 管理员获取用户列表的主要接口。支持通过用户名、邮箱、角色ID、状态、创建日期进行筛选，并支持排序。
+      parameters:
+      - description: 用户名 (模糊匹配)
+        in: query
+        name: username
+        type: string
+      - description: 邮箱 (模糊匹配)
+        in: query
+        name: email
+        type: string
+      - description: 角色ID
+        in: query
+        name: role_id
+        type: integer
+      - description: '用户状态 (0: Normal, 1: PendingApproval, 2: Banned, 3: Deleted,
+          4: ApprovalRejected)'
+        in: query
+        name: status
+        type: integer
+      - description: 创建时间范围开始 (YYYY-MM-DD)
+        format: date
+        in: query
+        name: created_at_start
+        type: string
+      - description: 创建时间范围结束 (YYYY-MM-DD)
+        format: date
+        in: query
+        name: created_at_end
+        type: string
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: id
+        description: 排序字段 (id, username, email, role_id, status, created_at, updated_at,
+          last_login_at)
+        in: query
+        name: sort_by
+        type: string
+      - default: asc
+        description: 排序顺序 (asc, desc)
+        in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dtos.AdminUserResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 管理员获取用户列表（支持筛选和排序）
+      tags:
+      - Admin User Management
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建一个新用户账户
+      parameters:
+      - description: 用户信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AdminUserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: 请求参数错误或用户已存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 管理员创建用户
+      tags:
+      - Admin User Management
+  /admin/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 管理员物理删除指定ID的用户的主要接口。
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 用户物理删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效的用户ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 管理员物理删除用户
+      tags:
+      - Admin User Management
+    put:
+      consumes:
+      - application/json
+      description: 管理员更新指定用户的通用信息。此接口整合了原 UserController 中的用户更新功能，作为管理员修改用户资料的主要途径。
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 用户信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: 请求参数错误或无效的用户ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 管理员更新任意用户信息
+      tags:
+      - Admin User Management
+  /admin/users/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: 管理员批准指定ID的用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: 请求参数错误或用户状态不合法
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批准用户
+      tags:
+      - Admin User Management
+  /admin/users/{id}/ban:
+    post:
+      consumes:
+      - application/json
+      description: 管理员封禁指定ID的用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 用户封禁成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: 无效的用户ID或用户状态不合法
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 封禁用户
+      tags:
+      - Admin User Management
+  /admin/users/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: 管理员拒绝指定ID的用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 拒绝理由
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/dtos.UserApprovalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: 请求参数错误或用户状态不合法
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 拒绝用户
+      tags:
+      - Admin User Management
+  /admin/users/{id}/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: 管理员为指定用户重置密码。新密码将通过邮件发送给用户。
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码重置成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效的用户ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 管理员重置用户密码
+      tags:
+      - Admin User Management
+  /admin/users/{id}/unban:
+    post:
+      consumes:
+      - application/json
+      description: 管理员解封指定ID的用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 用户解封成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: 无效的用户ID或用户状态不合法
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 解封用户
+      tags:
+      - Admin User Management
+  /admin/users/batch-approve:
+    post:
+      consumes:
+      - application/json
+      description: 管理员批量批准指定ID列表的用户
+      parameters:
+      - description: 用户ID列表
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.BatchUserIDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应，包含成功数量和失败详情
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量批准用户
+      tags:
+      - Admin User Management
+  /admin/users/batch-ban:
+    post:
+      consumes:
+      - application/json
+      description: 管理员批量封禁指定ID列表的用户
+      parameters:
+      - description: 用户ID列表
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.BatchUserIDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应，包含成功数量和失败详情
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量封禁用户
+      tags:
+      - Admin User Management
+  /admin/users/batch-reject:
+    post:
+      consumes:
+      - application/json
+      description: 管理员批量拒绝指定ID列表的用户
+      parameters:
+      - description: 用户ID列表和拒绝理由
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.BatchUserRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应，包含成功数量和失败详情
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量拒绝用户
+      tags:
+      - Admin User Management
+  /admin/users/batch-unban:
+    post:
+      consumes:
+      - application/json
+      description: 管理员批量解封指定ID列表的用户
+      parameters:
+      - description: 用户ID列表
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.BatchUserIDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应，包含成功数量和失败详情
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量解封用户
+      tags:
+      - Admin User Management
+  /admin/users/pending:
+    get:
+      consumes:
+      - application/json
+      description: 管理员获取所有状态为“待审核”的用户列表，支持分页
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.User'
+                  type: array
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取待审核用户列表
+      tags:
+      - Admin User Management
+  /albums:
+    get:
+      description: 获取当前登录用户的所有相册
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dtos.AlbumResponseDTO'
+                  type: array
+              type: object
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户的相册列表
+      tags:
+      - Albums
+    post:
+      consumes:
+      - application/json
+      description: 用户创建一个新的相册
+      parameters:
+      - description: 相册信息
+        in: body
+        name: album_data
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateAlbumInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 相册创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.AlbumResponseDTO'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建相册
+      tags:
+      - Albums
+  /albums/{id}:
+    delete:
+      description: 删除指定ID的相册
+      parameters:
+      - description: 相册ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效的相册ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 无权删除
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 相册未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除相册
+      tags:
+      - Albums
+    get:
+      description: 根据相册ID获取相册的详细信息
+      parameters:
+      - description: 相册ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.AlbumResponseDTO'
+              type: object
+        "400":
+          description: 无效的相册ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 无权访问
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 相册未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取单个相册信息
+      tags:
+      - Albums
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的相册信息
+      parameters:
+      - description: 相册ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 要更新的相册信息
+        in: body
+        name: album_data
+        required: true
+        schema:
+          $ref: '#/definitions/services.UpdateAlbumInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.AlbumResponseDTO'
+              type: object
+        "400":
+          description: 请求参数错误或无效的相册ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 无权修改
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 相册未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新相册信息
+      tags:
+      - Albums
+  /albums/{id}/images:
+    get:
+      description: 获取指定相册下的所有图片，支持分页
+      parameters:
+      - description: 相册ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dtos.ImageResponseDTO'
+                  type: array
+                meta:
+                  $ref: '#/definitions/utils.PaginationMeta'
+              type: object
+        "400":
+          description: 无效的相册ID或分页参数
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 无权访问
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 相册未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取相册下的图片列表
+      tags:
+      - Albums
+  /auth/activate:
+    post:
+      consumes:
+      - application/json
+      description: 用户使用邮箱和激活码激活账户
+      parameters:
+      - description: 激活信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AccountActivationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 账户激活成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误、验证码无效或已过期
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 账户激活
+      tags:
+      - Auth
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: 用户提交邮箱以请求密码重置邮件
+      parameters:
+      - description: 忘记密码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码重置邮件已发送
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 请求密码重置
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户使用用户名/邮箱和密码进行登录
+      parameters:
+      - description: 登录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功，返回用户信息和JWT
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 用户登录
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      description: 用户登出，使其 JWT 失效
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登出成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求头中缺少 Authorization 或 Token 格式错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 用户登出
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户使用用户名、邮箱和密码进行注册
+      parameters:
+      - description: 注册信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注册请求已提交，请检查邮箱以激活账户
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误或用户已存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 用户注册
+      tags:
+      - Auth
+  /auth/resend-activation-email:
+    post:
+      consumes:
+      - application/json
+      description: 为待激活的用户重新发送激活邮件
+      parameters:
+      - description: 重发激活邮件请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ResendActivationEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 激活邮件已发送
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误或账户状态不适用
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "429":
+          description: 操作过于频繁
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 重发激活邮件
+      tags:
+      - Auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: 用户使用邮箱、新密码和验证码重置密码
+      parameters:
+      - description: 重置密码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码重置成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误、验证码无效或已过期
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 执行密码重置
+      tags:
+      - Auth
+  /images:
+    get:
+      description: 列出当前用户的图片，支持分页和按相册筛选。
+      parameters:
+      - description: 相册ID (用于筛选)
+        in: query
+        name: album_id
+        type: string
+      - description: 页码 (默认 1)
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量 (默认 20)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 图片列表及分页信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dtos.ImageResponseDTO'
+                  type: array
+                meta:
+                  $ref: '#/definitions/utils.PaginationMeta'
+              type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 列出图片
+      tags:
+      - Images
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传一个或多个图片文件。用户必须已登录。
+      parameters:
+      - description: 要上传的图片文件 (字段名为 'files')
+        in: formData
+        name: files
+        required: true
+        type: file
+      - description: 图片关联的相册ID (可选)
+        in: formData
+        name: album_id
+        type: string
+      - description: 要使用的存储策略ID (可选, 否则使用默认策略)
+        in: formData
+        name: storage_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 图片上传成功，返回图片信息列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dtos.UploadResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: 错误请求 (例如：未上传文件、文件过大、格式不支持)
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 未授权 (用户未登录或Token无效)
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 上传图片
+      tags:
+      - Images
+  /images/{id}:
+    delete:
+      description: 根据图片ID删除图片及其文件。需要图片所有者或管理员权限。
+      parameters:
+      - description: 图片ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 无权限删除 (非所有者或管理员)
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 图片未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除图片
+      tags:
+      - Images
+    get:
+      description: 根据图片ID获取其元数据信息。
+      parameters:
+      - description: 图片ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 图片元数据
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.ImageResponseDTO'
+              type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 图片未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取图片信息
+      tags:
+      - Images
+  /me:
+    get:
+      description: 获取当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.UserResponseDTO'
+              type: object
+        "401":
+          description: 用户未认证
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: 更新当前登录用户的昵称、邮箱或密码
+      parameters:
+      - description: 更新信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateMeDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应，返回更新后的用户信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.UserResponseDTO'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 用户未认证
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "409":
+          description: 冲突错误 (例如邮箱已存在)
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新当前用户信息
+      tags:
+      - Users
+  /permissions:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有权限，支持分页和按组名过滤
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 权限分组名称
+        in: query
+        name: group_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取权限列表
+      tags:
+      - Permissions
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的权限定义
+      parameters:
+      - description: 权限创建信息
+        in: body
+        name: permission_input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.PermissionCreateDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建新权限
+      tags:
+      - Permissions
+  /permissions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除权限及其所有关联
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效的ID格式
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 权限未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除权限
+      tags:
+      - Permissions
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取权限的详细信息
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效的ID格式
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 权限未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取单个权限详情
+      tags:
+      - Permissions
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的权限信息 (注意：通常不建议修改权限的 Name)
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限更新信息
+        in: body
+        name: permission_update
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.PermissionUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误或无效的ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 权限未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新权限信息
+      tags:
+      - Permissions
+  /public/settings/site-details:
+    get:
+      description: 获取网站对所有访客公开的基础详情信息 (例如：应用名称, 网站描述, Favicon, Logo, 公告)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功获取公开的网站详情
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.PublicSiteDetailsDTO'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取公开的网站基础详情
+      tags:
+      - Settings
+      - Public
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有角色，支持分页
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dtos.RoleResponseDTO'
+                  type: array
+                meta:
+                  $ref: '#/definitions/utils.PaginationMeta'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取角色列表
+      tags:
+      - Roles
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的角色
+      parameters:
+      - description: 角色创建信息
+        in: body
+        name: role_input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RoleCreateDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.RoleResponseDTO'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建新角色
+      tags:
+      - Roles
+  /roles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除角色及其所有关联的权限和用户分配
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效的ID格式
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除角色
+      tags:
+      - Roles
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取角色的详细信息，包括其权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.RoleResponseDTO'
+              type: object
+        "400":
+          description: 无效的ID格式
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取单个角色详情
+      tags:
+      - Roles
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的角色名称
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 角色更新信息
+        in: body
+        name: role_update
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RoleUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.RoleResponseDTO'
+              type: object
+        "400":
+          description: 请求参数错误或无效的ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新角色信息
+      tags:
+      - Roles
+  /roles/{id}/permissions:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定角色当前拥有的所有权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取角色拥有的权限列表
+      tags:
+      - Permissions
+    put:
+      consumes:
+      - application/json
+      description: 覆盖指定角色当前的所有权限为请求中提供的权限列表
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限ID列表
+        in: body
+        name: permission_sync_input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.SyncPermissionsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 同步成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误或无效ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 同步角色的权限列表
+      tags:
+      - Permissions
+  /roles/{id}/permissions/{permission_id}:
+    delete:
+      consumes:
+      - application/json
+      description: 从指定的角色移除指定的权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限ID
+        in: path
+        name: permission_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 移除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 无效ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 从角色移除权限
+      tags:
+      - Permissions
+  /roles/{role_id}/permissions:
+    post:
+      consumes:
+      - application/json
+      description: 将指定的权限分配给指定的角色
+      parameters:
+      - description: 角色ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      - description: 权限分配信息
+        in: body
+        name: permission_assign_input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AssignPermissionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 分配成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误或无效ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色或权限未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 为角色添加权限
+      tags:
+      - Permissions
+  /settings/basic:
+    get:
+      description: 获取网站的详细基础配置信息 (仅供管理员访问)。包含SMTP设置（SMTP密码本身不会返回，但会指示是否已设置）。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功获取网站详细基础配置
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.AdminBasicSiteSettingsDTO'
+              type: object
+        "401":
+          description: 用户未认证
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 用户无权限访问
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取网站基础配置
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: 更新网站的基础配置信息。所有字段都是可选的，只更新提供的字段。
+      parameters:
+      - description: 要更新的网站基础配置项
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.BasicSiteSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 网站基础配置更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.BasicSiteSetting'
+              type: object
+        "400":
+          description: 请求参数错误或校验失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新网站基础配置
+      tags:
+      - Settings
+  /settings/email:
+    get:
+      description: 获取系统的邮件服务器配置信息 (SMTP服务器, 端口, 用户名, 发件人邮箱, 发件人名称, 邮件通知开关)。不包含敏感信息如密码。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功获取邮件配置
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.BasicSitePublicSettingsDTO'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取邮件配置
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: 更新系统的邮件服务器配置信息。所有字段都是可选的。成功后返回更新后的公开邮件配置。
+      parameters:
+      - description: 要更新的邮件配置项
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateEmailSettingsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 邮件配置更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.BasicSitePublicSettingsDTO'
+              type: object
+        "400":
+          description: 请求参数错误或校验失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新邮件配置
+      tags:
+      - Settings
+  /settings/image-processing:
+    get:
+      description: 获取系统的图片处理配置信息 (例如：图片自动压缩, 压缩质量, 水印设置, 上传大小限制, 允许格式, 缩略图等)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功获取图片处理配置
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ImageProcessingSetting'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取图片处理配置
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: 更新系统的图片处理配置信息。所有字段都是可选的，只更新提供的字段。
+      parameters:
+      - description: 要更新的图片处理配置项
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.ImageProcessingSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 图片处理配置更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ImageProcessingSetting'
+              type: object
+        "400":
+          description: 请求参数错误或校验失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新图片处理配置
+      tags:
+      - Settings
+  /settings/security:
+    get:
+      description: 获取系统的安全配置信息 (例如：登录尝试次数限制, 账户锁定策略, IP黑白名单, 密码策略等)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功获取安全配置
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.SecuritySetting'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取安全配置
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: 更新系统的安全配置信息。所有字段都是可选的，只更新提供的字段。
+      parameters:
+      - description: 要更新的安全配置项
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.SecuritySetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 安全配置更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.SecuritySetting'
+              type: object
+        "400":
+          description: 请求参数错误或校验失败
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新安全配置
+      tags:
+      - Settings
+  /shares:
+    post:
+      consumes:
+      - application/json
+      description: 为图片或相册创建分享链接
+      parameters:
+      - description: 分享请求参数
+        in: body
+        name: share
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateShareLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 分享链接创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.ShareResponseDTO'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 未经授权
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 禁止访问（例如，资源不属于当前用户）
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 资源未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建分享链接
+      tags:
+      - Share
+  /shares/{token}:
+    delete:
+      description: 根据 Token 删除一个分享链接
+      parameters:
+      - description: 分享Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 分享链接删除成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Token 不能为空
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: 未经授权
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: 禁止访问（例如，不是分享的创建者）
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 分享链接未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除分享链接
+      tags:
+      - Share
+    get:
+      description: 通过分享 Token 访问图片或相册内容（无需认证）
+      parameters:
+      - description: 分享Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取分享内容成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "404":
+          description: 分享链接不存在或已过期
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取分享内容
+      tags:
+      - Share
+  /users/{id}/roles:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定用户的当前角色
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.RoleResponseDTO'
+              type: object
+        "400":
+          description: 无效ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户或其角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户的角色
+      tags:
+      - Roles
+  /users/{user_id}/roles:
+    put:
+      consumes:
+      - application/json
+      description: 将指定用户分配给指定的角色 (目前系统为单角色模型)
+      parameters:
+      - description: 用户ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: 角色分配信息
+        in: body
+        name: role_assign_input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AssignRoleDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 分配成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误或无效ID
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户或角色未找到
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 为用户分配角色
+      tags:
+      - Roles
+schemes:
+- http
+- https
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
