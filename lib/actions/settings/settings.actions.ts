@@ -17,7 +17,7 @@ import {
   SettingType,
 } from "@/lib/types/settings";
 import { ErrorResponse, SuccessResponse } from "@/lib/types/user";
-import { cacheManager, CACHE_KEYS } from "@/lib/utils/cacheManager";
+import { cacheManager, CACHE_KEYS } from "@/lib/utils/cache-manager";
 
 // 设置相关API路径
 const SETTINGS_API_BASE = "/admin/settings";

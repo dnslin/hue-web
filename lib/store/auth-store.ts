@@ -16,7 +16,7 @@ import type {
   RegisterRequest,
   AuthResponseData,
 } from "@/lib/types/auth";
-import { cacheManager } from "@/lib/utils/cacheManager";
+import { cacheManager } from "@/lib/utils/cache-manager";
 
 /**
  * 认证操作结果接口

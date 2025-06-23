@@ -19,7 +19,11 @@ import {
 } from "@/lib/actions/roles/role.actions";
 import { handleError } from "@/lib/utils/error-handler";
 import { showToast } from "@/lib/utils/toast";
-import { cacheManager, CACHE_KEYS, cacheUtils } from "@/lib/utils/cacheManager";
+import {
+  cacheManager,
+  CACHE_KEYS,
+  cacheUtils,
+} from "@/lib/utils/cache-manager";
 
 // 权限分组的本地类型，因为后端不直接返回这个聚合结构
 export interface PermissionGroupFE {
