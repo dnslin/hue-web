@@ -10,13 +10,15 @@ import {
   EmailSettings,
   ImageProcessingSetting,
   SecuritySetting,
+  SettingType,
+  SettingsActionResponse,
+} from "@/lib/types/settings";
+import {
   BasicSettingFormData,
   EmailSettingsFormData,
   ImageSettingsFormData,
   SecuritySettingsFormData,
-  SettingType,
-  SettingsActionResponse,
-} from "@/lib/types/settings";
+} from "@/lib/schema";
 import type {
   ApiResponse,
   SuccessApiResponse,

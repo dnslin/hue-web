@@ -9,15 +9,13 @@ import {
   updateMultipleSettingsAction,
   testEmailSettingsAction,
 } from "@/lib/actions/settings/settings.actions";
+import { AllSettingsData, SettingType } from "@/lib/types/settings";
 import {
-  AllSettingsData,
   BasicSettingFormData,
   EmailSettingsFormData,
   ImageSettingsFormData,
   SecuritySettingsFormData,
-  SettingType,
-} from "@/lib/types/settings";
-import type { SuccessApiResponse, ErrorApiResponse } from "@/lib/types/common";
+} from "@/lib/schema";
 import { isSuccessApiResponse } from "@/lib/types/common";
 import { handleStoreError } from "@/lib/utils/error-handler";
 

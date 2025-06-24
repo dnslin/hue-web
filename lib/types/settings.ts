@@ -1,4 +1,11 @@
 import type { SuccessApiResponse, ErrorApiResponse } from "./common";
+import type {
+  BasicSettingFormData,
+  EmailSettingsFormData,
+  ImageSettingsFormData,
+  SecuritySettingsFormData,
+} from "@/lib/schema/settings";
+
 // ========== 基础站点设置 ==========
 
 /**
@@ -49,7 +56,6 @@ export interface AdminBasicSiteSettingsDTO {
   createdAt: string;
   updatedAt: string;
 }
-
 /**
  * 公共站点设置DTO - 对应后端 dtos.PublicSiteDetailsDTO
  */
