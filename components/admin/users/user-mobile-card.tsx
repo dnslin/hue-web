@@ -3,13 +3,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { AdminUserResponse, getUserDisplayName } from "@/lib/types/user";
+import { User, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { UserActions } from "./user-actions";
 
 interface UserMobileCardProps {
-  user: AdminUserResponse;
+  user: User;
 }
 
 export function UserMobileCard({ user }: UserMobileCardProps) {
@@ -38,7 +38,7 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
               <AvatarImage
-                src={user.avatar || getGravatarUrl(user.email)}
+                src={getGravatarUrl(user.email)}
                 alt={user.username}
               />
               <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
