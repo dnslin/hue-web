@@ -2,10 +2,12 @@
 
 import { StateCreator } from "zustand";
 import { shallow } from "zustand/shallow";
-import { User, UserListParams } from "@/lib/types/user";
+import { AdminUserResponse, UserListParams } from "@/lib/types/user";
+import type { PaginatedApiResponse } from "@/lib/types/common";
+import { isSuccessApiResponse } from "@/lib/types/common";
 import { useUserFilterStore } from "./user-filter.store";
 import { getUsersAction } from "@/lib/actions/users/user.actions";
-import { handleError } from "@/lib/utils/error-handler";
+import { handleStoreError } from "@/lib/utils/error-handler";
 
 /**
  * 用户核心数据状态
@@ -15,7 +17,7 @@ export interface UserDataState {
   /**
    * 当前页的用户列表
    */
-  users: User[];
+  users: AdminUserResponse[];
   /**
    * 用户总数
    */
@@ -83,9 +85,15 @@ export const createUserDataSlice: StateCreator<
   fetchUsers: async () => {
     const { filters, pagination } = useUserFilterStore.getState();
 
-    // 准备发送到后端的参数
+    // 准备发送到后端的参数，转换 search 字段为 username 和 email
+    const { search, ...otherFilters } = filters;
     const apiParams: UserListParams = {
-      ...filters,
+      ...otherFilters,
+      // 如果有搜索关键词，同时搜索用户名和邮箱
+      ...(search && {
+        username: search,
+        email: search,
+      }),
       page: pagination.page,
       pageSize: pagination.pageSize,
     };
@@ -94,29 +102,34 @@ export const createUserDataSlice: StateCreator<
     try {
       const response = await getUsersAction(apiParams);
 
-      // 首先检查成功的响应结构
-      if ("data" in response && "meta" in response) {
-        set({
-          users: response.data,
-          total: response.meta.total,
-          loading: false,
-        });
-      } else if ("error" in response) {
-        // 处理已知的 API 错误响应
-        const errorToHandle = new Error(response.message || "获取用户列表失败");
-        await handleError(errorToHandle, "获取用户列表失败");
-        set({ loading: false, error: response.message || "获取用户列表失败" });
+      // 使用类型守卫检查API响应
+      if (isSuccessApiResponse(response)) {
+        const paginatedResponse =
+          response as PaginatedApiResponse<AdminUserResponse>;
+        if (paginatedResponse.data && paginatedResponse.meta) {
+          set({
+            users: paginatedResponse.data,
+            total: paginatedResponse.meta.total,
+            loading: false,
+          });
+        } else {
+          console.error("❌ 用户列表数据格式错误");
+          const errorResult = await handleStoreError(
+            new Error("数据格式错误"),
+            "获取用户列表"
+          );
+          set({ loading: false, error: errorResult.error });
+        }
       } else {
-        // 处理任何其他意外的响应格式
-        const errorToHandle = new Error("API响应格式不正确或未知");
-        await handleError(errorToHandle, "获取用户列表失败");
-        set({ loading: false, error: "API响应格式不正确或未知" });
+        // 处理API错误响应
+        console.error("❌ 获取用户列表失败:", response.message);
+        const errorResult = await handleStoreError(response, "获取用户列表");
+        set({ loading: false, error: errorResult.error });
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "获取用户列表时发生未知错误";
-      await handleError(error, "获取用户列表失败");
-      set({ loading: false, error: errorMessage });
+      console.error("❌ 获取用户列表时发生未知错误:", error);
+      const errorResult = await handleStoreError(error, "获取用户列表");
+      set({ loading: false, error: errorResult.error });
     }
   },
 

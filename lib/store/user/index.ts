@@ -12,11 +12,7 @@
 
 import { useStore } from "zustand";
 import { User } from "@/lib/types/user";
-import {
-  userDataStore,
-  UserDataState,
-  UserDataActions,
-} from "./user-data.store";
+import { userDataStore, UserDataState } from "./user-data.store";
 import {
   useUserFilterStore,
   UserFilterState,

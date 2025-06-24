@@ -1,5 +1,5 @@
 import { showToast } from "./toast";
-import { cacheManager } from "./cacheManager";
+import { cacheManager } from "./cache-manager";
 
 /**
  * 错误类型枚举

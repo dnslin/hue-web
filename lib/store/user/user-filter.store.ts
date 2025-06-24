@@ -8,10 +8,16 @@ import { UserListParams } from "@/lib/types/user";
 /**
  * @interface UserFilters
  * @description 定义了可用于筛选用户列表的条件。
- *              它扩展了 UserListParams 的一部分，以确保类型一致性。
+ *              包含前端专用的 search 字段用于统一搜索功能。
  */
 export interface UserFilters
-  extends Omit<UserListParams, "page" | "page_size" | "limit" | "offset"> {}
+  extends Omit<
+    UserListParams,
+    "page" | "page_size" | "limit" | "offset" | "username" | "email"
+  > {
+  /** 统一搜索字段，用于搜索用户名和邮箱 */
+  search?: string;
+}
 
 /**
  * @interface PaginationState

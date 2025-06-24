@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -16,28 +15,7 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { Mail, CheckCircle2, RefreshCw } from "lucide-react";
-
-// 注册表单验证模式
-const registerSchema = z
-  .object({
-    username: z
-      .string()
-      .min(3, "用户名至少需要3个字符")
-      .max(50, "用户名不能超过50个字符")
-      .regex(/^[a-zA-Z0-9_-]+$/, "用户名只能包含字母、数字、下划线和连字符"),
-    email: z.string().min(1, "请输入邮箱").email("请输入有效的邮箱地址"),
-    password: z
-      .string()
-      .min(6, "密码至少需要6个字符")
-      .max(100, "密码不能超过100个字符"),
-    confirm_password: z.string().min(1, "请确认密码"),
-  })
-  .refine((data) => data.password === data.confirm_password, {
-    message: "两次输入的密码不一致",
-    path: ["confirm_password"],
-  });
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
+import { registerSchema, type RegisterFormValues } from "@/lib/schema";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,7 +23,8 @@ export default function RegisterPage() {
     register: registerUser,
     resendActivationEmail,
     activateAccount,
-    isLoading,
+    isLoadingRegister,
+    isLoadingOther,
     error,
     clearError,
   } = useAuthStore();
@@ -209,13 +188,13 @@ export default function RegisterPage() {
               <Button
                 onClick={handleActivateAccount}
                 disabled={
-                  isLoading ||
+                  isLoadingOther ||
                   !activationCode.trim() ||
                   activationCode.length !== 8
                 }
                 className="w-full"
               >
-                {isLoading ? (
+                {isLoadingOther ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                     激活中...
@@ -271,9 +250,9 @@ export default function RegisterPage() {
                 onClick={handleResendActivation}
                 variant="outline"
                 className="w-full"
-                disabled={isLoading || resendCooldown > 0}
+                disabled={isLoadingOther || resendCooldown > 0}
               >
-                {isLoading ? (
+                {isLoadingOther ? (
                   <>
                     <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
                     发送中...
@@ -441,10 +420,10 @@ export default function RegisterPage() {
             <ShimmerButton
               type="submit"
               className="w-full text-white dark:text-white"
-              disabled={isLoading}
+              disabled={isLoadingRegister}
               borderRadius="10px"
             >
-              {isLoading ? "注册中..." : "注册"}
+              {isLoadingRegister ? "注册中..." : "注册"}
             </ShimmerButton>
           </div>
 

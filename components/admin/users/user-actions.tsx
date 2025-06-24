@@ -133,8 +133,10 @@ export function UserActions({ user }: UserActionsProps) {
           "新密码已通过邮件发送给用户"
         );
       }
-      setShowResetPasswordDialog(false);
     }
+
+    // 无论成功还是失败，都关闭弹窗
+    setShowResetPasswordDialog(false);
   };
 
   const handleRejectUser = async () => {
@@ -288,42 +290,47 @@ export function UserActions({ user }: UserActionsProps) {
               </>
             )}
 
-            {/* 重置密码 - 所有用户 */}
-            <Dialog
-              open={showResetPasswordDialog}
-              onOpenChange={setShowResetPasswordDialog}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2"
-                >
-                  <Key className="h-4 w-4" />
-                  重置密码
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>重置密码</DialogTitle>
-                  <DialogDescription>
-                    确定要重置用户 &ldquo;{user.username}&rdquo;
-                    的密码吗？系统将生成一个临时密码。
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
+            {/* 重置密码 - 仅正常状态用户 */}
+            {user.status === UserStatus.NORMAL && (
+              <Dialog
+                open={showResetPasswordDialog}
+                onOpenChange={setShowResetPasswordDialog}
+              >
+                <DialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    onClick={() => setShowResetPasswordDialog(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start gap-2"
                   >
-                    取消
+                    <Key className="h-4 w-4" />
+                    重置密码
                   </Button>
-                  <Button onClick={handleResetPassword} disabled={isSubmitting}>
-                    {isSubmitting ? "重置中..." : "确认重置"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>重置密码</DialogTitle>
+                    <DialogDescription>
+                      确定要重置用户 &ldquo;{user.username}&rdquo;
+                      的密码吗？系统将生成一个临时密码。
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowResetPasswordDialog(false)}
+                    >
+                      取消
+                    </Button>
+                    <Button
+                      onClick={handleResetPassword}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "重置中..." : "确认重置"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
 
             {/* 删除用户 - 所有用户 */}
             {user.status !== UserStatus.DELETED && (

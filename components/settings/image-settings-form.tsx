@@ -2,13 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ImageProcessingSetting } from "@/lib/types/settings";
 import {
-  ImageSettingsFormData,
   imageSettingsSchema,
-  ImageProcessingSetting,
   watermarkPositionOptions,
   WATERMARK_POSITIONS,
-} from "@/lib/types/settings";
+  type ImageSettingsFormData,
+} from "@/lib/schema";
 import {
   SettingsFormWrapper,
   SettingsFormSection,

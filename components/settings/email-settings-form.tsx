@@ -2,11 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  EmailSettingsFormData,
-  emailSettingsSchema,
-  EmailSettings,
-} from "@/lib/types/settings";
+import { EmailSettings } from "@/lib/types/settings";
+import { emailSettingsSchema, type EmailSettingsFormData } from "@/lib/schema";
 import {
   SettingsFormWrapper,
   SettingsFormSection,

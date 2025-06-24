@@ -3,31 +3,37 @@
 import {
   getAuthenticatedApiService,
   AuthenticationError,
-} from "@/lib/api/apiService";
+} from "@/lib/api/api-service";
 import {
   AllSettingsData,
   BasicSiteSetting,
   EmailSettings,
   ImageProcessingSetting,
   SecuritySetting,
+  SettingType,
+  SettingsActionResponse,
+} from "@/lib/types/settings";
+import {
   BasicSettingFormData,
   EmailSettingsFormData,
   ImageSettingsFormData,
   SecuritySettingsFormData,
-  SettingType,
-} from "@/lib/types/settings";
-import { ErrorResponse, SuccessResponse } from "@/lib/types/user";
-import { cacheManager, CACHE_KEYS } from "@/lib/utils/cacheManager";
+} from "@/lib/schema";
+import type {
+  ApiResponse,
+  SuccessApiResponse,
+  ErrorApiResponse,
+} from "@/lib/types/common";
+import { cacheManager, CACHE_KEYS } from "@/lib/utils/cache-manager";
 
 // 设置相关API路径
 const SETTINGS_API_BASE = "/admin/settings";
 
 /**
  * 获取所有设置数据
- * GET /api/v1/admin/settings
  */
 export async function getSettingsAction(): Promise<
-  AllSettingsData | ErrorResponse
+  AllSettingsData | ErrorApiResponse
 > {
   try {
     const apiService = await getAuthenticatedApiService();
@@ -35,16 +41,16 @@ export async function getSettingsAction(): Promise<
     // 并行获取所有设置类型
     const [basicResponse, emailResponse, imageResponse, securityResponse] =
       await Promise.allSettled([
-        apiService.get<SuccessResponse<BasicSiteSetting>>(
+        apiService.get<ApiResponse<BasicSiteSetting>>(
           `${SETTINGS_API_BASE}/basic`
         ),
-        apiService.get<SuccessResponse<EmailSettings>>(
+        apiService.get<ApiResponse<EmailSettings>>(
           `${SETTINGS_API_BASE}/email`
         ),
-        apiService.get<SuccessResponse<ImageProcessingSetting>>(
+        apiService.get<ApiResponse<ImageProcessingSetting>>(
           `${SETTINGS_API_BASE}/image`
         ),
-        apiService.get<SuccessResponse<SecuritySetting>>(
+        apiService.get<ApiResponse<SecuritySetting>>(
           `${SETTINGS_API_BASE}/security`
         ),
       ]);
@@ -52,19 +58,23 @@ export async function getSettingsAction(): Promise<
     // 处理响应结果
     const settingsData: AllSettingsData = {
       basic:
-        basicResponse.status === "fulfilled"
+        basicResponse.status === "fulfilled" &&
+        basicResponse.value.data.code === 0
           ? basicResponse.value.data.data || null
           : null,
       email:
-        emailResponse.status === "fulfilled"
+        emailResponse.status === "fulfilled" &&
+        emailResponse.value.data.code === 0
           ? emailResponse.value.data.data || null
           : null,
       image:
-        imageResponse.status === "fulfilled"
+        imageResponse.status === "fulfilled" &&
+        imageResponse.value.data.code === 0
           ? imageResponse.value.data.data || null
           : null,
       security:
-        securityResponse.status === "fulfilled"
+        securityResponse.status === "fulfilled" &&
+        securityResponse.value.data.code === 0
           ? securityResponse.value.data.data || null
           : null,
     };
@@ -82,29 +92,30 @@ export async function getSettingsAction(): Promise<
 
     return settingsData;
   } catch (error: any) {
-    console.error("[Action Error] getSettingsAction:", error.message, error);
+    console.error("getSettingsAction 错误:", error.message);
+
     if (error instanceof AuthenticationError) {
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
       };
     }
+
     return {
       code: error.code || 500,
       message: error.message || "获取设置失败",
-      error: error.data || error.message,
+      error,
     };
   }
 }
 
 /**
  * 获取特定类型的设置
- * GET /api/v1/admin/settings/{type}
  */
 export async function getSettingByTypeAction(
   type: SettingType
-): Promise<SuccessResponse<any> | ErrorResponse> {
+): Promise<SuccessApiResponse<any> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
     const cacheKey = `${CACHE_KEYS.SETTINGS_BASE}:${type}`;
@@ -112,7 +123,7 @@ export async function getSettingByTypeAction(
     const response = await cacheManager.getOrSet(
       cacheKey,
       async () => {
-        const apiResponse = await apiService.get<SuccessResponse<any>>(
+        const apiResponse = await apiService.get<ApiResponse<any>>(
           `${SETTINGS_API_BASE}/${type}`
         );
         return apiResponse.data;
@@ -120,190 +131,246 @@ export async function getSettingByTypeAction(
       { ttl: 5 * 60 * 1000, storage: "memory" }
     );
 
-    return response as SuccessResponse<any> | ErrorResponse;
-  } catch (error: any) {
-    console.error(
-      `[Action Error] getSettingByTypeAction(${type}):`,
-      error.message,
-      error
-    );
-    if (error instanceof AuthenticationError) {
+    const apiResponse = response as ApiResponse<any>;
+
+    if (apiResponse.code === 0) {
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 0,
+        message: apiResponse.message || `获取${type}设置成功`,
+        data: apiResponse.data,
       };
     }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || `获取${type}设置失败`,
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error(`getSettingByTypeAction(${type}) 错误:`, error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
     return {
       code: error.code || 500,
       message: error.message || `获取${type}设置失败`,
-      error: error.data || error.message,
+      error,
     };
   }
 }
 
 /**
  * 更新基础设置
- * PUT /api/v1/admin/settings/basic
  */
 export async function updateBasicSettingsAction(
   settingsData: BasicSettingFormData
-): Promise<SuccessResponse<BasicSiteSetting> | ErrorResponse> {
+): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.put<SuccessResponse<BasicSiteSetting>>(
+    const response = await apiService.put<ApiResponse<BasicSiteSetting>>(
       `${SETTINGS_API_BASE}/basic`,
       settingsData
     );
 
-    // 清除相关缓存
-    cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:basic`);
-    cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+    const apiResponse = response.data;
 
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      "[Action Error] updateBasicSettingsAction:",
-      error.message,
-      error
-    );
-    if (error instanceof AuthenticationError) {
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:basic`);
+      cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 0,
+        message: apiResponse.message || "基础设置更新成功",
+        data: apiResponse.data,
       };
     }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "基础设置更新失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("updateBasicSettingsAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
     return {
       code: error.code || 500,
       message: error.message || "更新基础设置失败",
-      error: error.data || error.message,
+      error,
     };
   }
 }
 
 /**
  * 更新邮件设置
- * PUT /api/v1/admin/settings/email
  */
 export async function updateEmailSettingsAction(
   settingsData: EmailSettingsFormData
-): Promise<SuccessResponse<EmailSettings> | ErrorResponse> {
+): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.put<SuccessResponse<EmailSettings>>(
+    const response = await apiService.put<ApiResponse<EmailSettings>>(
       `${SETTINGS_API_BASE}/email`,
       settingsData
     );
 
-    // 清除相关缓存
-    cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:email`);
-    cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+    const apiResponse = response.data;
 
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      "[Action Error] updateEmailSettingsAction:",
-      error.message,
-      error
-    );
-    if (error instanceof AuthenticationError) {
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:email`);
+      cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 0,
+        message: apiResponse.message || "邮件设置更新成功",
+        data: apiResponse.data,
       };
     }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "邮件设置更新失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("updateEmailSettingsAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
     return {
       code: error.code || 500,
       message: error.message || "更新邮件设置失败",
-      error: error.data || error.message,
+      error,
     };
   }
 }
 
 /**
  * 更新图片设置
- * PUT /api/v1/admin/settings/image
  */
 export async function updateImageSettingsAction(
   settingsData: ImageSettingsFormData
-): Promise<SuccessResponse<ImageProcessingSetting> | ErrorResponse> {
+): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.put<
-      SuccessResponse<ImageProcessingSetting>
-    >(`${SETTINGS_API_BASE}/image`, settingsData);
-
-    // 清除相关缓存
-    cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:image`);
-    cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
-
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      "[Action Error] updateImageSettingsAction:",
-      error.message,
-      error
+    const response = await apiService.put<ApiResponse<ImageProcessingSetting>>(
+      `${SETTINGS_API_BASE}/image`,
+      settingsData
     );
-    if (error instanceof AuthenticationError) {
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:image`);
+      cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 0,
+        message: apiResponse.message || "图片设置更新成功",
+        data: apiResponse.data,
       };
     }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "图片设置更新失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("updateImageSettingsAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
     return {
       code: error.code || 500,
       message: error.message || "更新图片设置失败",
-      error: error.data || error.message,
+      error,
     };
   }
 }
 
 /**
  * 更新安全设置
- * PUT /api/v1/admin/settings/security
  */
 export async function updateSecuritySettingsAction(
   settingsData: SecuritySettingsFormData
-): Promise<SuccessResponse<SecuritySetting> | ErrorResponse> {
+): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.put<SuccessResponse<SecuritySetting>>(
+    const response = await apiService.put<ApiResponse<SecuritySetting>>(
       `${SETTINGS_API_BASE}/security`,
       settingsData
     );
 
-    // 清除相关缓存
-    cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:security`);
-    cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+    const apiResponse = response.data;
 
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      "[Action Error] updateSecuritySettingsAction:",
-      error.message,
-      error
-    );
-    if (error instanceof AuthenticationError) {
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:security`);
+      cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
+
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 0,
+        message: apiResponse.message || "安全设置更新成功",
+        data: apiResponse.data,
       };
     }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "安全设置更新失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("updateSecuritySettingsAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
     return {
       code: error.code || 500,
       message: error.message || "更新安全设置失败",
-      error: error.data || error.message,
+      error,
     };
   }
 }
 
 /**
  * 批量更新多个设置类型
- * 将多个设置更新合并为单个事务
  */
 export async function updateMultipleSettingsAction(updates: {
   basic?: BasicSettingFormData;
@@ -312,10 +379,10 @@ export async function updateMultipleSettingsAction(updates: {
   security?: SecuritySettingsFormData;
 }): Promise<{
   success: boolean;
-  results: Record<string, SuccessResponse<any> | ErrorResponse>;
+  results: Record<string, SettingsActionResponse>;
   errors: string[];
 }> {
-  const results: Record<string, SuccessResponse<any> | ErrorResponse> = {};
+  const results: Record<string, SettingsActionResponse> = {};
   const errors: string[] = [];
 
   try {
@@ -394,15 +461,14 @@ export async function updateMultipleSettingsAction(updates: {
 
 /**
  * 测试邮件配置
- * POST /api/v1/admin/settings/email/test
  */
 export async function testEmailSettingsAction(
   emailData: EmailSettingsFormData,
   testRecipient: string
-): Promise<SuccessResponse<any> | ErrorResponse> {
+): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.post<SuccessResponse<any>>(
+    const response = await apiService.post<ApiResponse<any>>(
       `${SETTINGS_API_BASE}/email/test`,
       {
         ...emailData,
@@ -410,24 +476,36 @@ export async function testEmailSettingsAction(
       }
     );
 
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      "[Action Error] testEmailSettingsAction:",
-      error.message,
-      error
-    );
-    if (error instanceof AuthenticationError) {
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
       return {
-        code: error.status,
-        message: error.message,
-        error: "AuthenticationError",
+        code: 0,
+        message: apiResponse.message || "邮件配置测试成功",
+        data: apiResponse.data,
       };
     }
+
+    return {
+      code: apiResponse.code || 1,
+      message: apiResponse.message || "邮件配置测试失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("testEmailSettingsAction 错误:", error.message);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        message: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
     return {
       code: error.code || 500,
       message: error.message || "邮件配置测试失败",
-      error: error.data || error.message,
+      error,
     };
   }
 }

@@ -2,11 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  BasicSettingFormData,
-  basicSettingSchema,
-  BasicSiteSetting,
-} from "@/lib/types/settings";
+import { BasicSiteSetting } from "@/lib/types/settings";
+import { basicSettingSchema, type BasicSettingFormData } from "@/lib/schema";
 import {
   SettingsFormWrapper,
   SettingsFormSection,
@@ -49,6 +46,7 @@ export const BasicSettingsForm = ({
       emailVerificationRequired: true,
       guestUploadEnabled: false,
       userInitialStorageCapacityMB: 1024,
+      notifyAdminOnPendingApproval: false,
     },
   });
 
@@ -67,6 +65,8 @@ export const BasicSettingsForm = ({
         emailVerificationRequired: data.emailVerificationRequired ?? true,
         guestUploadEnabled: data.guestUploadEnabled ?? false,
         userInitialStorageCapacityMB: data.userInitialStorageCapacityMB || 1024,
+        notifyAdminOnPendingApproval:
+          data.notifyAdminOnPendingApproval ?? false,
       });
     }
   }, [data, form]);
@@ -218,6 +218,21 @@ export const BasicSettingsForm = ({
           disabled={!watchedValues.userRegistrationEnabled}
           tooltip="开启后，新用户注册后需要管理员审核通过才能使用"
         />
+
+        {watchedValues.adminApprovalRequired && (
+          <LabeledSwitch
+            label="通知管理员"
+            description="新用户注册时通知管理员进行审核"
+            checked={watchedValues.notifyAdminOnPendingApproval}
+            onCheckedChange={(checked) =>
+              form.setValue("notifyAdminOnPendingApproval", checked, {
+                shouldDirty: true,
+              })
+            }
+            disabled={!watchedValues.userRegistrationEnabled}
+            tooltip="开启后，有新用户注册时会发送通知给管理员"
+          />
+        )}
 
         <LabeledSwitch
           label="需要邮箱验证"

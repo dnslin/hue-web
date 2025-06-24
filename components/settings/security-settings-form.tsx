@@ -2,11 +2,11 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { SecuritySetting } from "@/lib/types/settings";
 import {
-  SecuritySettingsFormData,
   securitySettingsSchema,
-  SecuritySetting,
-} from "@/lib/types/settings";
+  type SecuritySettingsFormData,
+} from "@/lib/schema";
 import {
   SettingsFormWrapper,
   SettingsFormSection,

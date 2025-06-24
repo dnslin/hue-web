@@ -1,16 +1,29 @@
-// 用户状态枚举 - 对齐后端定义
+import type {
+  ApiResponse,
+  SuccessApiResponse,
+  ErrorApiResponse,
+  PaginatedApiResponse,
+  BatchOperationResult,
+  BaseQueryParams,
+  SortOrder,
+} from "./common";
+
+/**
+ * 用户状态枚举 - 对应后端 models.User.status
+ * 0-正常, 1-禁用, 2-待审核, 3-已删除, 4-审核拒绝, 5-待邮件激活
+ */
 export enum UserStatus {
-  NORMAL = 0, // 正常/激活 - 对应后端 StatusNormal = 0
-  BANNED = 1, // 禁用/封禁 - 对应后端 StatusBanned = 1
-  PENDING = 2, // 待审核 - 对应后端 StatusPendingApproval = 2
-  DELETED = 3, // 已删除 (逻辑删除) - 对应后端 StatusDeleted = 3
-  REJECTED = 4, // 审核拒绝 - 对应后端 StatusApprovalRejected = 4
-  EMAIL_PENDING = 5, // 待邮件激活 - 对应后端 StatusEmailPending = 5
+  NORMAL = 0,
+  BANNED = 1,
+  PENDING = 2,
+  DELETED = 3,
+  REJECTED = 4,
+  EMAIL_PENDING = 5,
 }
 
-// UserRole enum and mappings are removed to rely on dynamic data from the backend.
-
-// 状态标签映射
+/**
+ * 状态标签映射
+ */
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   [UserStatus.NORMAL]: "正常",
   [UserStatus.BANNED]: "封禁",
@@ -20,28 +33,92 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   [UserStatus.EMAIL_PENDING]: "待邮件激活",
 };
 
-// 基础用户信息接口
+/**
+ * 权限接口 - 对应后端 models.Permission
+ */
+export interface Permission {
+  id: number;
+  name: string;
+  description: string;
+  groupName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 角色接口 - 对应后端 models.Role
+ */
+export interface Role {
+  id: number;
+  name: string;
+  alias?: string;
+  permissions: Permission[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 基础用户信息接口 - 对应后端 models.User
+ */
 export interface User {
   id: number;
   username: string;
   email: string;
   nickname?: string;
-  avatar?: string; // 前端使用Gravatar生成
   status: UserStatus;
-  role: Role; // 完整的角色对象
+  role: Role;
   roleId: number;
   originalRoleId?: number;
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string;
   lastLoginIp?: string;
-  storageUsed?: number;
-  storageLimit?: number;
-  uploadCount?: number;
-  passwordHash?: string;
+  minTokenIssueTime?: string;
+  suspiciousLoginNotifiedAt?: string;
 }
 
-// 管理员创建用户请求
+/**
+ * 管理员用户响应 - 对应后端 dtos.AdminUserResponseDTO
+ */
+export interface AdminUserResponse {
+  id: number;
+  username: string;
+  email: string;
+  nickname?: string;
+  status: UserStatus;
+  role: Role;
+  roleId: number;
+  originalRoleId?: number;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt?: string;
+  lastLoginIp?: string;
+  // 前端扩展字段（可选）
+  avatar?: string;
+  uploadCount?: number;
+  storageUsed?: number;
+  storageLimit?: number;
+}
+
+/**
+ * 用户响应 - 对应后端 dtos.UserResponseDTO
+ */
+export interface UserResponse {
+  id: number;
+  username: string;
+  email: string;
+  nickname?: string;
+  status: UserStatus;
+  role: Role;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt?: string;
+  lastLoginIp?: string;
+}
+
+/**
+ * 管理员创建用户请求 - 对应后端 dtos.AdminUserCreateRequest
+ */
 export interface AdminUserCreateRequest {
   username: string;
   email: string;
@@ -49,7 +126,9 @@ export interface AdminUserCreateRequest {
   roleId: number;
 }
 
-// 用户更新请求
+/**
+ * 用户更新请求 - 对应后端 models.UserUpdateRequest
+ */
 export interface UserUpdateRequest {
   username?: string;
   email?: string;
@@ -58,26 +137,32 @@ export interface UserUpdateRequest {
   status?: number;
 }
 
-// 批量用户ID请求
+/**
+ * 批量用户ID请求 - 对应后端 dtos.BatchUserIDsRequest
+ */
 export interface BatchUserIDsRequest {
   userIds: number[];
 }
 
-// 批量用户拒绝请求
+/**
+ * 批量用户拒绝请求 - 对应后端 dtos.BatchUserRejectRequest
+ */
 export interface BatchUserRejectRequest {
   userIds: number[];
   reason?: string;
 }
 
-// 用户审批请求
+/**
+ * 用户审批请求 - 对应后端 dtos.UserApprovalRequest
+ */
 export interface UserApprovalRequest {
   reason?: string;
 }
 
-// 用户列表查询参数
-export interface UserListParams {
-  page?: number;
-  pageSize?: number;
+/**
+ * 用户列表查询参数 - 对应后端 /admin/users 接口参数
+ */
+export interface UserListParams extends BaseQueryParams {
   username?: string;
   email?: string;
   roleId?: number;
@@ -88,105 +173,64 @@ export interface UserListParams {
     | "id"
     | "username"
     | "email"
-    | "roleId"
+    | "role_id"
     | "status"
-    | "createdAt"
-    | "updatedAt"
-    | "lastLoginAt"
-    | "uploadCount";
-  order?: "asc" | "desc";
-  // 前端扩展字段
-  search?: string; // 搜索关键词
-  sortOrder?: "asc" | "desc"; // 排序方向别名
+    | "created_at"
+    | "updated_at"
+    | "last_login_at";
+  sortOrder?: SortOrder;
 }
 
-// 分页元数据
-export interface PaginationMeta {
-  page: number;
-  pageSize: number;
-  total: number;
-}
+/**
+ * 用户列表响应类型
+ */
+export type UserListResponse = PaginatedApiResponse<AdminUserResponse>;
 
-// 分页响应 - 对齐utils.PaginatedResponse
-export interface PaginatedResponse<T> {
-  code: number;
-  message: string;
-  data: T[];
-  meta: PaginationMeta;
-}
+/**
+ * 用户详情响应类型
+ */
+export type UserDetailResponse = SuccessApiResponse<User>;
 
-// 用户列表响应
-export type UserListResponse = PaginatedResponse<User>;
+/**
+ * 用户操作响应类型
+ */
+export type UserActionResponse = SuccessApiResponse<User> | ErrorApiResponse;
 
-// 成功响应 - 对齐utils.SuccessResponse
-export interface SuccessResponse<T = unknown> {
-  code: number;
-  message: string;
-  data?: T;
-  meta?: Record<string, unknown>;
-}
+/**
+ * 批量用户操作响应类型
+ */
+export type BatchUserActionResponse =
+  | SuccessApiResponse<BatchOperationResult>
+  | ErrorApiResponse;
 
-// 错误响应 - 对齐utils.ErrorResponse
-export interface ErrorResponse {
-  code: number;
-  message: string;
-  error?: string;
-}
-
-// 批量操作结果
-export interface BatchOperationResult {
-  successCount: number;
-  failedCount: number;
-  failedItems?: Array<{
-    id: number;
-    error: string;
-  }>;
-}
-
-// 角色权限接口
-export interface Permission {
-  id: number;
-  name: string;
-  description: string;
-  groupName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// 角色接口
-export interface Role {
-  id: number;
-  name: string;
-  alias?: string;
-  permissions: Permission[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-// 角色创建请求接口
+/**
+ * 角色创建请求接口 - 对应后端 dtos.RoleCreateDTO
+ */
 export interface CreateRoleRequest {
   name: string;
   alias?: string;
-  description?: string;
-  permissions: string[];
 }
 
-// 角色更新请求接口
+/**
+ * 角色更新请求接口 - 对应后端 dtos.RoleUpdateDTO
+ */
 export interface UpdateRoleRequest {
   name?: string;
   alias?: string;
-  description?: string;
-  permissions?: string[];
 }
 
-// 权限分组接口
+/**
+ * 权限分组接口（前端聚合使用）
+ */
 export interface PermissionGroup {
   name: string;
   description: string;
   permissions: Permission[];
 }
 
-// 用户统计信息接口
+/**
+ * 用户统计信息接口
+ */
 export interface UserStats {
   totalUsers: number;
   activeUsers: number;

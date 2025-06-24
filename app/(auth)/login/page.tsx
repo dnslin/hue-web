@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,24 +14,17 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { ForgotPasswordDialog } from "@/components/auth/forgot-password-dialog";
-
-// 登录表单验证模式
-const loginSchema = z.object({
-  username_or_email: z.string().min(1, "请输入用户名或邮箱"),
-  password: z.string().min(1, "请输入密码"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormValues } from "@/lib/schema";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error, clearError, isAuthenticated } =
+  const { login, isLoadingLogin, error, clearError, isAuthenticated } =
     useAuthStore();
 
   // 添加调试信息
   React.useEffect(() => {
-    console.log("🔍 登录页面状态:", { isAuthenticated, isLoading });
-  }, [isAuthenticated, isLoading]);
+    console.log("🔍 登录页面状态:", { isAuthenticated, isLoadingLogin });
+  }, [isAuthenticated, isLoadingLogin]);
 
   // 登录表单
   const loginForm = useForm<LoginFormValues>({
@@ -152,10 +144,10 @@ export default function LoginPage() {
               <ShimmerButton
                 type="submit"
                 className="w-full text-white dark:text-white"
-                disabled={isLoading}
+                disabled={isLoadingLogin}
                 borderRadius="10px"
               >
-                {isLoading ? "登录中..." : "登录"}
+                {isLoadingLogin ? "登录中..." : "登录"}
               </ShimmerButton>
             </div>
           </form>

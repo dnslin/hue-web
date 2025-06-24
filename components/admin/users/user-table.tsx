@@ -191,7 +191,7 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src={user.avatar || getGravatarUrl(user.email)}
+                        src={getGravatarUrl(user.email)}
                         alt={user.username}
                       />
                       <AvatarFallback>
@@ -240,20 +240,19 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                       {formatFileSize(user.storageUsed)} /{" "}
                       {formatFileSize(user.storageLimit)}
                     </div>
-                    {user.storageLimit != null &&
-                      user.storageUsed != null && (
-                        <div className="w-full bg-muted rounded-full h-1.5">
-                          <div
-                            className="bg-primary h-1.5 rounded-full transition-all"
-                            style={{
-                              width: `${Math.min(
-                                (user.storageUsed / user.storageLimit) * 100,
-                                100
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                      )}
+                    {user.storageLimit != null && user.storageUsed != null && (
+                      <div className="w-full bg-muted rounded-full h-1.5">
+                        <div
+                          className="bg-primary h-1.5 rounded-full transition-all"
+                          style={{
+                            width: `${Math.min(
+                              (user.storageUsed / user.storageLimit) * 100,
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="p-4">

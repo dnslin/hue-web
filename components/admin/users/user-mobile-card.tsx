@@ -38,7 +38,7 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
               <AvatarImage
-                src={user.avatar || getGravatarUrl(user.email)}
+                src={getGravatarUrl(user.email)}
                 alt={user.username}
               />
               <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">

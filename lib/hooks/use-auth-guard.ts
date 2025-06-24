@@ -14,18 +14,12 @@ export const useAuthGuard = (options?: {
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, isLoading, isHydrated } = useAuthStore();
+  const { isAuthenticated, user, isLoadingInitAuth, isHydrated } =
+    useAuthStore();
+  // 路由守卫只关心认证状态初始化，不关心具体业务操作（如登录/注册）
+  const isLoading = isLoadingInitAuth;
 
   const { redirectTo = "/login", requireAuth = true } = options || {};
-
-  // 暂时移除自动服务端验证，避免复杂的状态同步问题
-  // 后续可以在特定场景下手动调用 initializeAuth
-  // useEffect(() => {
-  //   if (isHydrated && !isLoading && requireAuth && isAuthenticated && isProtectedRoute(pathname)) {
-  //     console.log("🔄 水合完成，验证服务端认证状态");
-  //     initializeAuth();
-  //   }
-  // }, [isHydrated, initializeAuth, isLoading, requireAuth, isAuthenticated, pathname]);
 
   useEffect(() => {
     // 如果状态还未水合完成，先初始化认证状态
