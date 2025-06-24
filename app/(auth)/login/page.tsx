@@ -26,13 +26,13 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error, clearError, isAuthenticated } =
+  const { login, isLoadingLogin, error, clearError, isAuthenticated } =
     useAuthStore();
 
   // 添加调试信息
   React.useEffect(() => {
-    console.log("🔍 登录页面状态:", { isAuthenticated, isLoading });
-  }, [isAuthenticated, isLoading]);
+    console.log("🔍 登录页面状态:", { isAuthenticated, isLoadingLogin });
+  }, [isAuthenticated, isLoadingLogin]);
 
   // 登录表单
   const loginForm = useForm<LoginFormValues>({
@@ -152,10 +152,10 @@ export default function LoginPage() {
               <ShimmerButton
                 type="submit"
                 className="w-full text-white dark:text-white"
-                disabled={isLoading}
+                disabled={isLoadingLogin}
                 borderRadius="10px"
               >
-                {isLoading ? "登录中..." : "登录"}
+                {isLoadingLogin ? "登录中..." : "登录"}
               </ShimmerButton>
             </div>
           </form>

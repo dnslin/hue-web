@@ -45,7 +45,8 @@ export default function RegisterPage() {
     register: registerUser,
     resendActivationEmail,
     activateAccount,
-    isLoading,
+    isLoadingRegister,
+    isLoadingOther,
     error,
     clearError,
   } = useAuthStore();
@@ -209,13 +210,13 @@ export default function RegisterPage() {
               <Button
                 onClick={handleActivateAccount}
                 disabled={
-                  isLoading ||
+                  isLoadingOther ||
                   !activationCode.trim() ||
                   activationCode.length !== 8
                 }
                 className="w-full"
               >
-                {isLoading ? (
+                {isLoadingOther ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                     激活中...
@@ -271,9 +272,9 @@ export default function RegisterPage() {
                 onClick={handleResendActivation}
                 variant="outline"
                 className="w-full"
-                disabled={isLoading || resendCooldown > 0}
+                disabled={isLoadingOther || resendCooldown > 0}
               >
-                {isLoading ? (
+                {isLoadingOther ? (
                   <>
                     <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2" />
                     发送中...
@@ -441,10 +442,10 @@ export default function RegisterPage() {
             <ShimmerButton
               type="submit"
               className="w-full text-white dark:text-white"
-              disabled={isLoading}
+              disabled={isLoadingRegister}
               borderRadius="10px"
             >
-              {isLoading ? "注册中..." : "注册"}
+              {isLoadingRegister ? "注册中..." : "注册"}
             </ShimmerButton>
           </div>
 

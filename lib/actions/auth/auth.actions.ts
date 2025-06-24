@@ -7,7 +7,7 @@ import {
   publicApiService,
   getAuthenticatedApiService,
   AuthenticationError,
-} from "@/lib/api/apiService";
+} from "@/lib/api/api-service";
 import type { User } from "@/lib/types/user";
 import type {
   LoginRequest,

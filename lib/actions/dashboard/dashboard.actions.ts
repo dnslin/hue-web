@@ -3,7 +3,7 @@
 import {
   getAuthenticatedApiService,
   AuthenticationError,
-} from "@/lib/api/apiService";
+} from "@/lib/api/api-service";
 import {
   DashboardData,
   DashboardMetrics,
