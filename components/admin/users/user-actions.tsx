@@ -507,6 +507,7 @@ export function UserActions({ user }: UserActionsProps) {
                     label="用户角色"
                     placeholder="请选择角色"
                     required
+                    portalContainer={editDialogContentRef.current}
                   />
                 </div>
                 <DialogFooter>
