@@ -62,10 +62,7 @@ export function UserMobileList({
   return (
     <div className="space-y-3 mobile-scroll-container">
       {users.map((user) => (
-        <UserMobileCard
-          key={user.id}
-          user={user}
-        />
+        <UserMobileCard key={user.id} user={user} />
       ))}
     </div>
   );

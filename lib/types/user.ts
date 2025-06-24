@@ -87,11 +87,17 @@ export interface AdminUserResponse {
   nickname?: string;
   status: UserStatus;
   role: Role;
+  roleId: number;
   originalRoleId?: number;
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string;
   lastLoginIp?: string;
+  // 前端扩展字段（可选）
+  avatar?: string;
+  uploadCount?: number;
+  storageUsed?: number;
+  storageLimit?: number;
 }
 
 /**

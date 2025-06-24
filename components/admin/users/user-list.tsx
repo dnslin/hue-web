@@ -96,13 +96,13 @@ export function UserList({ isMobile = false }: UserListProps) {
             user.lastLoginAt
               ? new Date(user.lastLoginAt).toLocaleString("zh-CN")
               : "",
-            user.uploadCount || 0,
-            user.storageUsed
-              ? (user.storageUsed / (1024 * 1024)).toFixed(2)
-              : 0,
-            user.storageLimit
-              ? (user.storageLimit / (1024 * 1024)).toFixed(2)
-              : "无限制",
+            // user.uploadCount || 0,
+            // user.storageUsed
+            //   ? (user.storageUsed / (1024 * 1024)).toFixed(2)
+            //   : 0,
+            // user.storageLimit
+            //   ? (user.storageLimit / (1024 * 1024)).toFixed(2)
+            //   : "无限制",
           ].join(",")
         ),
       ];

@@ -3,13 +3,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, getUserDisplayName } from "@/lib/types/user";
+import { AdminUserResponse, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { UserActions } from "./user-actions";
 
 interface UserMobileCardProps {
-  user: User;
+  user: AdminUserResponse;
 }
 
 export function UserMobileCard({ user }: UserMobileCardProps) {
