@@ -15,9 +15,7 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponseData,
-  AuthActionResponse,
 } from "@/lib/types/auth";
-import type { SuccessApiResponse, ErrorApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
 import { cacheManager } from "@/lib/utils/cache-manager";
 import { handleStoreError } from "@/lib/utils/error-handler";
