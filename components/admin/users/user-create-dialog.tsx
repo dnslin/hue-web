@@ -288,13 +288,10 @@ export function UserCreateDialog({ children }: UserCreateDialogProps) {
             >
               <RoleSelect
                 value={form.roleId}
-                onValueChange={(roleId) =>
-                  setForm({ ...form, roleId: roleId })
-                }
+                onValueChange={(roleId) => setForm({ ...form, roleId: roleId })}
                 label="用户角色"
                 placeholder="请选择角色"
                 required
-                portalContainer={dialogContentRef.current}
               />
               {errors.roleId && (
                 <p className="text-sm text-red-500">{errors.roleId}</p>
