@@ -85,9 +85,15 @@ export const createUserDataSlice: StateCreator<
   fetchUsers: async () => {
     const { filters, pagination } = useUserFilterStore.getState();
 
-    // 准备发送到后端的参数
+    // 准备发送到后端的参数，转换 search 字段为 username 和 email
+    const { search, ...otherFilters } = filters;
     const apiParams: UserListParams = {
-      ...filters,
+      ...otherFilters,
+      // 如果有搜索关键词，同时搜索用户名和邮箱
+      ...(search && {
+        username: search,
+        email: search,
+      }),
       page: pagination.page,
       pageSize: pagination.pageSize,
     };
