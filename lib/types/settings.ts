@@ -19,6 +19,7 @@ export interface BasicSiteSetting {
   emailVerificationRequired: boolean;
   guestUploadEnabled: boolean;
   userInitialStorageCapacityMB: number;
+  notifyAdminOnPendingApproval: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +40,7 @@ export interface AdminBasicSiteSettingsDTO {
   emailVerificationRequired: boolean;
   guestUploadEnabled: boolean;
   userInitialStorageCapacityMb: number;
+  notifyAdminOnPendingApproval: boolean;
   emailNotifyEnabled: boolean;
   fromEmailAddress: string;
   fromEmailName: string;
@@ -96,6 +98,7 @@ export const basicSettingSchema = z.object({
     .min(10, "初始存储容量不能少于10MB")
     .max(102400, "初始存储容量不能超过100GB")
     .default(1024),
+  notifyAdminOnPendingApproval: z.boolean().default(false),
 });
 
 export type BasicSettingFormData = z.infer<typeof basicSettingSchema>;
