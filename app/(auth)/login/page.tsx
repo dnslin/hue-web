@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,14 +14,7 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { ForgotPasswordDialog } from "@/components/auth/forgot-password-dialog";
-
-// 登录表单验证模式
-const loginSchema = z.object({
-  username_or_email: z.string().min(1, "请输入用户名或邮箱"),
-  password: z.string().min(1, "请输入密码"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormValues } from "@/lib/schema";
 
 export default function LoginPage() {
   const router = useRouter();

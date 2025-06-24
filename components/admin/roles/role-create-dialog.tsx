@@ -26,24 +26,7 @@ import { Input } from "@/components/ui/input";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { CreateRoleRequest } from "@/lib/types/roles";
 import { useRoleStore } from "@/lib/store/role-store";
-import { z } from "zod";
-
-// 角色创建表单验证模式
-const createRoleFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, "角色名称不能为空")
-    .max(50, "角色名称不能超过50个字符")
-    .regex(/^[a-zA-Z0-9_]+$/, "角色名称只能包含英文字母、数字和下划线"),
-  alias: z
-    .string()
-    .max(100, "角色别名不能超过100个字符")
-    .optional()
-    .or(z.literal("")),
-});
-
-// 角色创建表单数据类型
-type CreateRoleFormData = z.infer<typeof createRoleFormSchema>;
+import { createRoleFormSchema, type CreateRoleFormData } from "@/lib/schema";
 
 interface RoleCreateDialogProps {
   children?: React.ReactNode;

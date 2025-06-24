@@ -2,11 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  BasicSettingFormData,
-  basicSettingSchema,
-  BasicSiteSetting,
-} from "@/lib/types/settings";
+import { BasicSiteSetting } from "@/lib/types/settings";
+import { basicSettingSchema, type BasicSettingFormData } from "@/lib/schema";
 import {
   SettingsFormWrapper,
   SettingsFormSection,
