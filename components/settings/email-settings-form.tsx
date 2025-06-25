@@ -312,7 +312,7 @@ export const EmailSettingsForm = ({
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                邮件测试将使用当前表单中的配置发送测试邮件，请确保配置信息正确。
+                邮件测试将使用服务器已保存的邮件配置发送测试邮件。如果您修改了配置，请先保存设置再进行测试。
               </AlertDescription>
             </Alert>
 

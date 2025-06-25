@@ -325,6 +325,7 @@ export const useSettingsStore = create<SettingsState>()(
         emailData: EmailSettingsFormData,
         testRecipient: string
       ): Promise<boolean> => {
+        console.log("🧪 Store: 开始测试邮件配置...");
         set({ isTestingEmail: true, error: null });
 
         try {
@@ -335,16 +336,16 @@ export const useSettingsStore = create<SettingsState>()(
 
           if (isSuccessApiResponse(result)) {
             set({ isTestingEmail: false });
-            console.log("✅ 邮件配置测试成功");
+            console.log("✅ Store: 邮件配置测试成功");
             return true;
           } else {
-            console.error("❌ 邮件配置测试失败:", result.message);
+            console.error("❌ Store: 邮件配置测试失败:", result.message);
             const errorResult = await handleStoreError(result, "邮件配置测试");
             set({ isTestingEmail: false, error: errorResult.error });
             return false;
           }
         } catch (error: any) {
-          console.error("❌ 邮件配置测试异常:", error);
+          console.error("❌ Store: 邮件配置测试异常:", error);
           const errorResult = await handleStoreError(error, "邮件配置测试");
           set({ isTestingEmail: false, error: errorResult.error });
           return false;

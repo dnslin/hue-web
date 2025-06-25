@@ -488,18 +488,28 @@ export async function testEmailSettingsAction(
   testRecipient: string
 ): Promise<SettingsActionResponse> {
   try {
+    console.log("📧 开始测试邮件配置...");
+    console.log("📧 邮件配置数据:", emailData);
+    console.log("📧 测试收件人:", testRecipient);
+
     const apiService = await getAuthenticatedApiService();
+
+    // 只发送测试邮箱地址，使用服务器已保存的邮件配置进行测试
+    const testData = {
+      testEmail: testRecipient,
+    };
+
+    console.log("📤 发送测试邮件请求数据:", testData);
+
     const response = await apiService.post<ApiResponse<any>>(
       `${SETTINGS_API_BASE}/email/test`,
-      {
-        ...emailData,
-        testRecipient,
-      }
+      testData
     );
-
     const apiResponse = response.data;
+    console.log("📥 测试邮件响应:", apiResponse);
 
     if (apiResponse.code === 0) {
+      console.log("✅ 邮件配置测试成功");
       return {
         code: 0,
         message: apiResponse.message || "邮件配置测试成功",
@@ -507,6 +517,7 @@ export async function testEmailSettingsAction(
       };
     }
 
+    console.log("❌ 邮件配置测试失败:", apiResponse.message);
     return {
       code: apiResponse.code || 1,
       message: apiResponse.message || "邮件配置测试失败",
