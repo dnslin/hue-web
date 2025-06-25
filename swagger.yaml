@@ -24,22 +24,16 @@ definitions:
       created_at:
         type: string
       email_notify_enabled:
+        description: 邮件通知总开关，属于基础功能控制
         type: boolean
       email_verification_required:
         type: boolean
       favicon_url:
         type: string
-      from_email_address:
-        type: string
-      from_email_name:
-        type: string
       guest_upload_enabled:
         type: boolean
       id:
         type: integer
-      is_smtp_password_set:
-        description: 指示SMTP密码是否已设置
-        type: boolean
       logo_url:
         type: string
       notify_admin_on_pending_approval:
@@ -50,12 +44,6 @@ definitions:
       site_announcement:
         type: string
       site_description:
-        type: string
-      smtp_port:
-        type: integer
-      smtp_server:
-        type: string
-      smtp_username:
         type: string
       updated_at:
         type: string
@@ -344,10 +332,28 @@ definitions:
         type: string
       logo_url:
         type: string
+      password_min_length:
+        description: 新增：密码最小长度
+        type: integer
+      password_requires_lowercase:
+        description: 新增：密码是否需要小写字母
+        type: boolean
+      password_requires_number:
+        description: 新增：密码是否需要数字
+        type: boolean
+      password_requires_special_char:
+        description: 新增：密码是否需要特殊字符
+        type: boolean
+      password_requires_uppercase:
+        description: 新增：密码是否需要大写字母
+        type: boolean
       site_announcement:
         type: string
       site_description:
         type: string
+      user_registration_enabled:
+        description: 新增：用户注册是否开启
+        type: boolean
     type: object
   dtos.RegisterRequest:
     properties:
@@ -471,6 +477,44 @@ definitions:
           type: integer
         type: array
     type: object
+  dtos.TestEmailDTO:
+    properties:
+      test_email:
+        description: 接收测试邮件的邮箱地址
+        type: string
+    required:
+      - test_email
+    type: object
+  dtos.UpdateBasicSiteSettingsInputDTO:
+    properties:
+      admin_approval_required:
+        type: boolean
+      app_name:
+        type: string
+      email_notify_enabled:
+        description: 邮件通知总开关
+        type: boolean
+      email_verification_required:
+        type: boolean
+      favicon_url:
+        type: string
+      guest_upload_enabled:
+        type: boolean
+      logo_url:
+        type: string
+      notify_admin_on_pending_approval:
+        type: boolean
+      seo_keywords:
+        type: string
+      site_announcement:
+        type: string
+      site_description:
+        type: string
+      user_initial_storage_capacity_mb:
+        type: integer
+      user_registration_enabled:
+        type: boolean
+    type: object
   dtos.UpdateEmailSettingsDTO:
     properties:
       email_notify_enabled:
@@ -507,6 +551,44 @@ definitions:
         example: newpassword123
         minLength: 6
         type: string
+    type: object
+  dtos.UpdateSecuritySettingsInputDTO:
+    properties:
+      account_lockout_duration_minutes:
+        description: 账户锁定策略(分钟), 0 表示不锁定 (业务逻辑中可能有更严格的校验, e.g., 5-1440)
+        minimum: 0
+        type: integer
+      ip_blacklist:
+        description: IP黑名单限制规则, 数组形式接收，存储时转为逗号分隔
+        items:
+          type: string
+        type: array
+      ip_whitelist:
+        description: IP白名单限制规则, 数组形式接收，存储时转为逗号分隔
+        items:
+          type: string
+        type: array
+      login_max_attempts:
+        description: 登录失败次数限制, 0 表示不限制 (业务逻辑中可能有更严格的校验, e.g., 3-20)
+        minimum: 0
+        type: integer
+      password_min_length:
+        description: 密码最小长度
+        maximum: 64
+        minimum: 6
+        type: integer
+      password_requires_lowercase:
+        description: 密码是否需要小写字母
+        type: boolean
+      password_requires_number:
+        description: 密码是否需要数字
+        type: boolean
+      password_requires_special_char:
+        description: 密码是否需要特殊字符
+        type: boolean
+      password_requires_uppercase:
+        description: 密码是否需要大写字母
+        type: boolean
     type: object
   dtos.UploadResponseDTO:
     properties:
@@ -576,10 +658,12 @@ definitions:
       - ADMIN_BATCH_USER_UNBAN
       - SYSTEM_EMAIL_SEND_SKIPPED
       - SYSTEM_ADMIN_NOTIFICATION_SENT
+      - SYSTEM_EMAIL_TEST
     type: string
     x-enum-comments:
       ActionSystemAdminNotificationSent: 系统发送了新用户待审核通知给管理员
       ActionSystemEmailSendSkipped: 邮件发送因配置或开关被跳过
+      ActionSystemEmailTest: 系统发送测试邮件
     x-enum-varnames:
       - ActionUserRegister
       - ActionUserLogin
@@ -603,6 +687,7 @@ definitions:
       - ActionAdminBatchUserUnban
       - ActionSystemEmailSendSkipped
       - ActionSystemAdminNotificationSent
+      - ActionSystemEmailTest
   models.BasicSiteSetting:
     properties:
       adminApprovalRequired:
@@ -2693,12 +2778,12 @@ paths:
         - Permissions
   /public/settings/site-details:
     get:
-      description: 获取网站对所有访客公开的基础详情信息 (例如：应用名称, 网站描述, Favicon, Logo, 公告)
+      description: 获取网站对所有访客公开的基础详情信息 (例如：应用名称, 网站描述, Favicon, Logo, 公告, 用户注册开关, 密码策略等)
       produces:
         - application/json
       responses:
         "200":
-          description: 成功获取公开的网站详情
+          description: 成功获取公开的网站详情 (包括应用名称, 描述, Logo, 公告, 注册开关, 密码策略等)
           schema:
             allOf:
               - $ref: "#/definitions/utils.Response"
@@ -3064,7 +3149,9 @@ paths:
         - Permissions
   /settings/basic:
     get:
-      description: 获取网站的详细基础配置信息 (仅供管理员访问)。包含SMTP设置（SMTP密码本身不会返回，但会指示是否已设置）。
+      description:
+        获取网站的详细基础配置信息 (仅供管理员访问)。不包含SMTP服务器的具体连接信息，这些信息请通过 /settings/email
+        接口获取。
       produces:
         - application/json
       responses:
@@ -3097,14 +3184,16 @@ paths:
     put:
       consumes:
         - application/json
-      description: 更新网站的基础配置信息。所有字段都是可选的，只更新提供的字段。
+      description:
+        更新网站的基础配置信息。所有字段都是可选的，只更新提供的字段。此接口不处理SMTP服务器相关的配置更新，请使用 /settings/email
+        接口进行邮件服务器配置。
       parameters:
-        - description: 要更新的网站基础配置项
+        - description: 要更新的网站基础配置项 (不含SMTP配置)
           in: body
           name: settings
           required: true
           schema:
-            $ref: "#/definitions/models.BasicSiteSetting"
+            $ref: "#/definitions/dtos.UpdateBasicSiteSettingsInputDTO"
       produces:
         - application/json
       responses:
@@ -3188,6 +3277,38 @@ paths:
       security:
         - ApiKeyAuth: []
       summary: 更新邮件配置
+      tags:
+        - Settings
+  /settings/email/test:
+    post:
+      consumes:
+        - application/json
+      description: 发送一封测试邮件到指定的邮箱，以验证邮件服务器配置是否正确。
+      parameters:
+        - description: 测试邮件接收邮箱
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/dtos.TestEmailDTO"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 测试邮件发送成功
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "400":
+          description: 请求参数错误或校验失败
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误或邮件发送失败
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 测试邮件配置
       tags:
         - Settings
   /settings/image-processing:
@@ -3284,7 +3405,7 @@ paths:
           name: settings
           required: true
           schema:
-            $ref: "#/definitions/models.SecuritySetting"
+            $ref: "#/definitions/dtos.UpdateSecuritySettingsInputDTO"
       produces:
         - application/json
       responses:
@@ -3521,4 +3642,3 @@ securityDefinitions:
     name: Authorization
     type: apiKey
 swagger: "2.0"
-
