@@ -126,7 +126,6 @@ export const useSettingsStore = create<SettingsState>()(
               lastUpdated: Date.now(),
               error: null,
             });
-            console.log("✅ 设置加载成功:", result);
             return true;
           }
         } catch (error: any) {

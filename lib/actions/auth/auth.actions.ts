@@ -92,6 +92,8 @@ export async function loginAction(
 
       if (error.code === 400) {
         userMessage = error.message || "请求参数有误，请检查输入信息";
+      } else if (error.code === 403) {
+        userMessage = error.message || "您无权限进行访问";
       } else if (error.code === 422) {
         userMessage = error.message || "输入信息格式有误，请重新检查";
       } else if (error.code === 500) {

@@ -1,29 +1,86 @@
 import { z } from "zod";
 
-// 辅助函数：验证单个IP地址或CIDR的有效性
-const isValidIpOrCidr = (item: string): boolean => {
-  if (!item) return true; // 由 filter(ip => ip.length > 0) 处理分割后产生的空字符串
+// 验证结果接口
+interface IpValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+// 辅助函数：验证单个IP地址或CIDR的有效性（增强版）
+const validateSingleIpOrCidr = (
+  item: string,
+  lineNumber: number
+): { isValid: boolean; error?: string } => {
+  if (!item) return { isValid: true }; // 空字符串是有效的（会被过滤掉）
+
   const parts = item.split("/");
   const ip = parts[0];
   const mask = parts[1];
 
-  // 验证IP地址部分 (基础IPv4正则)
+  // 验证IP地址部分（精确的IPv4正则）
   const ipRegex =
     /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
   if (!ipRegex.test(ip)) {
-    console.log(`[调试日志] 无效的 IP 地址部分: ${ip} (完整条目: ${item})`);
-    return false;
+    return {
+      isValid: false,
+      error: `第${lineNumber}行：IP地址格式不正确 "${ip}"（应为xxx.xxx.xxx.xxx格式）`,
+    };
   }
 
-  if (mask !== undefined) {
-    // 验证掩码部分
-    const maskNum = parseInt(mask, 10);
-    if (isNaN(maskNum) || maskNum < 0 || maskNum > 32) {
-      console.log(`[调试日志] 无效的 CIDR 掩码: ${mask} (完整条目: ${item})`);
-      return false;
+  // 验证IP地址范围
+  const ipParts = ip.split(".");
+  for (let i = 0; i < ipParts.length; i++) {
+    const num = parseInt(ipParts[i], 10);
+    if (num < 0 || num > 255) {
+      return {
+        isValid: false,
+        error: `第${lineNumber}行：IP地址数值超出范围 "${ip}"（每段数值应在0-255之间）`,
+      };
     }
   }
-  return true;
+
+  // 如果有CIDR掩码，验证掩码部分
+  if (mask !== undefined) {
+    const maskNum = parseInt(mask, 10);
+    if (isNaN(maskNum) || maskNum < 0 || maskNum > 32) {
+      return {
+        isValid: false,
+        error: `第${lineNumber}行：CIDR掩码不正确 "/${mask}"（应在0-32之间）`,
+      };
+    }
+  }
+
+  return { isValid: true };
+};
+
+// 验证IP列表并返回详细错误信息
+const validateIpListWithDetails = (ipList: string[]): IpValidationResult => {
+  const errors: string[] = [];
+
+  for (let i = 0; i < ipList.length; i++) {
+    const item = ipList[i];
+    const result = validateSingleIpOrCidr(item, i + 1);
+    if (!result.isValid && result.error) {
+      errors.push(result.error);
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
+// 处理输入字符串，只支持逗号分割
+const parseIpListInput = (input: string): string[] => {
+  if (!input.trim()) return [];
+
+  // 使用逗号分割
+  return input
+    .split(",")
+    .map((ip) => ip.trim())
+    .filter((ip) => ip.length > 0);
 };
 
 /**
@@ -52,29 +109,39 @@ export const securitySettingsSchema = z.object({
   ipWhitelist: z
     .string()
     .default("")
-    .transform((val) =>
-      val
-        .split("\n")
-        .map((ip) => ip.trim())
-        .filter((ip) => ip.length > 0)
-    )
-    .refine((ips) => ips.every(isValidIpOrCidr), {
-      message:
-        "IP白名单包含无效的IP地址或CIDR格式。请确保每行一个有效的IPv4地址或IPv4 CIDR (例如 192.168.1.1 或 10.0.0.0/24)，并且掩码在0-32之间。",
-    }),
+    .transform((val) => parseIpListInput(val))
+    .refine(
+      (ips) => {
+        const result = validateIpListWithDetails(ips);
+        return result.isValid;
+      },
+      {
+        message: (val) => {
+          const result = validateIpListWithDetails(val as string[]);
+          return result.errors.length > 0
+            ? result.errors.join("；")
+            : "IP白名单包含无效的IP地址或CIDR格式";
+        },
+      }
+    ),
   ipBlacklist: z
     .string()
     .default("")
-    .transform((val) =>
-      val
-        .split("\n")
-        .map((ip) => ip.trim())
-        .filter((ip) => ip.length > 0)
-    )
-    .refine((ips) => ips.every(isValidIpOrCidr), {
-      message:
-        "IP黑名单包含无效的IP地址或CIDR格式。请确保每行一个有效的IPv4地址或IPv4 CIDR (例如 192.168.1.1 或 10.0.0.0/24)，并且掩码在0-32之间。",
-    }),
+    .transform((val) => parseIpListInput(val))
+    .refine(
+      (ips) => {
+        const result = validateIpListWithDetails(ips);
+        return result.isValid;
+      },
+      {
+        message: (val) => {
+          const result = validateIpListWithDetails(val as string[]);
+          return result.errors.length > 0
+            ? result.errors.join("；")
+            : "IP黑名单包含无效的IP地址或CIDR格式";
+        },
+      }
+    ),
 });
 
 /**

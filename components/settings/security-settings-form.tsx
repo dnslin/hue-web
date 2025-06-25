@@ -100,27 +100,15 @@ export const SecuritySettingsForm = ({
   const { watch } = form;
   const watchedValues = watch();
 
-  // IP地址格式验证辅助函数
+  // 使用Schema验证逻辑
   const validateIPList = (ipList: string) => {
-    if (!ipList.trim()) return true; // 空列表是有效的
-
-    const ips = ipList.split("\n").filter((ip) => ip.trim());
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/;
-
-    return ips.every((ip) => {
-      const trimmedIP = ip.trim();
-      if (!trimmedIP) return true;
-
-      // 检查IP地址格式（支持CIDR）
-      if (!ipRegex.test(trimmedIP)) return false;
-
-      // 检查IP地址范围
-      const parts = trimmedIP.split("/")[0].split(".");
-      return parts.every((part) => {
-        const num = parseInt(part);
-        return num >= 0 && num <= 255;
-      });
-    });
+    try {
+      // 直接使用Schema的ipWhitelist验证逻辑
+      const result = securitySettingsSchema.shape.ipWhitelist.safeParse(ipList);
+      return result.success;
+    } catch (error) {
+      return false;
+    }
   };
 
   return (
@@ -276,8 +264,8 @@ export const SecuritySettingsForm = ({
               error={form.formState.errors.ipWhitelist}
               placeholder="192.168.1.1,10.0.0.0/8,172.16.0.0/12"
               rows={6}
-              tooltip="只允许这些IP地址访问系统，每行一个IP或IP段"
-              description="支持单个IP或CIDR格式的IP段"
+              tooltip="只允许这些IP地址访问系统，使用逗号分割多个IP"
+              description="支持单个IP或CIDR格式的IP段，使用逗号分割多个IP"
             />
             {watchedValues.ipWhitelist &&
               !validateIPList(watchedValues.ipWhitelist) && (
@@ -298,8 +286,8 @@ export const SecuritySettingsForm = ({
               error={form.formState.errors.ipBlacklist}
               placeholder="192.168.1.100,10.0.0.50,172.16.1.0/24"
               rows={6}
-              tooltip="禁止这些IP地址访问系统，每行一个IP或IP段"
-              description="支持单个IP或CIDR格式的IP段"
+              tooltip="禁止这些IP地址访问系统，使用逗号分割多个IP"
+              description="支持单个IP或CIDR格式的IP段，使用逗号分割多个IP"
             />
             {watchedValues.ipBlacklist &&
               !validateIPList(watchedValues.ipBlacklist) && (

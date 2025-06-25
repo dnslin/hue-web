@@ -95,20 +95,37 @@ export interface BasicSitePublicSettingsDTO {
 }
 
 /**
- * 邮件设置接口（前端使用）
+ * 邮件设置接口（前端使用）- 转换为驼峰命名后的结构
  */
 export interface EmailSettings {
-  id: number;
+  emailNotifyEnabled: boolean;
   fromEmailAddress: string;
   fromEmailName: string;
   smtpServer: string;
   smtpPort: number;
   smtpUsername: string;
-  smtpPassword: string;
-  emailNotifyEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
+  smtpPassword?: string; // 可选，因为后端不返回密码
 }
+
+/**
+ * 邮件设置数据转换函数
+ */
+export const transformEmailSettingsData = (
+  data: BasicSitePublicSettingsDTO | null
+): EmailSettings | null => {
+  if (!data) return null;
+
+  // 移除 Public 后缀，转换为前端期望的格式
+  return {
+    emailNotifyEnabled: data.emailNotifyEnabledPublic,
+    fromEmailAddress: data.fromEmailAddressPublic,
+    fromEmailName: data.fromEmailNamePublic,
+    smtpServer: data.smtpServerPublic,
+    smtpPort: data.smtpPortPublic,
+    smtpUsername: data.smtpUsernamePublic,
+    smtpPassword: "", // 默认空字符串，因为后端不返回密码
+  };
+};
 
 // ========== 图片处理设置 ==========
 export interface ImageProcessingSetting {

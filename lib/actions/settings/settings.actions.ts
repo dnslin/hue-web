@@ -7,11 +7,13 @@ import {
 import {
   AllSettingsData,
   BasicSiteSetting,
+  BasicSitePublicSettingsDTO,
   EmailSettings,
   ImageProcessingSetting,
   SecuritySetting,
   SettingType,
   SettingsActionResponse,
+  transformEmailSettingsData,
 } from "@/lib/types/settings";
 import {
   BasicSettingFormData,
@@ -36,7 +38,9 @@ export async function getSettingsAction(): Promise<
   AllSettingsData | ErrorApiResponse
 > {
   try {
+    console.log("🔐 正在获取认证API服务...");
     const apiService = await getAuthenticatedApiService();
+    console.log("✅ API服务获取成功，开始并行请求所有设置...");
 
     // 并行获取所有设置类型
     const [basicResponse, emailResponse, imageResponse, securityResponse] =
@@ -44,7 +48,7 @@ export async function getSettingsAction(): Promise<
         apiService.get<ApiResponse<BasicSiteSetting>>(
           `${SETTINGS_API_BASE}/basic`
         ),
-        apiService.get<ApiResponse<EmailSettings>>(
+        apiService.get<ApiResponse<BasicSitePublicSettingsDTO>>(
           `${SETTINGS_API_BASE}/email`
         ),
         apiService.get<ApiResponse<ImageProcessingSetting>>(
@@ -65,7 +69,7 @@ export async function getSettingsAction(): Promise<
       email:
         emailResponse.status === "fulfilled" &&
         emailResponse.value.data.code === 0
-          ? emailResponse.value.data.data || null
+          ? transformEmailSettingsData(emailResponse.value.data.data) || null
           : null,
       image:
         imageResponse.status === "fulfilled" &&
@@ -227,10 +231,21 @@ export async function updateEmailSettingsAction(
 ): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.put<ApiResponse<EmailSettings>>(
-      `${SETTINGS_API_BASE}/email`,
-      settingsData
-    );
+
+    // 转换前端表单数据为后端期望的格式
+    const updateData: UpdateEmailSettingsDTO = {
+      emailNotifyEnabled: settingsData.emailNotifyEnabled,
+      fromEmailAddress: settingsData.fromEmailAddress,
+      fromEmailName: settingsData.fromEmailName,
+      smtpServer: settingsData.smtpServer,
+      smtpPort: settingsData.smtpPort,
+      smtpUsername: settingsData.smtpUsername,
+      smtpPassword: settingsData.smtpPassword,
+    };
+
+    const response = await apiService.put<
+      ApiResponse<BasicSitePublicSettingsDTO>
+    >(`${SETTINGS_API_BASE}/email`, updateData);
 
     const apiResponse = response.data;
 
@@ -239,10 +254,13 @@ export async function updateEmailSettingsAction(
       cacheManager.delete(`${CACHE_KEYS.SETTINGS_BASE}:email`);
       cacheManager.delete(CACHE_KEYS.SETTINGS_ALL);
 
+      // 转换返回的数据为前端格式
+      const transformedData = transformEmailSettingsData(apiResponse.data);
+
       return {
         code: 0,
         message: apiResponse.message || "邮件设置更新成功",
-        data: apiResponse.data,
+        data: transformedData,
       };
     }
 
