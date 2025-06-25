@@ -27,7 +27,7 @@ import type {
 import { cacheManager, CACHE_KEYS } from "@/lib/utils/cache-manager";
 
 // 设置相关API路径
-const SETTINGS_API_BASE = "/admin/settings";
+const SETTINGS_API_BASE = "/settings";
 
 /**
  * 获取所有设置数据
@@ -48,7 +48,7 @@ export async function getSettingsAction(): Promise<
           `${SETTINGS_API_BASE}/email`
         ),
         apiService.get<ApiResponse<ImageProcessingSetting>>(
-          `${SETTINGS_API_BASE}/image`
+          `${SETTINGS_API_BASE}/image-processing`
         ),
         apiService.get<ApiResponse<SecuritySetting>>(
           `${SETTINGS_API_BASE}/security`
@@ -120,11 +120,14 @@ export async function getSettingByTypeAction(
     const apiService = await getAuthenticatedApiService();
     const cacheKey = `${CACHE_KEYS.SETTINGS_BASE}:${type}`;
 
+    // 图片设置需要特殊路径映射
+    const apiPath = type === SettingType.IMAGE ? "image-processing" : type;
+
     const response = await cacheManager.getOrSet(
       cacheKey,
       async () => {
         const apiResponse = await apiService.get<ApiResponse<any>>(
-          `${SETTINGS_API_BASE}/${type}`
+          `${SETTINGS_API_BASE}/${apiPath}`
         );
         return apiResponse.data;
       },
@@ -276,7 +279,7 @@ export async function updateImageSettingsAction(
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.put<ApiResponse<ImageProcessingSetting>>(
-      `${SETTINGS_API_BASE}/image`,
+      `${SETTINGS_API_BASE}/image-processing`,
       settingsData
     );
 
