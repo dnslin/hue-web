@@ -111,7 +111,7 @@ export interface EmailSettings {
  * 邮件设置数据转换函数
  */
 export const transformEmailSettingsData = (
-  data: BasicSitePublicSettingsDTO | null
+  data: BasicSitePublicSettingsDTO | null | undefined
 ): EmailSettings | null => {
   if (!data) return null;
 

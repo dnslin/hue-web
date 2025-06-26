@@ -14,6 +14,7 @@ import {
   SettingType,
   SettingsActionResponse,
   transformEmailSettingsData,
+  UpdateEmailSettingsDTO,
 } from "@/lib/types/settings";
 import {
   BasicSettingFormData,
