@@ -16,9 +16,9 @@ import type {
   RegisterRequest,
   AuthResponseData,
 } from "@/lib/types/auth";
-import { isSuccessApiResponse } from "@/lib/types/common";
+import { isSuccessApiResponse, isErrorApiResponse } from "@/lib/types/common";
 import { cacheManager } from "@/lib/utils/cache-manager";
-import { handleStoreError } from "@/lib/utils/error-handler";
+import { showToast } from "@/lib/utils/toast";
 
 /**
  * 忘记密码状态接口
@@ -177,42 +177,46 @@ export const useAuthStore = create<AuthState>()(
         password: string
       ): Promise<boolean> => {
         set({ isLoadingLogin: true, error: null });
-        try {
-          const credentials: LoginRequest = { usernameOrEmail, password };
-          const response = await loginAction(credentials);
+        
+        const credentials: LoginRequest = { usernameOrEmail, password };
+        const response = await loginAction(credentials);
 
-          // 使用类型守卫检查业务成功 (code === 0)
-          if (isSuccessApiResponse(response)) {
-            const authData = response.data as AuthResponseData;
-            if (authData?.user) {
-              console.log("✅ 登录成功:", authData.user);
-              set({
-                user: authData.user,
-                isAuthenticated: true,
-                isLoadingLogin: false,
-                error: null,
-              });
-              return true;
-            }
+        // 使用类型守卫检查成功/失败
+        if (isSuccessApiResponse(response)) {
+          const authData = response.data as AuthResponseData;
+          if (authData?.user) {
+            console.log("✅ 登录成功:", authData.user);
+            set({
+              user: authData.user,
+              isAuthenticated: true,
+              isLoadingLogin: false,
+              error: null,
+            });
+            showToast.success("登录成功");
+            return true;
           }
-
-          // 业务失败或数据不完整
-          console.error("❌ 登录失败:", response.message);
-          const errorResult = await handleStoreError(response, "登录");
-          set({
-            isLoadingLogin: false,
-            error: errorResult.error,
-          });
-          return false;
-        } catch (err: any) {
-          console.error("❌ 登录时发生意外错误:", err);
-          const errorResult = await handleStoreError(err, "登录");
-          set({
-            isLoadingLogin: false,
-            error: errorResult.error,
-          });
-          return false;
         }
+
+        // 业务失败或错误响应
+        if (isErrorApiResponse(response)) {
+          console.error("❌ 登录失败:", response.message);
+          
+          // 检查是否是认证过期（根据后端的业务码）
+          if (response.code === 40101) {
+            // Token过期的业务码，需要清理状态并重定向
+            get().clearAuth();
+            showToast.error("登录已过期，请重新登录");
+            // 这里可以添加重定向逻辑，或者由上层处理
+          } else {
+            // 其他业务错误
+            const errorMessage = response.message || "登录失败";
+            showToast.error(errorMessage);
+            set({ error: errorMessage });
+          }
+        }
+        
+        set({ isLoadingLogin: false });
+        return false;
       },
 
       // 用户注册
@@ -222,73 +226,65 @@ export const useAuthStore = create<AuthState>()(
         password: string
       ): Promise<boolean> => {
         set({ isLoadingRegister: true, error: null });
-        try {
-          const userData: RegisterRequest = { username, email, password };
-          const response = await registerAction(userData);
+        
+        const userData: RegisterRequest = { username, email, password };
+        const response = await registerAction(userData);
 
-          // 使用类型守卫检查业务成功 (code === 0)
-          if (isSuccessApiResponse(response)) {
-            const authData = response.data as AuthResponseData;
-            if (authData?.user) {
-              console.log("✅ 注册成功并自动登录:", authData.user);
-              set({
-                user: authData.user,
-                isAuthenticated: true,
-                isLoadingRegister: false,
-                error: null,
-              });
-            } else {
-              // 注册成功但未自动登录 (例如需要邮箱验证)
-              console.log("📝 注册请求成功:", response.message);
-              set({ isLoadingRegister: false, error: null });
-            }
-            return true;
+        // 使用类型守卫检查成功/失败
+        if (isSuccessApiResponse(response)) {
+          const authData = response.data as AuthResponseData;
+          if (authData?.user) {
+            console.log("✅ 注册成功并自动登录:", authData.user);
+            set({
+              user: authData.user,
+              isAuthenticated: true,
+              isLoadingRegister: false,
+              error: null,
+            });
+            showToast.success("注册成功并已登录");
+          } else {
+            // 注册成功但未自动登录 (例如需要邮箱验证)
+            console.log("📝 注册请求成功:", response.message);
+            set({ isLoadingRegister: false, error: null });
+            showToast.success(response.message || "注册成功，请查收邮件进行验证");
           }
-
-          // 业务失败
-          console.error("❌ 注册失败:", response.message);
-          const errorResult = await handleStoreError(response, "注册");
-          set({
-            isLoadingRegister: false,
-            error: errorResult.error,
-          });
-          return false;
-        } catch (err: any) {
-          console.error("❌ 注册时发生意外错误:", err);
-          const errorResult = await handleStoreError(err, "注册");
-          set({
-            isLoadingRegister: false,
-            error: errorResult.error,
-          });
-          return false;
+          return true;
         }
+
+        // 业务失败或错误响应
+        if (isErrorApiResponse(response)) {
+          console.error("❌ 注册失败:", response.message);
+          const errorMessage = response.message || "注册失败";
+          showToast.error(errorMessage);
+          set({
+            isLoadingRegister: false,
+            error: errorMessage,
+          });
+        }
+        
+        return false;
       },
 
       // 用户登出
       logout: async () => {
         set({ isLoadingLogout: true });
-        try {
-          const response = await logoutAction();
-          if (isSuccessApiResponse(response)) {
-            console.log("🚪 用户已成功登出");
-          } else {
-            console.warn(
-              "⚠️ 登出操作在服务端可能未完全成功:",
-              response.message
-            );
-            // 即使服务端失败，客户端也应清除状态
-          }
-        } catch (err: any) {
-          console.error("❌ 登出时发生意外错误:", err);
-          // 即使捕获到错误，也应清除客户端状态
-        } finally {
-          // 使用clearAuth来确保清理缓存
-          get().clearAuth();
-          set({
-            isLoadingLogout: false,
-            error: null, // 清除登出相关的错误，避免影响下次操作
-          });
+        
+        const response = await logoutAction();
+        
+        if (isSuccessApiResponse(response)) {
+          console.log("🚪 用户已成功登出");
+          showToast.success("登出成功");
+        } else if (isErrorApiResponse(response)) {
+          console.warn("⚠️ 登出操作在服务端可能未完全成功:", response.message);
+          // 即使服务端失败，客户端也应清除状态
         }
+        
+        // 始终清除客户端状态
+        get().clearAuth();
+        set({
+          isLoadingLogout: false,
+          error: null,
+        });
       },
 
       // 清除错误
@@ -300,6 +296,7 @@ export const useAuthStore = create<AuthState>()(
       initializeAuth: async () => {
         console.log("🔄 开始初始化认证状态");
         set({ isLoadingInitAuth: true });
+        
         try {
           const currentUser = await getCurrentUserAction();
           if (currentUser) {
@@ -321,12 +318,12 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error: any) {
           console.error("❌ 认证状态初始化失败:", error);
-          const errorResult = await handleStoreError(error, "认证状态初始化");
+          // 初始化失败时不显示TOAST，只记录日志
           set({
             user: null,
             isAuthenticated: false,
             isLoadingInitAuth: false,
-            error: errorResult.error,
+            error: null, // 不在界面显示初始化错误
           });
         }
       },
@@ -345,80 +342,66 @@ export const useAuthStore = create<AuthState>()(
           },
         });
 
-        try {
-          const response = await forgotPasswordAction(email);
-          if (isSuccessApiResponse(response)) {
-            console.log(`✅ 忘记密码请求成功${silent ? "（静默模式）" : ""}`);
-
-            // 更新忘记密码专门状态
-            set({
-              forgotPasswordState: {
-                ...get().forgotPasswordState,
-                isLoading: false,
-                error: null,
-                currentStep: "reset",
-              },
-            });
-
-            // 根据是否静默模式返回不同格式的结果
-            if (silent) {
-              return {
-                success: true,
-                data: response.data,
-              } as AuthOperationResult;
-            }
-            return true;
-          } else {
-            console.error(
-              `❌ 忘记密码请求失败${silent ? "（静默模式）" : ""}:`,
-              response.message
-            );
-            const errorMessage =
-              response.message || "忘记密码请求失败，请检查输入信息。";
-
-            // 更新忘记密码专门状态
-            set({
-              forgotPasswordState: {
-                ...get().forgotPasswordState,
-                isLoading: false,
-                error: errorMessage,
-              },
-            });
-
-            // 根据是否静默模式返回不同格式的结果
-            if (silent) {
-              return {
-                success: false,
-                error: errorMessage,
-              } as AuthOperationResult;
-            }
-            return false;
-          }
-        } catch (err: any) {
-          console.error(
-            `❌ 忘记密码时发生意外错误${silent ? "（静默模式）" : ""}:`,
-            err
-          );
-          const errorResult = await handleStoreError(err, "忘记密码");
+        const response = await forgotPasswordAction(email);
+        
+        if (isSuccessApiResponse(response)) {
+          console.log(`✅ 忘记密码请求成功${silent ? "（静默模式）" : ""}`);
 
           // 更新忘记密码专门状态
           set({
             forgotPasswordState: {
               ...get().forgotPasswordState,
               isLoading: false,
-              error: errorResult.error,
+              error: null,
+              currentStep: "reset",
             },
           });
+
+          if (!silent) {
+            showToast.success(response.message || "密码重置邮件已发送");
+          }
+
+          // 根据是否静默模式返回不同格式的结果
+          if (silent) {
+            return {
+              success: true,
+              data: response.data,
+            } as AuthOperationResult;
+          }
+          return true;
+        }
+        
+        // 业务失败或错误响应
+        if (isErrorApiResponse(response)) {
+          console.error(
+            `❌ 忘记密码请求失败${silent ? "（静默模式）" : ""}:`,
+            response.message
+          );
+          const errorMessage = response.message || "忘记密码请求失败";
+
+          // 更新忘记密码专门状态
+          set({
+            forgotPasswordState: {
+              ...get().forgotPasswordState,
+              isLoading: false,
+              error: errorMessage,
+            },
+          });
+
+          if (!silent) {
+            showToast.error(errorMessage);
+          }
 
           // 根据是否静默模式返回不同格式的结果
           if (silent) {
             return {
               success: false,
-              error: errorResult.error,
+              error: errorMessage,
             } as AuthOperationResult;
           }
-          return false;
         }
+        
+        return false;
       },
 
       resetPassword: async (
@@ -439,85 +422,71 @@ export const useAuthStore = create<AuthState>()(
           },
         });
 
-        try {
-          const response = await resetPasswordAction(
-            email,
-            password,
-            confirmPassword,
-            code
-          );
-          if (isSuccessApiResponse(response)) {
-            console.log(`✅ 密码重置成功${silent ? "（静默模式）" : ""}`);
-
-            // 更新忘记密码专门状态
-            set({
-              forgotPasswordState: {
-                ...get().forgotPasswordState,
-                isLoading: false,
-                error: null,
-                currentStep: "success",
-              },
-            });
-
-            // 根据是否静默模式返回不同格式的结果
-            if (silent) {
-              return {
-                success: true,
-                data: response.data,
-              } as AuthOperationResult;
-            }
-            return true;
-          } else {
-            console.error(
-              `❌ 密码重置失败${silent ? "（静默模式）" : ""}:`,
-              response.message
-            );
-            const errorMessage =
-              response.message || "密码重置失败，请检查输入信息。";
-
-            // 更新忘记密码专门状态
-            set({
-              forgotPasswordState: {
-                ...get().forgotPasswordState,
-                isLoading: false,
-                error: errorMessage,
-              },
-            });
-
-            // 根据是否静默模式返回不同格式的结果
-            if (silent) {
-              return {
-                success: false,
-                error: errorMessage,
-              } as AuthOperationResult;
-            }
-            return false;
-          }
-        } catch (err: any) {
-          console.error(
-            `❌ 密码重置时发生意外错误${silent ? "（静默模式）" : ""}:`,
-            err
-          );
-          const errorResult = await handleStoreError(err, "密码重置");
+        const response = await resetPasswordAction(
+          email,
+          password,
+          confirmPassword,
+          code
+        );
+        
+        if (isSuccessApiResponse(response)) {
+          console.log(`✅ 密码重置成功${silent ? "（静默模式）" : ""}`);
 
           // 更新忘记密码专门状态
           set({
             forgotPasswordState: {
               ...get().forgotPasswordState,
               isLoading: false,
-              error: errorResult.error,
+              error: null,
+              currentStep: "success",
             },
           });
+
+          if (!silent) {
+            showToast.success(response.message || "密码重置成功");
+          }
+
+          // 根据是否静默模式返回不同格式的结果
+          if (silent) {
+            return {
+              success: true,
+              data: response.data,
+            } as AuthOperationResult;
+          }
+          return true;
+        }
+        
+        // 业务失败或错误响应
+        if (isErrorApiResponse(response)) {
+          console.error(
+            `❌ 密码重置失败${silent ? "（静默模式）" : ""}:`,
+            response.message
+          );
+          const errorMessage = response.message || "密码重置失败";
+
+          // 更新忘记密码专门状态
+          set({
+            forgotPasswordState: {
+              ...get().forgotPasswordState,
+              isLoading: false,
+              error: errorMessage,
+            },
+          });
+
+          if (!silent) {
+            showToast.error(errorMessage);
+          }
 
           // 根据是否静默模式返回不同格式的结果
           if (silent) {
             return {
               success: false,
-              error: errorResult.error,
+              error: errorMessage,
             } as AuthOperationResult;
           }
-          return false;
         }
+        
+        return false;
       },
 
       activateAccount: async (
@@ -525,61 +494,54 @@ export const useAuthStore = create<AuthState>()(
         code: string
       ): Promise<boolean> => {
         set({ isLoadingOther: true, error: null });
-        try {
-          const response = await activateAccountAction(email, code);
-          if (isSuccessApiResponse(response)) {
-            console.log("✅ 账户激活成功");
-            set({ isLoadingOther: false, error: null });
-            return true;
-          } else {
-            console.error("❌ 账户激活失败:", response.message);
-            const errorResult = await handleStoreError(response, "账户激活");
-            set({
-              isLoadingOther: false,
-              error: errorResult.error,
-            });
-            return false;
-          }
-        } catch (err: any) {
-          console.error("❌ 账户激活时发生意外错误:", err);
-          const errorResult = await handleStoreError(err, "账户激活");
+        
+        const response = await activateAccountAction(email, code);
+        
+        if (isSuccessApiResponse(response)) {
+          console.log("✅ 账户激活成功");
+          set({ isLoadingOther: false, error: null });
+          showToast.success(response.message || "账户激活成功");
+          return true;
+        }
+        
+        // 业务失败或错误响应
+        if (isErrorApiResponse(response)) {
+          console.error("❌ 账户激活失败:", response.message);
+          const errorMessage = response.message || "账户激活失败";
+          showToast.error(errorMessage);
           set({
             isLoadingOther: false,
-            error: errorResult.error,
+            error: errorMessage,
           });
-          return false;
         }
+        
+        return false;
       },
 
       resendActivationEmail: async (email: string): Promise<boolean> => {
         set({ isLoadingOther: true, error: null });
-        try {
-          const response = await resendActivationEmailAction(email);
-          if (isSuccessApiResponse(response)) {
-            console.log("✅ 激活邮件重发成功");
-            set({ isLoadingOther: false, error: null });
-            return true;
-          } else {
-            console.error("❌ 激活邮件重发失败:", response.message);
-            const errorResult = await handleStoreError(
-              response,
-              "激活邮件重发"
-            );
-            set({
-              isLoadingOther: false,
-              error: errorResult.error,
-            });
-            return false;
-          }
-        } catch (err: any) {
-          console.error("❌ 激活邮件重发时发生意外错误:", err);
-          const errorResult = await handleStoreError(err, "激活邮件重发");
+        
+        const response = await resendActivationEmailAction(email);
+        
+        if (isSuccessApiResponse(response)) {
+          console.log("✅ 激活邮件重发成功");
+          set({ isLoadingOther: false, error: null });
+          showToast.success(response.message || "激活邮件已重新发送");
+          return true;
+        }
+        
+        // 业务失败或错误响应
+        if (isErrorApiResponse(response)) {
+          console.error("❌ 激活邮件重发失败:", response.message);
+          const errorMessage = response.message || "激活邮件重发失败";
+          showToast.error(errorMessage);
           set({
             isLoadingOther: false,
-            error: errorResult.error,
+            error: errorMessage,
           });
-          return false;
         }
+        
+        return false;
       },
 
       // 新增：忘记密码状态管理方法

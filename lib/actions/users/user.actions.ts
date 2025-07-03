@@ -14,13 +14,11 @@ import {
   BatchUserIDsRequest,
   BatchUserRejectRequest,
   UserApprovalRequest,
-  UserActionResponse,
   BatchUserActionResponse,
   AdminUserResponse,
 } from "@/lib/types/user";
 import type {
   ApiResponse,
-  SuccessApiResponse,
   ErrorApiResponse,
   BatchOperationResult,
 } from "@/lib/types/common";
@@ -38,34 +36,10 @@ export async function getUsersAction(
     const response = await apiService.get<UserListResponse>(USER_API_BASE, {
       params,
     });
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return apiResponse;
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "获取用户列表失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("getUsersAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "获取用户列表时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
@@ -74,45 +48,17 @@ export async function getUsersAction(
  */
 export async function createAdminUserAction(
   userData: AdminUserCreateRequest
-): Promise<UserActionResponse> {
+): Promise<ApiResponse<User>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.post<ApiResponse<User>>(
       USER_API_BASE,
       userData
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户创建成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户创建失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("createAdminUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "创建用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
@@ -122,45 +68,17 @@ export async function createAdminUserAction(
 export async function updateAdminUserAction(
   id: number,
   userData: UserUpdateRequest
-): Promise<UserActionResponse> {
+): Promise<ApiResponse<User>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.put<ApiResponse<User>>(
       `${USER_API_BASE}/${id}`,
       userData
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户信息更新成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户信息更新失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("updateAdminUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "更新用户信息时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
@@ -169,44 +87,16 @@ export async function updateAdminUserAction(
  */
 export async function deleteAdminUserAction(
   id: number
-): Promise<SuccessApiResponse<any> | ErrorApiResponse> {
+): Promise<ApiResponse<any>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.delete<ApiResponse<any>>(
       `${USER_API_BASE}/${id}`
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户删除成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户删除失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("deleteAdminUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "删除用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
@@ -215,88 +105,32 @@ export async function deleteAdminUserAction(
  */
 export async function approveUserAction(
   id: number
-): Promise<UserActionResponse> {
+): Promise<ApiResponse<User>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.post<ApiResponse<User>>(
       `${USER_API_BASE}/${id}/approve`
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户批准成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户批准失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("approveUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "批准用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
 /**
  * 封禁用户
  */
-export async function banUserAction(id: number): Promise<UserActionResponse> {
+export async function banUserAction(id: number): Promise<ApiResponse<User>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.post<ApiResponse<User>>(
       `${USER_API_BASE}/${id}/ban`
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户封禁成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户封禁失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("banUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "封禁用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
@@ -306,7 +140,7 @@ export async function banUserAction(id: number): Promise<UserActionResponse> {
 export async function rejectUserAction(
   id: number,
   reason?: string
-): Promise<UserActionResponse> {
+): Promise<ApiResponse<User>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const requestData: UserApprovalRequest = reason ? { reason } : {};
@@ -314,82 +148,26 @@ export async function rejectUserAction(
       `${USER_API_BASE}/${id}/reject`,
       requestData
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户拒绝成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户拒绝失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("rejectUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "拒绝用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
 /**
  * 解封用户
  */
-export async function unbanUserAction(id: number): Promise<UserActionResponse> {
+export async function unbanUserAction(id: number): Promise<ApiResponse<User>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.post<ApiResponse<User>>(
       `${USER_API_BASE}/${id}/unban`
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "用户解封成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "用户解封失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("unbanUserAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "解封用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
@@ -398,7 +176,7 @@ export async function unbanUserAction(id: number): Promise<UserActionResponse> {
  */
 export async function batchApproveUsersAction(
   userIds: number[]
-): Promise<BatchUserActionResponse> {
+): Promise<ApiResponse<BatchOperationResult>> {
   try {
     const apiService = await getAuthenticatedApiService();
     const requestData: BatchUserIDsRequest = { userIds };
@@ -406,38 +184,10 @@ export async function batchApproveUsersAction(
       `${USER_API_BASE}/batch-approve`,
       requestData
     );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        message: apiResponse.message || "批量批准用户成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      message: apiResponse.message || "批量批准用户失败",
-      error: apiResponse,
-    };
+    return response.data;
   } catch (error: any) {
     console.error("batchApproveUsersAction 错误:", error.message);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        message: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      message: error.message || "批量批准用户时发生未知错误",
-      error,
-    };
+    return error as ErrorApiResponse;
   }
 }
 
