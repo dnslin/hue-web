@@ -14,16 +14,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Architecture
 
-This is a **Next.js 15** frontend application for **Lsky Pro**, an image hosting service. The architecture follows a modern React patterns with comprehensive state management and API integration.
+This is a **Next.js 15** frontend application for **Lsky Pro**, an image hosting service. The architecture follows modern React patterns with comprehensive state management and API integration.
 
 ### Key Technology Stack
+
+#### Core Framework
 - **Framework:** Next.js 15 with App Router and React 19
-- **Styling:** Tailwind CSS 4 with Radix UI components
+- **Styling:** Tailwind CSS 4
 - **State Management:** Zustand with persistence
 - **Forms:** React Hook Form with Zod validation
 - **API Client:** Axios with custom interceptors
-- **Animation:** Framer Motion
 - **Theme:** next-themes for dark/light mode
+
+#### UI Component System
+- **shadcn/ui:** Core UI component library (New York style)
+- **Magic UI:** Advanced animation components for enhanced UX
+- **Aceternity UI:** Third-party modern UI components
+- **Radix UI:** Underlying primitive components for accessibility
+- **Icons:** Lucide React (primary) + React Icons (supplementary)
+
+#### Animation Framework
+- **Motion:** Lightweight animation library (not Framer Motion)
+- **Features:** GPU-accelerated animations, mouse tracking effects, micro-interactions
+- **Performance:** Optimized for both desktop and mobile experiences
 
 ### Directory Structure
 
@@ -31,12 +44,36 @@ This is a **Next.js 15** frontend application for **Lsky Pro**, an image hosting
 - `app/` - Next.js App Router structure
   - `(admin)/` - Admin route group with dashboard, users, settings
   - `(auth)/` - Authentication route group (login, register)
-- `components/` - Organized by feature domains
-  - `admin/` - Admin-specific components (users, roles management)
-  - `auth/` - Authentication components
-  - `settings/` - Settings forms and components
-  - `ui/` - Reusable UI components (shadcn/ui based)
-  - `shared/` - Cross-cutting components
+
+**Component Architecture:**
+```
+components/
+├── ui/                     # shadcn/ui base components
+│   ├── button.tsx         # Base button component
+│   ├── card.tsx           # Base card component
+│   ├── input.tsx          # Base input component
+│   └── ...                # Other shadcn/ui components
+├── magicui/               # Magic UI animation components
+│   ├── magic-card.tsx     # Mouse-tracking card effects
+│   ├── animated-grid-pattern.tsx
+│   ├── border-beam.tsx
+│   ├── box-reveal.tsx
+│   ├── interactive-hover-button.tsx
+│   ├── meteors.tsx
+│   ├── number-ticker.tsx
+│   ├── ripple-button.tsx
+│   ├── shimmer-button.tsx
+│   ├── shine-border.tsx
+│   ├── text-animate.tsx
+│   ├── typing-animation.tsx
+│   └── ...                # Other advanced animation components
+├── admin/                 # Admin-specific business components
+├── auth/                  # Authentication business components
+├── dashboard/             # Dashboard visualization components
+├── settings/              # Settings form components
+├── shared/                # Cross-cutting shared components
+└── layouts/               # Layout and navigation components
+```
 
 **State and Data Layer:**
 - `lib/store/` - Zustand stores with sophisticated patterns
@@ -46,6 +83,20 @@ This is a **Next.js 15** frontend application for **Lsky Pro**, an image hosting
 - `lib/api/` - API service layer with case conversion and error handling
 - `lib/schema/` - Zod schemas for validation
 - `lib/types/` - TypeScript type definitions
+
+### UI System Architecture
+
+#### Multi-Layer Design System
+1. **Foundation Layer:** shadcn/ui provides standard, accessible components
+2. **Enhancement Layer:** Magic UI provides advanced animation effects
+3. **Business Layer:** Project-specific domain components
+4. **Layout Layer:** Responsive layout and navigation systems
+
+#### Animation Performance
+- **Motion Library:** Lighter weight than Framer Motion, better performance
+- **Hardware Acceleration:** Leverages GPU rendering for smooth animations
+- **Lazy Loading:** Component-level animation imports
+- **Mobile Optimization:** Touch-optimized interactions and performance
 
 ### State Management Architecture
 
@@ -78,12 +129,14 @@ The auth system uses server-side sessions with HTTP-only cookies for security:
 - Zustand store for client-side auth state
 - Hydration-aware authentication checks
 - Automatic token expiration handling
+- Role-based access control (RBAC)
 
 ### Component Patterns
 
-**UI Components:** Built on Radix UI primitives with custom styling
+**UI Components:** Multi-layered component system with shadcn/ui + Magic UI
 **Form Handling:** React Hook Form with Zod validation schemas
 **Layout System:** Conditional layouts based on route groups and auth state
+**Animation Integration:** Motion-powered micro-interactions and transitions
 
 ### Development Notes
 
@@ -100,17 +153,47 @@ The auth system uses server-side sessions with HTTP-only cookies for security:
 
 **API Documentation:** `swagger.yaml` contains comprehensive API documentation for backend integration.
 
+### Mobile Compatibility
+
+**Responsive Design:**
+- All components support mobile-first responsive design
+- Touch-optimized interactions and gestures
+- Performance-optimized animations for mobile devices
+- Adaptive layouts for different screen sizes
+
+**Animation Considerations:**
+- Reduced motion preferences support
+- Battery and performance optimizations
+- Touch-friendly interaction zones
+
 ## Testing
 
 No specific test framework is configured. Check with the team for testing approach when implementing tests.
 
-## Necessary Condition
-1.Please use Chinese output for comments and logs
-2.If you need to use the fetch MCP to request the URL you want, and you can use the Context7 MCP to get the latest documentation of certain dependencies, and you can use the Github MCP to get the repository and code.
-3.Our development platform is on Ubuntu 22.04, the terminal environment is bash, the commands you have given should conform to the syntax of bash.
+## Development Platform
+
+**Environment:** Ubuntu 22.04 with bash terminal
+**Commands:** All terminal commands should conform to bash syntax
+**Package Manager:** pnpm for dependency management
 
 ## Design Guidelines
+
+- **Mobile-First:** UI design must be mobile compatible
+- **Accessibility:** Follow WCAG guidelines and use semantic HTML
+- **Performance:** Optimize for Core Web Vitals
+- **Animation:** Use motion thoughtfully for enhanced UX without overwhelming users
+
+## Necessary Conditions
+
+1. Please use Chinese output for comments and logs
+2. If you need to use the fetch MCP to request the URL you want, and you can use the Context7 MCP to get the latest documentation of certain dependencies, and you can use the Github MCP to get the repository and code.
+3. Our development platform is on Ubuntu 22.04, the terminal environment is bash, the commands you have given should conform to the syntax of bash.
+
+## Design Guidelines
+
 - Your UI style needs to be mobile compatible
 
 ## Communication Guidelines
+
 - You have to talk to me in Chinese.
+- Available MCP tools: fetch MCP for URL requests, Context7 MCP for dependency documentation, Github MCP for repository access
