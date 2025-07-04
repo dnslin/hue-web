@@ -68,7 +68,7 @@ export interface UserActionState {
  * 负责处理单个用户的具体操作，如状态变更、删除、重置密码等。
  * 操作成功后会触发 user-data.store 的数据刷新。
  */
-export const useUserActionStore = create<UserActionState>((set, get) => ({
+export const useUserActionStore = create<UserActionState>((set) => ({
   loading: {
     isChangingStatus: {},
     isDeleting: {},
@@ -135,7 +135,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             const error = new Error(
               `不支持从 ${fromStatus} 到 ${toStatus} 的状态转换`
             );
-            return await handleStoreError(error, "更改用户状态");
+            const result = await handleStoreError(error, "更改用户状态");
+            return { success: false, error: result.error };
           }
           break;
         case UserStatus.BANNED:
@@ -146,7 +147,8 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           break;
         default:
           const error = new Error(`不支持的目标状态: ${toStatus}`);
-          return await handleStoreError(error, "更改用户状态");
+          const result = await handleStoreError(error, "更改用户状态");
+          return { success: false, error: result.error };
       }
 
       if (actionResponse && !isSuccessApiResponse(actionResponse)) {
@@ -161,7 +163,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             },
           },
         }));
-        return result;
+        return { success: false, error: result.error };
       }
 
       // 操作成功，刷新数据
@@ -179,7 +181,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           },
         },
       }));
-      return result;
+      return { success: false, error: result.error };
     } finally {
       set((state) => ({
         loading: {
@@ -217,7 +219,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             deleteError: { ...state.error.deleteError, [userId]: result.error },
           },
         }));
-        return result;
+        return { success: false, error: result.error };
       }
 
       // 操作成功，刷新数据
@@ -232,7 +234,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           deleteError: { ...state.error.deleteError, [userId]: result.error },
         },
       }));
-      return result;
+      return { success: false, error: result.error };
     } finally {
       set((state) => ({
         loading: {
@@ -277,7 +279,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             },
           },
         }));
-        return storeResult;
+        return { success: false, error: storeResult.error };
       }
 
       // 使缓存失效
@@ -333,7 +335,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             updateError: { ...state.error.updateError, [userId]: result.error },
           },
         }));
-        return result;
+        return { success: false, error: result.error };
       }
 
       // 操作成功，刷新数据
@@ -348,7 +350,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           updateError: { ...state.error.updateError, [userId]: result.error },
         },
       }));
-      return result;
+      return { success: false, error: result.error };
     } finally {
       set((state) => ({
         loading: {
@@ -384,7 +386,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
             createError: result.error,
           },
         }));
-        return result;
+        return { success: false, error: result.error };
       }
 
       // 操作成功，刷新数据
@@ -405,7 +407,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           createError: result.error,
         },
       }));
-      return result;
+      return { success: false, error: result.error };
     } catch (e) {
       const result = await handleStoreError(e, "创建用户");
       set((state) => ({
@@ -414,7 +416,7 @@ export const useUserActionStore = create<UserActionState>((set, get) => ({
           createError: result.error,
         },
       }));
-      return result;
+      return { success: false, error: result.error };
     } finally {
       set((state) => ({
         loading: {
