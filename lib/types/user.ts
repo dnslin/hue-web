@@ -1,5 +1,4 @@
 import type {
-  ApiResponse,
   SuccessApiResponse,
   ErrorApiResponse,
   PaginatedApiResponse,
@@ -75,6 +74,8 @@ export interface User {
   lastLoginIp?: string;
   minTokenIssueTime?: string;
   suspiciousLoginNotifiedAt?: string;
+  usedStorageMb?: number;
+  storageCapacityMb?: number;
 }
 
 /**
@@ -93,11 +94,11 @@ export interface AdminUserResponse {
   updatedAt: string;
   lastLoginAt?: string;
   lastLoginIp?: string;
+  suspiciousLoginNotifiedAt?: string;
+  usedStorageMb?: number;
+  storageCapacityMb?: number;
   // 前端扩展字段（可选）
   avatar?: string;
-  uploadCount?: number;
-  storageUsed?: number;
-  storageLimit?: number;
 }
 
 /**

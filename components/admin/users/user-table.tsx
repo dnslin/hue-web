@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User, UserListParams, getUserDisplayName } from "@/lib/types/user";
-import { Role } from "@/lib/types/roles";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { useUserSelectionStore } from "@/lib/store/user/user-selection.store";
@@ -77,11 +76,12 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
     });
   };
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return "0 B";
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+  const formatStorageSize = (mb?: number) => {
+    if (!mb) return "0 MB";
+    if (mb >= 1024) {
+      return `${(mb / 1024).toFixed(1)} GB`;
+    }
+    return `${mb} MB`;
   };
 
   if (loading) {
@@ -141,10 +141,10 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   variant="ghost"
                   size="sm"
                   className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("createdAt")}
+                  onClick={() => handleSort("created_at")}
                 >
                   注册时间
-                  {getSortIcon("createdAt")}
+                  {getSortIcon("created_at")}
                 </Button>
               </th>
               <th className="text-left p-4 font-medium">
@@ -152,25 +152,15 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                   variant="ghost"
                   size="sm"
                   className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("lastLoginAt")}
+                  onClick={() => handleSort("last_login_at")}
                 >
                   最后登录
-                  {getSortIcon("lastLoginAt")}
+                  {getSortIcon("last_login_at")}
                 </Button>
               </th>
               <th className="text-left p-4 font-medium">登录IP</th>
-              <th className="text-left p-4 font-medium">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto p-0 font-medium"
-                  onClick={() => handleSort("uploadCount")}
-                >
-                  上传数量
-                  {getSortIcon("uploadCount")}
-                </Button>
-              </th>
-              <th className="text-left p-4 font-medium">存储使用</th>
+              <th className="text-left p-4 font-medium">通知时间</th>
+              <th className="text-left p-4 font-medium">存储容量</th>
               <th className="text-right p-4 font-medium">操作</th>
             </tr>
           </thead>
@@ -231,22 +221,24 @@ export function UserTable({ users, loading = false, onSort }: UserTableProps) {
                 <td className="p-4 text-sm text-muted-foreground">
                   {user.lastLoginIp || "无记录"}
                 </td>
-                <td className="p-4 text-sm">
-                  <div className="font-medium">{user.uploadCount || 0}</div>
+                <td className="p-4 text-sm text-muted-foreground">
+                  {user.suspiciousLoginNotifiedAt
+                    ? formatDate(user.suspiciousLoginNotifiedAt)
+                    : "无通知"}
                 </td>
                 <td className="p-4 text-sm">
                   <div className="space-y-1">
                     <div className="font-medium">
-                      {formatFileSize(user.storageUsed)} /{" "}
-                      {formatFileSize(user.storageLimit)}
+                      {formatStorageSize(user.usedStorageMb)} /{" "}
+                      {formatStorageSize(user.storageCapacityMb)}
                     </div>
-                    {user.storageLimit != null && user.storageUsed != null && (
+                    {(user.storageCapacityMb != null && user.usedStorageMb != null) && (
                       <div className="w-full bg-muted rounded-full h-1.5">
                         <div
                           className="bg-primary h-1.5 rounded-full transition-all"
                           style={{
                             width: `${Math.min(
-                              (user.storageUsed / user.storageLimit) * 100,
+                              (user.usedStorageMb! / user.storageCapacityMb!) * 100,
                               100
                             )}%`,
                           }}

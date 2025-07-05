@@ -10,7 +10,7 @@ import { UserTable } from "./user-table";
 import { UserMobileList } from "./user-mobile-list";
 import { UserPagination } from "./user-pagination";
 import { UserCreateDialog } from "./user-create-dialog";
-import { UserListParams, User } from "@/lib/types/user";
+import { User } from "@/lib/types/user";
 import { userDataStore } from "@/lib/store/user/user-data.store";
 import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
 import { useUserDataHydration } from "@/lib/store/user/user-hydration.store";
@@ -22,12 +22,10 @@ interface UserListProps {
 }
 
 export function UserList({ isMobile = false }: UserListProps) {
-  // --- 从新的 stores 中获取状态和方法 ---
   const { users, total, loading, error } = useStore(userDataStore);
-  const { filters, pagination, setFilters } = useUserFilterStore();
+  const { filters, setFilters } = useUserFilterStore();
   const isHydrated = useUserDataHydration();
 
-  // 错误处理应该在所有 hooks 调用之后，但在任何可能提前返回的逻辑之前
   useEffect(() => {
     if (error) {
       // store中已经显示了toast，这里只记录日志用于调试
@@ -76,9 +74,10 @@ export function UserList({ isMobile = false }: UserListProps) {
         "状态",
         "注册时间",
         "最后登录时间",
-        "上传数量",
-        "已用存储(MB)",
-        "存储上限(MB)",
+        "最后登录IP",
+        "通知时间",
+        "已用容量(MB)",
+        "存储容量(MB)",
       ];
       const csvRows = [
         headers.join(","),
@@ -88,7 +87,7 @@ export function UserList({ isMobile = false }: UserListProps) {
             `"${user.username.replace(/"/g, '""')}"`, // Handle quotes in username
             `"${(user.nickname || "").replace(/"/g, '""')}"`,
             user.email,
-            user.role,
+            user.role?.name || "",
             user.status,
             user.createdAt
               ? new Date(user.createdAt).toLocaleString("zh-CN")
@@ -96,13 +95,12 @@ export function UserList({ isMobile = false }: UserListProps) {
             user.lastLoginAt
               ? new Date(user.lastLoginAt).toLocaleString("zh-CN")
               : "",
-            // user.uploadCount || 0,
-            // user.storageUsed
-            //   ? (user.storageUsed / (1024 * 1024)).toFixed(2)
-            //   : 0,
-            // user.storageLimit
-            //   ? (user.storageLimit / (1024 * 1024)).toFixed(2)
-            //   : "无限制",
+            user.lastLoginIp || "",
+            user.suspiciousLoginNotifiedAt
+              ? new Date(user.suspiciousLoginNotifiedAt).toLocaleString("zh-CN")
+              : "",
+            user.usedStorageMb || 0,
+            user.storageCapacityMb || "无限制",
           ].join(",")
         ),
       ];

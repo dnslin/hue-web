@@ -274,10 +274,9 @@ export function UserFilters({ isMobile = false }: UserFiltersProps) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="DEFAULT_SORT">默认</SelectItem>
-                        <SelectItem value="createdAt">注册时间</SelectItem>
-                        <SelectItem value="updatedAt">更新时间</SelectItem>
-                        <SelectItem value="lastLoginAt">最后登录</SelectItem>
-                        <SelectItem value="uploadCount">上传数量</SelectItem>
+                        <SelectItem value="created_at">注册时间</SelectItem>
+                        <SelectItem value="updated_at">更新时间</SelectItem>
+                        <SelectItem value="last_login_at">最后登录</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select

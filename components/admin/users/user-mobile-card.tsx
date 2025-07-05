@@ -21,11 +21,12 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
     });
   };
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return "0 B";
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+  const formatStorageSize = (mb?: number) => {
+    if (!mb) return "0 MB";
+    if (mb >= 1024) {
+      return `${(mb / 1024).toFixed(1)} GB`;
+    }
+    return `${mb} MB`;
   };
 
   // This logic is now centralized in lib/utils/role-helpers.ts
@@ -93,6 +94,14 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
                 {user.lastLoginAt ? formatDate(user.lastLoginAt) : "从未"}
               </div>
             </div>
+            {user.suspiciousLoginNotifiedAt && (
+              <div className="col-span-2 space-y-1 p-2 bg-orange-50 dark:bg-orange-900/20 rounded-md border border-orange-200 dark:border-orange-800">
+                <div className="text-orange-700 dark:text-orange-300 font-medium">通知时间</div>
+                <div className="font-semibold text-orange-800 dark:text-orange-200 text-xs">
+                  {formatDate(user.suspiciousLoginNotifiedAt)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 存储信息和进度条 */}
@@ -100,27 +109,24 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
             <div className="flex justify-between items-center text-xs">
               <div className="flex items-center gap-3">
                 <span className="text-muted-foreground font-medium">
-                  上传: {user.uploadCount || 0}
-                </span>
-                <span className="text-muted-foreground font-medium">
-                  存储: {formatFileSize(user.storageUsed)} /{" "}
-                  {formatFileSize(user.storageLimit)}
+                  已用容量: {formatStorageSize(user.usedStorageMb)} /{" "}
+                  {formatStorageSize(user.storageCapacityMb)}
                 </span>
               </div>
               <span className="font-bold text-primary text-xs">
-                {user.storageLimit && user.storageUsed
-                  ? Math.round((user.storageUsed / user.storageLimit) * 100)
+                {user.storageCapacityMb && user.usedStorageMb
+                  ? Math.round((user.usedStorageMb / user.storageCapacityMb) * 100)
                   : 0}
                 %
               </span>
             </div>
-            {user.storageLimit != null && user.storageUsed != null && (
+            {(user.storageCapacityMb != null && user.usedStorageMb != null) && (
               <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-primary to-primary/80 h-1.5 rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${Math.min(
-                      (user.storageUsed / user.storageLimit) * 100,
+                      (user.usedStorageMb! / user.storageCapacityMb!) * 100,
                       100
                     )}%`,
                   }}
