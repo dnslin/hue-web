@@ -47,28 +47,28 @@ export const adminNavigation: NavigationGroup[] = [
       {
         id: "images",
         label: "图片管理",
-        href: "/admin/images",
+        href: "/images",
         icon: Images,
         badge: "new",
         description: "图片上传、分类和管理",
-        defaultHref: "/admin/images/list", // 折叠状态下跳转到图片列表
+        defaultHref: "/images/list", // 折叠状态下跳转到图片列表
         children: [
           {
             id: "images-list",
             label: "图片列表",
-            href: "/admin/images/list",
+            href: "/images/list",
             icon: Images,
           },
           {
             id: "images-upload",
             label: "批量上传",
-            href: "/admin/images/upload",
+            href: "/images/upload",
             icon: Images,
           },
           {
             id: "images-categories",
             label: "分类管理",
-            href: "/admin/images/categories",
+            href: "/images/categories",
             icon: Images,
           },
         ],
@@ -104,14 +104,14 @@ export const adminNavigation: NavigationGroup[] = [
       {
         id: "pages",
         label: "页面管理",
-        href: "/admin/pages",
+        href: "/pages",
         icon: FileText,
         description: "静态页面和内容管理",
       },
       {
         id: "announcements",
         label: "公告管理",
-        href: "/admin/announcements",
+        href: "/announcements",
         icon: Bell,
         description: "系统公告和通知",
       },
@@ -124,21 +124,21 @@ export const adminNavigation: NavigationGroup[] = [
       {
         id: "analytics",
         label: "数据统计",
-        href: "/admin/analytics",
+        href: "/analytics",
         icon: BarChart3,
         description: "访问统计和数据分析",
       },
       {
         id: "storage",
         label: "存储管理",
-        href: "/admin/storage",
+        href: "/storage",
         icon: Database,
         description: "存储配置和空间管理",
       },
       {
         id: "appearance",
         label: "外观设置",
-        href: "/admin/appearance",
+        href: "/appearance",
         icon: Palette,
         description: "主题和界面定制",
       },
@@ -232,3 +232,4 @@ export const generateBreadcrumbs = (path: string) => {
 
   return breadcrumbs;
 };
+
