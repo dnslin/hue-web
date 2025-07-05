@@ -23,8 +23,10 @@ definitions:
         type: string
       created_at:
         type: string
+      default_storage_strategy_id:
+        description: 新增：默认存储策略ID
+        type: integer
       email_notify_enabled:
-        description: 邮件通知总开关，属于基础功能控制
         type: boolean
       email_verification_required:
         type: boolean
@@ -37,7 +39,6 @@ definitions:
       logo_url:
         type: string
       notify_admin_on_pending_approval:
-        description: 新增字段
         type: boolean
       seo_keywords:
         type: string
@@ -51,6 +52,14 @@ definitions:
         type: integer
       user_registration_enabled:
         type: boolean
+    type: object
+  dtos.AdminUpdateUserCapacityRequest:
+    properties:
+      storage_capacity_mb:
+        description: 使用指针以区分0和未设置
+        type: integer
+    required:
+      - storage_capacity_mb
     type: object
   dtos.AdminUserCreateRequest:
     properties:
@@ -97,10 +106,18 @@ definitions:
         description: 使用 RoleResponseDTO
       status:
         type: integer
+      storage_capacity_mb:
+        type: integer
       updated_at:
         type: string
       username:
         type: string
+    type: object
+  dtos.AdminUserUpdateRequest:
+    properties:
+      storage_capacity_mb:
+        description: 使用指针以区分0和未设置
+        type: integer
     type: object
   dtos.AlbumResponseDTO:
     properties:
@@ -232,12 +249,74 @@ definitions:
       - resource_id
       - type
     type: object
+  dtos.ExifInfoDTO:
+    properties:
+      altitude:
+        type: number
+      camera_model:
+        type: string
+      date_time_original:
+        type: string
+      exposure_time:
+        type: string
+      f_number:
+        type: number
+      film_mode:
+        type: string
+      flash:
+        type: integer
+      focal_length:
+        type: number
+      iso_speed_ratings:
+        type: integer
+      latitude:
+        type: number
+      lens:
+        type: string
+      longitude:
+        type: number
+      make:
+        type: string
+    type: object
   dtos.ForgotPasswordRequest:
     properties:
       email:
         type: string
     required:
       - email
+    type: object
+  dtos.ImageDetailDTO:
+    properties:
+      album_id:
+        type: integer
+      created_at:
+        type: string
+      exif:
+        $ref: "#/definitions/dtos.ExifInfoDTO"
+      filename:
+        type: string
+      height:
+        type: integer
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      mime_type:
+        type: string
+      moderation_status:
+        type: integer
+      size:
+        type: integer
+      storage_strategy_id:
+        type: integer
+      updated_at:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: integer
+      width:
+        type: integer
     type: object
   dtos.ImageResponseDTO:
     properties:
@@ -255,9 +334,9 @@ definitions:
         type: boolean
       mime_type:
         type: string
-      size:
+      moderation_status:
         type: integer
-      status:
+      size:
         type: integer
       storage_strategy_id:
         type: integer
@@ -269,6 +348,13 @@ definitions:
         type: integer
       width:
         type: integer
+    type: object
+  dtos.LocalConfigDTO:
+    properties:
+      base_path:
+        type: string
+    required:
+      - base_path
     type: object
   dtos.LoginRequest:
     properties:
@@ -415,6 +501,11 @@ definitions:
         description: 角色名称，必须唯一
         example: administrator
         type: string
+      storage_strategy_ids:
+        description: 关联的存储策略ID列表
+        items:
+          type: integer
+        type: array
     required:
       - name
     type: object
@@ -445,6 +536,34 @@ definitions:
         description: 新的角色名称
         example: super_admin
         type: string
+      storage_strategy_ids:
+        description: 关联的存储策略ID列表 (使用指针以区分空数组和未提供)
+        items:
+          type: integer
+        type: array
+    type: object
+  dtos.S3ConfigDTO:
+    properties:
+      access_key_id:
+        type: string
+      base_url:
+        type: string
+      bucket:
+        type: string
+      endpoint:
+        type: string
+      force_path_style:
+        type: boolean
+      region:
+        type: string
+      secret_access_key:
+        type: string
+    required:
+      - access_key_id
+      - bucket
+      - endpoint
+      - region
+      - secret_access_key
     type: object
   dtos.ShareResponseDTO:
     properties:
@@ -464,6 +583,28 @@ definitions:
         type: string
       view_count:
         type: integer
+    type: object
+  dtos.StorageStrategyDTO:
+    properties:
+      is_enabled:
+        type: boolean
+      local_config:
+        $ref: "#/definitions/dtos.LocalConfigDTO"
+      name:
+        type: string
+      s3_config:
+        allOf:
+          - $ref: "#/definitions/dtos.S3ConfigDTO"
+        description: 根据Type的值，S3Config或LocalConfig必须存在一个
+      type:
+        enum:
+          - s3
+          - local
+        type: string
+    required:
+      - is_enabled
+      - name
+      - type
     type: object
   dtos.SyncPermissionsDTO:
     properties:
@@ -491,6 +632,8 @@ definitions:
         type: boolean
       app_name:
         type: string
+      default_storage_strategy_id:
+        type: integer
       email_notify_enabled:
         description: 邮件通知总开关
         type: boolean
@@ -600,6 +743,8 @@ definitions:
         type: string
       size:
         type: integer
+      thumbnail_url:
+        type: string
       url:
         type: string
     type: object
@@ -633,6 +778,14 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
     type: object
   models.AuditLogActionType:
     enum:
@@ -696,6 +849,10 @@ definitions:
         type: string
       createdAt:
         type: string
+      defaultStorageStrategyID:
+        type: integer
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       emailNotifyEnabled:
         type: boolean
       emailVerificationRequired:
@@ -731,7 +888,6 @@ definitions:
       updatedAt:
         type: string
       userInitialStorageCapacityMB:
-        description: "校验: e.g., 10-102400"
         type: integer
       userRegistrationEnabled:
         type: boolean
@@ -742,28 +898,27 @@ definitions:
         type: string
       autoCompressEnabled:
         type: boolean
+      autoConvertToWebP:
+        type: boolean
       batchUploadLimit:
-        description: "校验: e.g., 1-100"
         type: integer
       compressionQuality:
-        description: "校验: 1-100"
         type: integer
       createdAt:
         type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       id:
         type: integer
       thumbnailEnabled:
         type: boolean
       thumbnailHeight:
-        description: "校验: e.g., 0-8000"
         type: integer
       thumbnailWidth:
-        description: "校验: e.g., 0-8000"
         type: integer
       updatedAt:
         type: string
       uploadMaxSizeMB:
-        description: "校验: e.g., 1-100"
         type: integer
       watermarkEnabled:
         type: boolean
@@ -772,30 +927,29 @@ definitions:
       watermarkMarginY:
         type: integer
       watermarkOpacity:
-        description: "校验: 0.0-1.0"
         type: number
       watermarkPosition:
         type: string
       watermarkScaleRatio:
-        description: "校验: e.g., 0.01-1.0"
         type: number
       watermarkSourceFile:
         type: string
+      webPQuality:
+        type: integer
     type: object
   models.Permission:
     properties:
       createdAt:
         type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       description:
-        description: 权限描述
         type: string
       groupName:
-        description: 权限分组, e.g., "用户管理", "图片管理"
         type: string
       id:
         type: integer
       name:
-        description: 权限名称, 如 user:create
         type: string
       updatedAt:
         type: string
@@ -803,19 +957,22 @@ definitions:
   models.Role:
     properties:
       alias:
-        description: 别名
         type: string
       createdAt:
         type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       id:
         type: integer
       name:
-        description: 角色名称
         type: string
       permissions:
-        description: 角色拥有的权限
         items:
           $ref: "#/definitions/models.Permission"
+        type: array
+      storageStrategies:
+        items:
+          $ref: "#/definitions/models.StorageStrategy"
         type: array
       updatedAt:
         type: string
@@ -823,10 +980,11 @@ definitions:
   models.SecuritySetting:
     properties:
       accountLockoutDurationMinutes:
-        description: "校验: e.g., 5-1440"
         type: integer
       createdAt:
         type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       id:
         type: integer
       ipblacklist:
@@ -834,10 +992,8 @@ definitions:
       ipwhitelist:
         type: string
       loginMaxAttempts:
-        description: "校验: e.g., 3-20"
         type: integer
       passwordMinLength:
-        description: "校验: e.g., 6-64"
         type: integer
       passwordRequiresLowercase:
         type: boolean
@@ -852,87 +1008,76 @@ definitions:
     type: object
   models.StorageStrategy:
     properties:
-      config:
-        description: 存储配置详情 (JSON)
-        type: string
       createdAt:
-        description: 创建时间
         type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       id:
         type: integer
       isEnabled:
-        description: 是否启用
         type: boolean
+      localBasePath:
+        description: Local Storage Config
+        type: string
       name:
-        description: 策略名称
+        type: string
+      s3AccessKeyID:
+        type: string
+      s3BaseURL:
+        type: string
+      s3Bucket:
+        description: S3 Storage Config
+        type: string
+      s3Endpoint:
+        type: string
+      s3ForcePathStyle:
+        type: boolean
+      s3Region:
+        type: string
+      s3SecretAccessKey:
         type: string
       type:
-        description: 存储类型标识
+        description: "'s3' or 'local'"
         type: string
       updatedAt:
-        description: 更新时间
         type: string
     type: object
   models.User:
     properties:
       createdAt:
-        description: 注册时间
         type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
       email:
-        description: 用户邮箱
         type: string
       id:
         type: integer
       lastLoginAt:
-        description: 最后登录时间
         type: string
       lastLoginIP:
-        description: 最后登录IP
         type: string
       minTokenIssueTime:
-        description: 新增字段
         type: string
       nickname:
-        description: 用户昵称 (可选)
         type: string
       originalRoleID:
         type: integer
       passwordHash:
-        description: 密码哈希
         type: string
       role:
-        allOf:
-          - $ref: "#/definitions/models.Role"
-        description: 关联角色
+        $ref: "#/definitions/models.Role"
       roleID:
-        description: 用户角色ID
         type: integer
       status:
-        description: 用户状态（0-正常, 1-禁用, 2-待审核, 3-已删除, 4-审核拒绝, 5-待邮件激活）
+        type: integer
+      storageCapacityMB:
         type: integer
       suspiciousLoginNotifiedAt:
-        description: 新增字段
         type: string
       updatedAt:
-        description: 更新时间
         type: string
-      username:
-        description: 用户名/登录名
-        type: string
-    type: object
-  models.UserUpdateRequest:
-    properties:
-      email:
-        type: string
-      password:
-        description: 可选，用于修改密码
-        type: string
-      role_id:
-        description: 可选，用于修改角色
-        type: integer
-      status:
-        description: 可选，用于修改状态
-        type: integer
+      usedStorageMB:
+        type: number
       username:
         type: string
     type: object
@@ -1000,12 +1145,12 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: 这是 LskyPro-Go 的 API 文档.
+  description: 这是 Hue-Go 的 API 文档.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: LskyPro-Go API
+  title: Hue-Go API
   version: "1.0"
 paths:
   /admin/audit-logs:
@@ -1172,12 +1317,12 @@ paths:
         - application/json
       description: 管理员创建新的存储策略
       parameters:
-        - description: 存储策略信息
+        - description: 存储策略信息。根据type字段，s3_config或local_config必须提供一个
           in: body
           name: strategy
           required: true
           schema:
-            $ref: "#/definitions/models.StorageStrategy"
+            $ref: "#/definitions/dtos.StorageStrategyDTO"
       produces:
         - application/json
       responses:
@@ -1191,7 +1336,7 @@ paths:
                     $ref: "#/definitions/models.StorageStrategy"
                 type: object
         "400":
-          description: 请求参数错误
+          description: 请求参数错误或配置验证失败
           schema:
             $ref: "#/definitions/utils.Response"
         "500":
@@ -1283,12 +1428,12 @@ paths:
           name: id
           required: true
           type: integer
-        - description: 存储策略信息
+        - description: 存储策略信息。根据type字段，s3_config或local_config必须提供一个
           in: body
           name: strategy
           required: true
           schema:
-            $ref: "#/definitions/models.StorageStrategy"
+            $ref: "#/definitions/dtos.StorageStrategyDTO"
       produces:
         - application/json
       responses:
@@ -1302,7 +1447,7 @@ paths:
                     $ref: "#/definitions/models.StorageStrategy"
                 type: object
         "400":
-          description: 请求参数错误
+          description: 请求参数错误或配置验证失败
           schema:
             $ref: "#/definitions/utils.Response"
         "404":
@@ -1316,6 +1461,38 @@ paths:
       security:
         - ApiKeyAuth: []
       summary: 更新存储策略
+      tags:
+        - Storage
+  /admin/storage-strategies/test:
+    post:
+      consumes:
+        - application/json
+      description: 用户提供S3配置信息，API进行实时的上传/删除测试以验证其可用性
+      parameters:
+        - description: S3存储配置
+          in: body
+          name: config
+          required: true
+          schema:
+            $ref: "#/definitions/dtos.S3ConfigDTO"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 连接成功
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "400":
+          description: 请求参数错误或连接测试失败
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 测试S3存储连接
       tags:
         - Storage
   /admin/users:
@@ -1472,22 +1649,67 @@ paths:
       summary: 管理员物理删除用户
       tags:
         - Admin User Management
-    put:
+    patch:
       consumes:
         - application/json
-      description: 管理员更新指定用户的通用信息。此接口整合了原 UserController 中的用户更新功能，作为管理员修改用户资料的主要途径。
+      description: 管理员更新指定用户的存储容量
       parameters:
         - description: 用户ID
           in: path
           name: id
           required: true
           type: integer
-        - description: 用户信息
+        - description: 存储容量信息
+          in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/dtos.AdminUpdateUserCapacityRequest"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 成功响应
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/models.User"
+                type: object
+        "400":
+          description: 请求参数错误或无效的用户ID
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 用户未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 管理员更新用户存储容量
+      tags:
+        - Admin User Management
+    put:
+      consumes:
+        - application/json
+      description: 管理员更新指定用户的通用信息，包括用户的存储容量。
+      parameters:
+        - description: 用户ID
+          in: path
+          name: id
+          required: true
+          type: integer
+        - description: 要更新的用户信息，例如存储容量
           in: body
           name: user
           required: true
           schema:
-            $ref: "#/definitions/models.UserUpdateRequest"
+            $ref: "#/definitions/dtos.AdminUserUpdateRequest"
       produces:
         - application/json
       responses:
@@ -2421,8 +2643,8 @@ paths:
           type: string
         - description: 要使用的存储策略ID (可选, 否则使用默认策略)
           in: formData
-          name: storage_id
-          type: string
+          name: storage_strategy_id
+          type: integer
       produces:
         - application/json
       responses:
@@ -2522,6 +2744,84 @@ paths:
       security:
         - ApiKeyAuth: []
       summary: 获取图片信息
+      tags:
+        - Images
+  /images/{id}/detail:
+    get:
+      description: 根据图片ID获取其完整的元数据，包括 EXIF 信息。
+      parameters:
+        - description: 图片ID
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 图片详细元数据
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/dtos.ImageDetailDTO"
+                type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 图片未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取图片详细信息
+      tags:
+        - Images
+  /images/{id}/view:
+    get:
+      description: 根据图片ID获取图片文件。对于私有图片，需要所有者权限。
+      parameters:
+        - description: 图片ID
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: 是否获取缩略图 (true/false)
+          in: query
+          name: thumb
+          type: boolean
+      produces:
+        - image/png
+        - image/jpeg
+        - image/gif
+        - image/webp
+      responses:
+        "200":
+          description: 图片文件
+          schema:
+            type: file
+        "302":
+          description: 重定向到S3预签名URL
+        "400":
+          description: 无效的ID
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "403":
+          description: 无权访问
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 图片或缩略图未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      summary: 获取图片文件
       tags:
         - Images
   /me:
@@ -2843,9 +3143,9 @@ paths:
     post:
       consumes:
         - application/json
-      description: 创建一个新的角色
+      description: 创建一个新角色，可以同时关联存储策略。
       parameters:
-        - description: 角色创建信息
+        - description: 角色创建信息，包括名称、别名和可选的存储策略ID列表 (storage_strategy_ids)
           in: body
           name: role_input
           required: true
@@ -2953,14 +3253,14 @@ paths:
     put:
       consumes:
         - application/json
-      description: 更新指定ID的角色名称
+      description: 更新指定ID的角色信息，包括名称、别名和关联的存储策略。
       parameters:
         - description: 角色ID
           in: path
           name: id
           required: true
           type: integer
-        - description: 角色更新信息
+        - description: 角色更新信息。所有字段都是可选的，包括 storage_strategy_ids。
           in: body
           name: role_update
           required: true
@@ -3150,7 +3450,7 @@ paths:
   /settings/basic:
     get:
       description:
-        获取网站的详细基础配置信息 (仅供管理员访问)。不包含SMTP服务器的具体连接信息，这些信息请通过 /settings/email
+        获取网站的详细基础配置信息 (仅供管理员访问)，包括默认存储策略ID。不包含SMTP服务器的具体连接信息，这些信息请通过 /settings/email
         接口获取。
       produces:
         - application/json
@@ -3184,11 +3484,9 @@ paths:
     put:
       consumes:
         - application/json
-      description:
-        更新网站的基础配置信息。所有字段都是可选的，只更新提供的字段。此接口不处理SMTP服务器相关的配置更新，请使用 /settings/email
-        接口进行邮件服务器配置。
+      description: 更新网站的基础配置信息，包括默认存储策略。所有字段都是可选的，只更新提供的字段。
       parameters:
-        - description: 要更新的网站基础配置项 (不含SMTP配置)
+        - description: 要更新的网站基础配置项，例如 `default_storage_strategy_id`
           in: body
           name: settings
           required: true
@@ -3287,7 +3585,7 @@ paths:
       parameters:
         - description: 测试邮件接收邮箱
           in: body
-          name: input
+          name: body
           required: true
           schema:
             $ref: "#/definitions/dtos.TestEmailDTO"
@@ -3552,6 +3850,37 @@ paths:
       summary: 获取分享内容
       tags:
         - Share
+  /user/storage-strategies:
+    get:
+      description: 获取当前登录用户有权使用的所有存储策略。
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 成功响应，返回可用存储策略列表
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.StorageStrategyDTO"
+                    type: array
+                type: object
+        "401":
+          description: 用户未认证
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取可用存储策略
+      tags:
+        - Users
+        - Storage
   /users/{id}/roles:
     get:
       consumes:
@@ -3642,3 +3971,4 @@ securityDefinitions:
     name: Authorization
     type: apiKey
 swagger: "2.0"
+
