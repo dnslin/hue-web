@@ -14,11 +14,23 @@ import {
   ImageIcon,
   Users,
   BookOpen,
+  Settings,
+  LogOut,
+  User,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuthStore } from "@/lib/store/auth-store";
 import { ReactNode } from "react";
-
+import { getGravatarUrl } from "@/lib/utils/gravatar";
 // 定义导航项类型
 interface NavItemProps {
   item: {
@@ -35,6 +47,9 @@ export function NavBar() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
+  // 获取认证状态
+  const { user, isAuthenticated, isHydrated, logout } = useAuthStore();
+
   // 监听滚动事件，当页面滚动时改变导航栏样式
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +61,12 @@ export function NavBar() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  // 处理登出
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false); // 关闭移动端菜单
+  };
 
   // 更丰富的导航项
   const navItems = [
@@ -59,6 +80,131 @@ export function NavBar() {
       icon: <Github className="h-4 w-4" />,
     },
   ];
+
+  // 渲染认证相关按钮（桌面端）
+  const renderAuthSection = () => {
+    // 如果状态还未水合完成，显示加载状态
+    if (!isHydrated) {
+      return (
+        <div className="flex items-center space-x-3">
+          <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+          <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+        </div>
+      );
+    }
+
+    if (isAuthenticated && user) {
+      return (
+        <div className="flex items-center space-x-3">
+          {/* 进入后台按钮 */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="flex items-center gap-1"
+            >
+              <Link href="/dashboard">
+                <Settings className="h-4 w-4" />
+                <span>后台管理</span>
+              </Link>
+            </Button>
+          </motion.div>
+          
+          {/* 用户头像下拉菜单 */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="relative h-8 w-8 rounded-full"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={getGravatarUrl(user.email)} alt={user.username || ""} />
+                    <AvatarFallback>
+                      {user.username?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium">{user.username}</p>
+                    <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>后台管理</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>个人设置</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>退出登录</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // 未登录状态
+    return (
+      <div className="flex items-center space-x-3">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="flex items-center gap-1"
+          >
+            <Link href="/login">
+              <LogIn className="h-4 w-4" />
+              <span>登录</span>
+            </Link>
+          </Button>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Button size="sm" asChild className="flex items-center gap-1">
+            <Link href="/register">
+              <UserPlus className="h-4 w-4" />
+              <span>注册</span>
+            </Link>
+          </Button>
+        </motion.div>
+      </div>
+    );
+  };
 
   return (
     <header
@@ -101,7 +247,7 @@ export function NavBar() {
             ))}
           </nav>
 
-          {/* Desktop Right Section - 登录注册按钮 */}
+          {/* Desktop Right Section - 认证相关按钮 */}
           <div className="hidden md:flex items-center space-x-3">
             <NavItem
               key={navItems[4].name}
@@ -110,35 +256,7 @@ export function NavBar() {
               setHoveredItem={setHoveredItem}
             />
             <ThemeSwitcher />
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="flex items-center gap-1"
-              >
-                <Link href="/login">
-                  <LogIn className="h-4 w-4" />
-                  <span>登录</span>
-                </Link>
-              </Button>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <Button size="sm" asChild className="flex items-center gap-1">
-                <Link href="/register">
-                  <UserPlus className="h-4 w-4" />
-                  <span>注册</span>
-                </Link>
-              </Button>
-            </motion.div>
+            {renderAuthSection()}
           </div>
 
           {/* Mobile Menu Button */}
@@ -197,51 +315,139 @@ export function NavBar() {
                 </motion.div>
               ))}
               <div className="flex flex-col space-y-2 pt-2 border-t">
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{
-                    duration: 0.2,
-                    delay: navItems.length * 0.1,
-                  }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className="w-full justify-start"
-                  >
-                    <Link
-                      href="/login"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2"
+                {!isHydrated ? (
+                  // 加载状态
+                  <div className="space-y-2">
+                    <div className="h-8 bg-muted animate-pulse rounded" />
+                    <div className="h-8 bg-muted animate-pulse rounded" />
+                  </div>
+                ) : isAuthenticated && user ? (
+                  // 已登录状态
+                  <>
+                    <div className="px-3 py-2 text-sm">
+                      <div className="font-medium">{user.username}</div>
+                      <div className="text-muted-foreground truncate">{user.email}</div>
+                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: navItems.length * 0.1,
+                      }}
                     >
-                      <LogIn className="h-4 w-4" />
-                      <span>登录</span>
-                    </Link>
-                  </Button>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{
-                    duration: 0.2,
-                    delay: (navItems.length + 1) * 0.1,
-                  }}
-                >
-                  <Button size="sm" asChild className="w-full justify-start">
-                    <Link
-                      href="/register"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                        className="w-full justify-start"
+                      >
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2"
+                        >
+                          <Settings className="h-4 w-4" />
+                          <span>后台管理</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: (navItems.length + 1) * 0.1,
+                      }}
                     >
-                      <UserPlus className="h-4 w-4" />
-                      <span>注册</span>
-                    </Link>
-                  </Button>
-                </motion.div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                        className="w-full justify-start"
+                      >
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2"
+                        >
+                          <User className="h-4 w-4" />
+                          <span>个人设置</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: (navItems.length + 2) * 0.1,
+                      }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleLogout}
+                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        <span>退出登录</span>
+                      </Button>
+                    </motion.div>
+                  </>
+                ) : (
+                  // 未登录状态
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: navItems.length * 0.1,
+                      }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                        className="w-full justify-start"
+                      >
+                        <Link
+                          href="/login"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2"
+                        >
+                          <LogIn className="h-4 w-4" />
+                          <span>登录</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: (navItems.length + 1) * 0.1,
+                      }}
+                    >
+                      <Button size="sm" asChild className="w-full justify-start">
+                        <Link
+                          href="/register"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          <span>注册</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

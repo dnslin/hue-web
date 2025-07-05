@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ConditionalLayout } from "@/components/layouts/conditional-layout";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -52,8 +53,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ConditionalLayout>{children}</ConditionalLayout>
-        <Toaster position="top-center" richColors />
+        <AuthProvider>
+          <ConditionalLayout>{children}</ConditionalLayout>
+          <Toaster position="top-center" richColors />
+        </AuthProvider>
       </body>
     </html>
   );

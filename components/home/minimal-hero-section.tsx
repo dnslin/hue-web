@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Image as ImageIcon, Upload } from "lucide-react";
+import { Image as ImageIcon, Upload, Settings } from "lucide-react";
 import { ReactNode } from "react";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import { TypingAnimation } from "@/components/magicui/typing-animation";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 // 定义动画变体
 const containerVariants = {
@@ -68,6 +69,49 @@ const FloatingElement = ({
 );
 
 export function MinimalHeroSection() {
+  // 获取认证状态
+  const { isAuthenticated, isHydrated, user } = useAuthStore();
+
+  // 渲染智能CTA按钮
+  const renderCTAButton = () => {
+    // 如果状态还未水合完成，显示加载状态
+    if (!isHydrated) {
+      return (
+        <div className="h-10 w-24 bg-muted animate-pulse rounded-md" />
+      );
+    }
+
+    if (isAuthenticated && user) {
+      return (
+        <Link href="/dashboard">
+          <InteractiveHoverButton className="text-sm flex items-center gap-2">
+            进入后台
+          </InteractiveHoverButton>
+        </Link>
+      );
+    }
+
+    return (
+      <Link href="/login">
+        <InteractiveHoverButton className="text-sm">
+          立即登录
+        </InteractiveHoverButton>
+      </Link>
+    );
+  };
+
+  // 渲染动态描述文本
+  const getDescriptionText = () => {
+    if (!isHydrated) {
+      return "专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全";
+    }
+
+    if (isAuthenticated && user) {
+      return `欢迎回来，${user.username}！您可以继续管理您的图片资源，或访问后台查看统计数据`;
+    }
+
+    return "专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全";
+  };
   return (
     <section className="relative overflow-hidden py-10 md:py-14">
       {/* 背景效果 - 增强版 */}
@@ -146,16 +190,12 @@ export function MinimalHeroSection() {
               startOnView={true}
               as="p"
             >
-              专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全
+              {getDescriptionText()}
             </TypingAnimation>
           </motion.div>
 
           <motion.div variants={itemVariants} className="mt-10">
-            <Link href="/docs">
-              <InteractiveHoverButton className="text-sm">
-                开始使用
-              </InteractiveHoverButton>
-            </Link>
+            {renderCTAButton()}
           </motion.div>
 
           <motion.div

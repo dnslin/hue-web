@@ -1,4 +1,3 @@
-// lib/api/apiService.ts
 import axios, {
   AxiosInstance,
   AxiosRequestConfig,
@@ -19,6 +18,42 @@ export class AuthenticationError extends Error {
   constructor(message: string, public status: number = 401) {
     super(message);
     this.name = "AuthenticationError";
+  }
+}
+
+/**
+ * 处理认证错误的全局函数
+ * 在检测到 401 错误时自动清理认证状态并跳转到登录页
+ */
+function handleAuthenticationError() {
+  try {
+    console.log("🔄 [API] 开始处理认证失效");
+    
+    // 动态导入 auth store 以避免循环依赖
+    import("@/lib/store/auth-store").then(({ useAuthStore }) => {
+      const { clearAuth, isAuthenticated } = useAuthStore.getState();
+      
+      // 如果当前确实是已认证状态，才进行清理和跳转
+      if (isAuthenticated) {
+        console.log("🚪 [API] 清理过期的认证状态");
+        clearAuth();
+        
+        // 保存当前页面路径用于登录后跳转
+        const currentPath = window.location.pathname;
+        const isLoginPage = currentPath === "/login";
+        
+        // 如果当前不在登录页，则跳转到登录页
+        if (!isLoginPage) {
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          console.log("🔄 [API] 重定向到登录页:", loginUrl);
+          window.location.href = loginUrl;
+        }
+      }
+    }).catch((error) => {
+      console.error("❌ [API] 处理认证失效时发生错误:", error);
+    });
+  } catch (error) {
+    console.error("❌ [API] 处理认证失效失败:", error);
   }
 }
 
@@ -70,10 +105,23 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
       // 网络错误（无响应）
       if (!error.response) {
         const networkError: ErrorApiResponse = {
-          code: 500, // 网络错误使用 0
+          code: 500, // 网络错误使用 500
           message: "Network Error 网络连接失败，请检查网络后重试",
         };
         return Promise.reject(networkError);
+      }
+
+      // 特殊处理 401 认证错误
+      if (error.response.status === 401) {
+        console.warn("⚠️ [API] 检测到 401 认证错误，开始处理认证失效");
+        
+        // 在客户端环境下处理认证失效
+        if (typeof window !== "undefined") {
+          // 延迟处理以避免在拦截器中直接操作 store
+          setTimeout(() => {
+            handleAuthenticationError();
+          }, 0);
+        }
       }
 
       // HTTP错误但有响应体
