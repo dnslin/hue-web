@@ -16,7 +16,6 @@ import { StorageStrategy } from "@/lib/types/storage-strategy"
 import { StorageStrategyCreateDialog } from "@/components/admin/storage-strategies/storage-strategy-create-dialog"
 import { StorageStrategyEditDialog } from "@/components/admin/storage-strategies/storage-strategy-edit-dialog"
 import { StorageStrategyDeleteDialog } from "@/components/admin/storage-strategies/storage-strategy-delete-dialog"
-import { StorageStrategyTestDialog } from "@/components/admin/storage-strategies/storage-strategy-test-dialog"
 
 export default function StorageStrategiesPage() {
   const {
@@ -47,7 +46,6 @@ export default function StorageStrategiesPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [editingStrategy, setEditingStrategy] = useState<StorageStrategy | null>(null)
   const [deletingStrategy, setDeletingStrategy] = useState<StorageStrategy | null>(null)
-  const [testingStrategy, setTestingStrategy] = useState<StorageStrategy | null>(null)
 
   // 页面加载时获取数据
   useEffect(() => {
@@ -411,15 +409,6 @@ export default function StorageStrategiesPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          {strategy.type === "s3" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setTestingStrategy(strategy)}
-                            >
-                              测试连接
-                            </Button>
-                          )}
                           <Button
                             size="sm"
                             variant="outline"
@@ -525,14 +514,6 @@ export default function StorageStrategiesPage() {
           open={!!deletingStrategy}
           onOpenChange={(open) => !open && setDeletingStrategy(null)}
           onConfirm={() => handleDelete(deletingStrategy)}
-        />
-      )}
-
-      {testingStrategy && (
-        <StorageStrategyTestDialog
-          strategy={testingStrategy}
-          open={!!testingStrategy}
-          onOpenChange={(open) => !open && setTestingStrategy(null)}
         />
       )}
     </PageContainer>
