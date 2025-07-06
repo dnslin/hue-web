@@ -23,6 +23,7 @@ export default function StorageStrategiesPage() {
     strategies,
     stats,
     isLoadingStrategies,
+    isLoadingStats,
     isSubmitting,
     error,
     pagination,
@@ -50,8 +51,11 @@ export default function StorageStrategiesPage() {
 
   // 页面加载时获取数据
   useEffect(() => {
-    fetchStrategies()
-    fetchStats()
+    const loadData = async () => {
+      await fetchStrategies()
+      await fetchStats()
+    }
+    loadData()
   }, [fetchStrategies, fetchStats])
 
   // 处理搜索和筛选
@@ -165,7 +169,20 @@ export default function StorageStrategiesPage() {
       description="管理图片存储配置，支持本地存储和S3兼容存储"
     >
       {/* 统计卡片 */}
-      {stats && (
+      {isLoadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-16" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-12" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -208,7 +225,7 @@ export default function StorageStrategiesPage() {
             </CardContent>
           </Card>
         </div>
-      )}
+      ) : null}
 
       {/* 操作栏 */}
       <Card>

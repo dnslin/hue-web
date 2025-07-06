@@ -359,6 +359,8 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           const results = await Promise.all(promises)
           const successCount = results.filter(result => result !== null).length
           if (successCount > 0) {
+            // 刷新统计信息
+            await get().fetchStats()
             set({ isSubmitting: false })
             return true
           } else {
@@ -405,6 +407,8 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           const results = await Promise.all(promises)
           const successCount = results.filter(result => result !== null).length
           if (successCount > 0) {
+            // 刷新统计信息
+            await get().fetchStats()
             set({ isSubmitting: false })
             return true
           } else {
@@ -469,7 +473,12 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           }),
         }
         
-        return get().updateStrategy(id, updateData)
+        const result = await get().updateStrategy(id, updateData)
+        if (result) {
+          // 刷新统计信息
+          await get().fetchStats()
+        }
+        return result
       },
 
       testS3Connection: async (config) => {
@@ -523,14 +532,44 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
       fetchStats: async () => {
         set({ isLoadingStats: true, error: null })
         try {
-          // 从当前策略列表计算统计信息
-          const { strategies } = get()
-          const stats: StorageStrategyStats = {
-            totalStrategies: strategies.length,
-            enabledStrategies: strategies.filter(s => s.isEnabled).length,
-            s3Strategies: strategies.filter(s => s.type === 's3').length,
-            localStrategies: strategies.filter(s => s.type === 'local').length,
+          // 确保策略列表已加载
+          const { isLoadingStrategies } = get()
+          
+          // 如果策略正在加载，等待加载完成
+          if (isLoadingStrategies) {
+            console.log("📊 统计信息计算等待策略加载完成...")
+            // 等待策略加载完成
+            await new Promise((resolve) => {
+              const checkInterval = setInterval(() => {
+                const { isLoadingStrategies: currentLoading } = get()
+                if (!currentLoading) {
+                  clearInterval(checkInterval)
+                  resolve(void 0)
+                }
+              }, 100)
+            })
           }
+          
+          // 获取最新的策略列表
+          const { strategies: currentStrategies } = get()
+          
+          // 如果策略列表为空，先尝试获取策略
+          if (currentStrategies.length === 0) {
+            console.log("📊 策略列表为空，先获取策略数据...")
+            await get().fetchStrategies()
+          }
+          
+          // 重新获取最新的策略列表进行计算
+          const { strategies: finalStrategies } = get()
+          
+          const stats: StorageStrategyStats = {
+            totalStrategies: finalStrategies.length,
+            enabledStrategies: finalStrategies.filter(s => s.isEnabled).length,
+            s3Strategies: finalStrategies.filter(s => s.type === 's3').length,
+            localStrategies: finalStrategies.filter(s => s.type === 'local').length,
+          }
+          
+          console.log("📊 统计信息计算完成:", stats)
           set({ 
             stats,
             isLoadingStats: false,
