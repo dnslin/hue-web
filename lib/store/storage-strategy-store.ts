@@ -329,10 +329,33 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
       batchEnableStrategies: async (ids) => {
         set({ isSubmitting: true, error: null })
         try {
-          // 批量启用操作，可以通过更新单个策略实现
-          const promises = ids.map(id => 
-            get().updateStrategy(id, { isEnabled: true })
-          )
+          // 批量启用操作，传递完整的策略数据
+          const strategies = get().strategies.filter(s => ids.includes(s.id))
+          const promises = strategies.map(strategy => {
+            const updateData = {
+              name: strategy.name,
+              type: strategy.type,
+              isEnabled: true,
+              // 根据策略类型包含对应的配置
+              ...(strategy.type === 's3' && {
+                s3Config: {
+                  accessKeyId: strategy.s3AccessKeyId || '',
+                  secretAccessKey: strategy.s3SecretAccessKey || '',
+                  bucket: strategy.s3Bucket || '',
+                  region: strategy.s3Region || '',
+                  endpoint: strategy.s3Endpoint || '',
+                  baseUrl: strategy.s3BaseUrl || '',
+                  forcePathStyle: strategy.s3ForcePathStyle || false,
+                }
+              }),
+              ...(strategy.type === 'local' && {
+                localConfig: {
+                  basePath: strategy.localBasePath || '',
+                }
+              }),
+            }
+            return get().updateStrategy(strategy.id, updateData)
+          })
           const results = await Promise.all(promises)
           const successCount = results.filter(result => result !== null).length
           if (successCount > 0) {
@@ -353,9 +376,32 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
       batchDisableStrategies: async (ids) => {
         set({ isSubmitting: true, error: null })
         try {
-          const promises = ids.map(id => 
-            get().updateStrategy(id, { isEnabled: false })
-          )
+          const strategies = get().strategies.filter(s => ids.includes(s.id))
+          const promises = strategies.map(strategy => {
+            const updateData = {
+              name: strategy.name,
+              type: strategy.type,
+              isEnabled: false,
+              // 根据策略类型包含对应的配置
+              ...(strategy.type === 's3' && {
+                s3Config: {
+                  accessKeyId: strategy.s3AccessKeyId || '',
+                  secretAccessKey: strategy.s3SecretAccessKey || '',
+                  bucket: strategy.s3Bucket || '',
+                  region: strategy.s3Region || '',
+                  endpoint: strategy.s3Endpoint || '',
+                  baseUrl: strategy.s3BaseUrl || '',
+                  forcePathStyle: strategy.s3ForcePathStyle || false,
+                }
+              }),
+              ...(strategy.type === 'local' && {
+                localConfig: {
+                  basePath: strategy.localBasePath || '',
+                }
+              }),
+            }
+            return get().updateStrategy(strategy.id, updateData)
+          })
           const results = await Promise.all(promises)
           const successCount = results.filter(result => result !== null).length
           if (successCount > 0) {
@@ -399,7 +445,31 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
         const strategy = get().strategies.find(s => s.id === id)
         if (!strategy) return null
         
-        return get().updateStrategy(id, { isEnabled: !strategy.isEnabled })
+        // 构建完整的更新数据，包含所有必需字段
+        const updateData = {
+          name: strategy.name,
+          type: strategy.type,
+          isEnabled: !strategy.isEnabled,
+          // 根据策略类型包含对应的配置
+          ...(strategy.type === 's3' && {
+            s3Config: {
+              accessKeyId: strategy.s3AccessKeyId || '',
+              secretAccessKey: strategy.s3SecretAccessKey || '',
+              bucket: strategy.s3Bucket || '',
+              region: strategy.s3Region || '',
+              endpoint: strategy.s3Endpoint || '',
+              baseUrl: strategy.s3BaseUrl || '',
+              forcePathStyle: strategy.s3ForcePathStyle || false,
+            }
+          }),
+          ...(strategy.type === 'local' && {
+            localConfig: {
+              basePath: strategy.localBasePath || '',
+            }
+          }),
+        }
+        
+        return get().updateStrategy(id, updateData)
       },
 
       testS3Connection: async (config) => {
