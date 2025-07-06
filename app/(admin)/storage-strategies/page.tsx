@@ -1,0 +1,519 @@
+"use client"
+
+import React, { useEffect, useState } from "react"
+import { Plus, Search, Filter, Trash2, Power, PowerOff } from "lucide-react"
+import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store"
+import PageContainer from "@/components/layouts/page-container"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { showToast } from "@/lib/utils/toast"
+import { StorageStrategy } from "@/lib/types/storage-strategy"
+import { StorageStrategyCreateDialog } from "@/components/admin/storage-strategies/storage-strategy-create-dialog"
+import { StorageStrategyEditDialog } from "@/components/admin/storage-strategies/storage-strategy-edit-dialog"
+import { StorageStrategyDeleteDialog } from "@/components/admin/storage-strategies/storage-strategy-delete-dialog"
+import { StorageStrategyTestDialog } from "@/components/admin/storage-strategies/storage-strategy-test-dialog"
+
+export default function StorageStrategiesPage() {
+  const {
+    strategies,
+    stats,
+    isLoadingStrategies,
+    isSubmitting,
+    error,
+    pagination,
+    queryParams,
+    fetchStrategies,
+    fetchStats,
+    deleteStrategy,
+    toggleStrategyEnabled,
+    batchDeleteStrategies,
+    batchEnableStrategies,
+    batchDisableStrategies,
+    setQueryParams,
+    clearError,
+  } = useStorageStrategyStore()
+
+  // 本地状态
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedType, setSelectedType] = useState<string>("all")
+  const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  const [selectedStrategies, setSelectedStrategies] = useState<number[]>([])
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [editingStrategy, setEditingStrategy] = useState<StorageStrategy | null>(null)
+  const [deletingStrategy, setDeletingStrategy] = useState<StorageStrategy | null>(null)
+  const [testingStrategy, setTestingStrategy] = useState<StorageStrategy | null>(null)
+
+  // 页面加载时获取数据
+  useEffect(() => {
+    fetchStrategies()
+    fetchStats()
+  }, [fetchStrategies, fetchStats])
+
+  // 处理搜索和筛选
+  const handleSearch = () => {
+    const params = {
+      ...queryParams,
+      page: 1,
+      name: searchTerm || undefined,
+      type: selectedType && selectedType !== "all" ? selectedType as "s3" | "local" : undefined,
+      isEnabled: selectedStatus && selectedStatus !== "all" ? selectedStatus === "enabled" : undefined,
+    }
+    setQueryParams(params)
+    fetchStrategies(params)
+  }
+
+  // 重置筛选
+  const handleResetFilters = () => {
+    setSearchTerm("")
+    setSelectedType("all")
+    setSelectedStatus("all")
+    const params = { page: 1, pageSize: 10 }
+    setQueryParams(params)
+    fetchStrategies(params)
+  }
+
+  // 处理分页
+  const handlePageChange = (page: number) => {
+    const params = { ...queryParams, page }
+    setQueryParams(params)
+    fetchStrategies(params)
+  }
+
+  // 处理选中状态
+  const handleSelectStrategy = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedStrategies(prev => [...prev, id])
+    } else {
+      setSelectedStrategies(prev => prev.filter(item => item !== id))
+    }
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedStrategies(strategies.map(s => s.id))
+    } else {
+      setSelectedStrategies([])
+    }
+  }
+
+  // 批量操作
+  const handleBatchDelete = async () => {
+    if (selectedStrategies.length === 0) return
+    
+    const success = await batchDeleteStrategies(selectedStrategies)
+    if (success) {
+      setSelectedStrategies([])
+      showToast.success("批量删除成功", `已删除 ${selectedStrategies.length} 个存储策略`)
+    }
+  }
+
+  const handleBatchEnable = async () => {
+    if (selectedStrategies.length === 0) return
+    
+    const success = await batchEnableStrategies(selectedStrategies)
+    if (success) {
+      setSelectedStrategies([])
+    }
+  }
+
+  const handleBatchDisable = async () => {
+    if (selectedStrategies.length === 0) return
+    
+    const success = await batchDisableStrategies(selectedStrategies)
+    if (success) {
+      setSelectedStrategies([])
+    }
+  }
+
+  // 单个操作
+  const handleToggleEnabled = async (strategy: StorageStrategy) => {
+    await toggleStrategyEnabled(strategy.id)
+    showToast.success(
+      strategy.isEnabled ? "存储策略已禁用" : "存储策略已启用",
+      `${strategy.name} 状态已更新`
+    )
+  }
+
+  const handleDelete = async (strategy: StorageStrategy) => {
+    const success = await deleteStrategy(strategy.id)
+    if (success) {
+      setDeletingStrategy(null)
+      showToast.success("删除成功", `存储策略 "${strategy.name}" 已删除`)
+    }
+  }
+
+  // 清理错误
+  useEffect(() => {
+    if (error) {
+      showToast.error("操作失败", error)
+      clearError()
+    }
+  }, [error, clearError])
+
+  return (
+    <PageContainer
+      title="存储策略"
+      description="管理图片存储配置，支持本地存储和S3兼容存储"
+    >
+      {/* 统计卡片 */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                总策略数
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalStrategies}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                已启用
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.enabledStrategies}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                S3 存储
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{stats.s3Strategies}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                本地存储
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats.localStrategies}</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* 操作栏 */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle>存储策略管理</CardTitle>
+              <CardDescription>
+                创建和管理存储策略，配置图片存储位置
+              </CardDescription>
+            </div>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              新建策略
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* 搜索和筛选 */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="搜索策略名称..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="存储类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部类型</SelectItem>
+                  <SelectItem value="s3">S3 存储</SelectItem>
+                  <SelectItem value="local">本地存储</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-full sm:w-[120px]">
+                  <SelectValue placeholder="状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部状态</SelectItem>
+                  <SelectItem value="enabled">已启用</SelectItem>
+                  <SelectItem value="disabled">已禁用</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleSearch} variant="default">
+                <Filter className="mr-2 h-4 w-4" />
+                筛选
+              </Button>
+              <Button onClick={handleResetFilters} variant="outline">
+                重置
+              </Button>
+            </div>
+          </div>
+
+          {/* 批量操作 */}
+          {selectedStrategies.length > 0 && (
+            <div
+              className="flex items-center gap-2 p-3 bg-muted rounded-lg mb-4"
+            >
+              <span className="text-sm text-muted-foreground">
+                已选择 {selectedStrategies.length} 个策略
+              </span>
+              <div className="flex gap-2 ml-auto">
+                <Button size="sm" onClick={handleBatchEnable} variant="outline">
+                  <Power className="mr-1 h-3 w-3" />
+                  启用
+                </Button>
+                <Button size="sm" onClick={handleBatchDisable} variant="outline">
+                  <PowerOff className="mr-1 h-3 w-3" />
+                  禁用
+                </Button>
+                <Button size="sm" onClick={handleBatchDelete} variant="destructive">
+                  <Trash2 className="mr-1 h-3 w-3" />
+                  删除
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 策略列表 */}
+          {isLoadingStrategies ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="h-4 w-4" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-[200px]" />
+                          <Skeleton className="h-3 w-[300px]" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-16" />
+                        <Skeleton className="h-8 w-16" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : strategies.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground">暂无存储策略</p>
+                <Button 
+                  className="mt-4" 
+                  onClick={() => setShowCreateDialog(true)}
+                >
+                  创建第一个存储策略
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {/* 全选 */}
+              <div className="flex items-center space-x-2 px-4 py-2 border rounded-lg bg-muted/30">
+                <Checkbox
+                  checked={
+                    strategies.length > 0 && 
+                    selectedStrategies.length === strategies.length
+                  }
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm text-muted-foreground">
+                  全选 ({strategies.length} 个策略)
+                </span>
+              </div>
+
+              {/* 策略卡片 */}
+              {strategies.map((strategy) => (
+                <div
+                  key={strategy.id}
+                >
+                  <Card className={`transition-all duration-200 hover:shadow-md ${
+                    selectedStrategies.includes(strategy.id) 
+                      ? "ring-2 ring-primary/20 bg-primary/5" 
+                      : ""
+                  }`}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Checkbox
+                            checked={selectedStrategies.includes(strategy.id)}
+                            onCheckedChange={(checked) => 
+                              handleSelectStrategy(strategy.id, checked as boolean)
+                            }
+                          />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                              <h3 className="font-medium">{strategy.name}</h3>
+                              <Badge 
+                                variant={strategy.type === "s3" ? "default" : "secondary"}
+                              >
+                                {strategy.type === "s3" ? "S3 存储" : "本地存储"}
+                              </Badge>
+                              <Badge 
+                                variant={strategy.isEnabled ? "default" : "secondary"}
+                                className={strategy.isEnabled ? "bg-green-500" : "bg-gray-500"}
+                              >
+                                {strategy.isEnabled ? "已启用" : "已禁用"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {strategy.type === "s3" 
+                                ? `端点: ${strategy.s3Endpoint}` 
+                                : `路径: ${strategy.localBasePath}`
+                              }
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              创建时间: {new Date(strategy.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {strategy.type === "s3" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setTestingStrategy(strategy)}
+                            >
+                              测试连接
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleToggleEnabled(strategy)}
+                            disabled={isSubmitting}
+                          >
+                            {strategy.isEnabled ? (
+                              <>
+                                <PowerOff className="mr-1 h-3 w-3" />
+                                禁用
+                              </>
+                            ) : (
+                              <>
+                                <Power className="mr-1 h-3 w-3" />
+                                启用
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingStrategy(strategy)}
+                          >
+                            编辑
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeletingStrategy(strategy)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 分页 */}
+          {!isLoadingStrategies && strategies.length > 0 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                显示第 {(pagination.page - 1) * pagination.pageSize + 1} - {" "}
+                {Math.min(pagination.page * pagination.pageSize, pagination.total)} 条，
+                共 {pagination.total} 条
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.page <= 1}
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                >
+                  上一页
+                </Button>
+                <span className="text-sm">
+                  第 {pagination.page} 页，共 {Math.ceil(pagination.total / pagination.pageSize)} 页
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.page >= Math.ceil(pagination.total / pagination.pageSize)}
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 对话框 */}
+      <StorageStrategyCreateDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={() => {
+          setShowCreateDialog(false)
+          fetchStrategies()
+          fetchStats()
+        }}
+      />
+
+      {editingStrategy && (
+        <StorageStrategyEditDialog
+          strategy={editingStrategy}
+          open={!!editingStrategy}
+          onOpenChange={(open) => !open && setEditingStrategy(null)}
+          onSuccess={() => {
+            setEditingStrategy(null)
+            fetchStrategies()
+            fetchStats()
+          }}
+        />
+      )}
+
+      {deletingStrategy && (
+        <StorageStrategyDeleteDialog
+          strategy={deletingStrategy}
+          open={!!deletingStrategy}
+          onOpenChange={(open) => !open && setDeletingStrategy(null)}
+          onConfirm={() => handleDelete(deletingStrategy)}
+        />
+      )}
+
+      {testingStrategy && (
+        <StorageStrategyTestDialog
+          strategy={testingStrategy}
+          open={!!testingStrategy}
+          onOpenChange={(open) => !open && setTestingStrategy(null)}
+        />
+      )}
+    </PageContainer>
+  )
+}
