@@ -266,7 +266,6 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           if (isSuccessApiResponse(response)) {
             const updatedStrategy = response.data as StorageStrategy
             const sanitizedStrategy = sanitizeStrategy(updatedStrategy)
-            showToast.success("存储策略更新成功")
             cacheUtils.clearStorageStrategyCache?.() // 清理缓存
             set((state) => ({
               strategies: state.strategies.map((s) => 
@@ -337,7 +336,6 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           const results = await Promise.all(promises)
           const successCount = results.filter(result => result !== null).length
           if (successCount > 0) {
-            showToast.success(`成功启用 ${successCount} 个存储策略`)
             set({ isSubmitting: false })
             return true
           } else {
@@ -361,7 +359,6 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           const results = await Promise.all(promises)
           const successCount = results.filter(result => result !== null).length
           if (successCount > 0) {
-            showToast.success(`成功禁用 ${successCount} 个存储策略`)
             set({ isSubmitting: false })
             return true
           } else {

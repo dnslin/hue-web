@@ -117,6 +117,7 @@ export default function StorageStrategiesPage() {
     
     const success = await batchEnableStrategies(selectedStrategies)
     if (success) {
+      showToast.success(`成功启用 ${selectedStrategies.length} 个存储策略`)
       setSelectedStrategies([])
     }
   }
@@ -126,17 +127,20 @@ export default function StorageStrategiesPage() {
     
     const success = await batchDisableStrategies(selectedStrategies)
     if (success) {
+      showToast.success(`成功禁用 ${selectedStrategies.length} 个存储策略`)
       setSelectedStrategies([])
     }
   }
 
   // 单个操作
   const handleToggleEnabled = async (strategy: StorageStrategy) => {
-    await toggleStrategyEnabled(strategy.id)
-    showToast.success(
-      strategy.isEnabled ? "存储策略已禁用" : "存储策略已启用",
-      `${strategy.name} 状态已更新`
-    )
+    const result = await toggleStrategyEnabled(strategy.id)
+    if (result) {
+      showToast.success(
+        strategy.isEnabled ? "存储策略已禁用" : "存储策略已启用",
+        `${strategy.name} 状态已更新`
+      )
+    }
   }
 
   const handleDelete = async (strategy: StorageStrategy) => {

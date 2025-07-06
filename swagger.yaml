@@ -1292,6 +1292,18 @@ paths:
         in: query
         name: page_size
         type: integer
+      - description: 存储名称（模糊搜索）
+        in: query
+        name: name
+        type: string
+      - description: 存储类型（s3/local）
+        in: query
+        name: type
+        type: string
+      - description: 是否启用
+        in: query
+        name: is_enabled
+        type: boolean
       produces:
       - application/json
       responses:
