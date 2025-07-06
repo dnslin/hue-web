@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, Eye, EyeOff, TestTube } from "lucide-react"
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Eye, EyeOff, TestTube } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,29 +20,29 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
-import { showToast } from "@/lib/utils/toast"
-import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store"
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { showToast } from "@/lib/utils/toast";
+import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store";
 import {
   createStorageStrategyFormSchema,
   type CreateStorageStrategyFormData,
-} from "@/lib/schema/admin/storage-strategy"
+} from "@/lib/schema/admin/storage-strategy";
 
 interface StorageStrategyCreateDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export function StorageStrategyCreateDialog({
@@ -50,12 +50,16 @@ export function StorageStrategyCreateDialog({
   onOpenChange,
   onSuccess,
 }: StorageStrategyCreateDialogProps) {
-  const { createStrategy, testS3Connection, isSubmitting, isTesting } = useStorageStrategyStore()
-  const [showS3Password, setShowS3Password] = useState(false)
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
+  const { createStrategy, testS3Connection, isSubmitting, isTesting } =
+    useStorageStrategyStore();
+  const [showS3Password, setShowS3Password] = useState(false);
+  const [testResult, setTestResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   const form = useForm<CreateStorageStrategyFormData>({
-    resolver: zodResolver(createStorageStrategyFormSchema),
+    resolver: zodResolver(createStorageStrategyFormSchema) as any,
     defaultValues: {
       name: "",
       type: "local",
@@ -73,9 +77,9 @@ export function StorageStrategyCreateDialog({
         basePath: "/uploads",
       },
     },
-  })
+  });
 
-  const watchedType = form.watch("type")
+  const watchedType = form.watch("type");
 
   const handleSubmit = async (data: CreateStorageStrategyFormData) => {
     try {
@@ -85,23 +89,23 @@ export function StorageStrategyCreateDialog({
         isEnabled: data.isEnabled,
         ...(data.type === "s3" && { s3Config: data.s3Config }),
         ...(data.type === "local" && { localConfig: data.localConfig }),
-      }
+      };
 
-      const result = await createStrategy(strategyData)
+      const result = await createStrategy(strategyData);
       if (result) {
-        showToast.success("创建成功", `存储策略 "${data.name}" 创建成功`)
-        form.reset()
-        setTestResult(null)
-        onSuccess?.()
+        showToast.success("创建成功", `存储策略 "${data.name}" 创建成功`);
+        form.reset();
+        setTestResult(null);
+        onSuccess?.();
       }
     } catch (err: unknown) {
-      console.error("创建存储策略失败:", err)
+      console.error("创建存储策略失败:", err);
     }
-  }
+  };
 
   const handleTestConnection = async () => {
-    const s3Config = form.getValues("s3Config")
-    if (!s3Config) return
+    const s3Config = form.getValues("s3Config");
+    if (!s3Config) return;
 
     try {
       const result = await testS3Connection({
@@ -112,21 +116,21 @@ export function StorageStrategyCreateDialog({
         endpoint: s3Config.endpoint,
         baseUrl: s3Config.baseUrl,
         forcePathStyle: s3Config.forcePathStyle,
-      })
-      setTestResult(result)
+      });
+      setTestResult(result);
     } catch {
       setTestResult({
         success: false,
         message: "测试连接时发生错误",
-      })
+      });
     }
-  }
+  };
 
   const handleCancel = () => {
-    form.reset()
-    setTestResult(null)
-    onOpenChange(false)
-  }
+    form.reset();
+    setTestResult(null);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -139,11 +143,14 @@ export function StorageStrategyCreateDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             {/* 基础配置 */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">基础配置</h3>
-              
+
               <FormField
                 control={form.control}
                 name="name"
@@ -151,9 +158,9 @@ export function StorageStrategyCreateDialog({
                   <FormItem>
                     <FormLabel>策略名称 *</FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         placeholder="输入策略名称，如：阿里云OSS、本地存储"
-                        {...field} 
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -167,7 +174,10 @@ export function StorageStrategyCreateDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>存储类型 *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="选择存储类型" />
@@ -179,10 +189,9 @@ export function StorageStrategyCreateDialog({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      {field.value === "local" 
-                        ? "将图片存储在服务器本地磁盘" 
-                        : "兼容 AWS S3、阿里云 OSS、腾讯云 COS 等"
-                      }
+                      {field.value === "local"
+                        ? "将图片存储在服务器本地磁盘"
+                        : "兼容 AWS S3、阿里云 OSS、腾讯云 COS 等"}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -217,7 +226,7 @@ export function StorageStrategyCreateDialog({
             {watchedType === "local" && (
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">本地存储配置</h3>
-                
+
                 <FormField
                   control={form.control}
                   name="localConfig.basePath"
@@ -225,10 +234,7 @@ export function StorageStrategyCreateDialog({
                     <FormItem>
                       <FormLabel>存储路径 *</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="/var/www/uploads" 
-                          {...field} 
-                        />
+                        <Input placeholder="/var/www/uploads" {...field} />
                       </FormControl>
                       <FormDescription>
                         服务器上存储文件的绝对路径
@@ -245,11 +251,13 @@ export function StorageStrategyCreateDialog({
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium">S3 存储配置</h3>
                   {testResult && (
-                    <div className={`text-sm px-3 py-1 rounded-full ${
-                      testResult.success 
-                        ? "bg-green-100 text-green-700" 
-                        : "bg-red-100 text-red-700"
-                    }`}>
+                    <div
+                      className={`text-sm px-3 py-1 rounded-full ${
+                        testResult.success
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {testResult.message}
                     </div>
                   )}
@@ -263,10 +271,7 @@ export function StorageStrategyCreateDialog({
                       <FormItem>
                         <FormLabel>Access Key ID *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="AKIA..." 
-                            {...field} 
-                          />
+                          <Input placeholder="AKIA..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -281,10 +286,10 @@ export function StorageStrategyCreateDialog({
                         <FormLabel>Secret Access Key *</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input 
+                            <Input
                               type={showS3Password ? "text" : "password"}
-                              placeholder="••••••••••••••••" 
-                              {...field} 
+                              placeholder="••••••••••••••••"
+                              {...field}
                             />
                             <Button
                               type="button"
@@ -315,10 +320,7 @@ export function StorageStrategyCreateDialog({
                       <FormItem>
                         <FormLabel>存储桶名称 *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="my-bucket" 
-                            {...field} 
-                          />
+                          <Input placeholder="my-bucket" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -332,10 +334,7 @@ export function StorageStrategyCreateDialog({
                       <FormItem>
                         <FormLabel>区域 *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="us-west-2" 
-                            {...field} 
-                          />
+                          <Input placeholder="us-west-2" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -350,14 +349,16 @@ export function StorageStrategyCreateDialog({
                     <FormItem>
                       <FormLabel>终端节点 *</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="https://s3.amazonaws.com" 
-                          {...field} 
+                        <Input
+                          placeholder="https://s3.amazonaws.com"
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        AWS S3: https://s3.amazonaws.com<br />
-                        阿里云 OSS: https://oss-cn-hangzhou.aliyuncs.com<br />
+                        AWS S3: https://s3.amazonaws.com
+                        <br />
+                        阿里云 OSS: https://oss-cn-hangzhou.aliyuncs.com
+                        <br />
                         腾讯云 COS: https://cos.ap-guangzhou.myqcloud.com
                       </FormDescription>
                       <FormMessage />
@@ -372,9 +373,9 @@ export function StorageStrategyCreateDialog({
                     <FormItem>
                       <FormLabel>自定义域名</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           placeholder="https://cdn.example.com"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -391,7 +392,9 @@ export function StorageStrategyCreateDialog({
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">强制路径样式</FormLabel>
+                        <FormLabel className="text-base">
+                          强制路径样式
+                        </FormLabel>
                         <FormDescription>
                           启用后使用路径样式访问（适用于 MinIO 等）
                         </FormDescription>
@@ -446,5 +449,5 @@ export function StorageStrategyCreateDialog({
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
