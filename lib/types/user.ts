@@ -52,6 +52,7 @@ export interface Role {
   name: string;
   alias?: string;
   permissions: Permission[];
+  storageStrategyIds?: number[]; // 关联的存储策略ID列表
   createdAt: string;
   updatedAt: string;
 }
@@ -210,6 +211,7 @@ export type BatchUserActionResponse =
 export interface CreateRoleRequest {
   name: string;
   alias?: string;
+  storageStrategyIds?: number[]; // 关联的存储策略ID列表
 }
 
 /**
@@ -218,6 +220,7 @@ export interface CreateRoleRequest {
 export interface UpdateRoleRequest {
   name?: string;
   alias?: string;
+  storageStrategyIds?: number[]; // 关联的存储策略ID列表
 }
 
 /**

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Role, Permission, CreateRoleRequest } from "@/lib/types/roles";
+import { Role, Permission, CreateRoleRequest, UpdateRoleRequest } from "@/lib/types/roles";
 import type {
   SuccessApiResponse,
   ErrorApiResponse,
@@ -52,7 +52,7 @@ interface RoleStoreState {
   fetchRoles: (page?: number, pageSize?: number) => Promise<void>;
   fetchRoleById: (id: number) => Promise<Role | null>;
   createRole: (roleData: CreateRoleRequest) => Promise<Role | null>;
-  updateRole: (id: number, name: string) => Promise<Role | null>;
+  updateRole: (id: number, roleData: UpdateRoleRequest) => Promise<Role | null>;
   deleteRole: (id: number) => Promise<boolean>;
   duplicateRole: (
     roleId: number,
@@ -279,10 +279,10 @@ export const useRoleStore = create<RoleStoreState>()(
         }
       },
 
-      updateRole: async (id: number, name: string) => {
+      updateRole: async (id: number, roleData: UpdateRoleRequest) => {
         set({ isSubmitting: true, error: null });
         try {
-          const response = await updateRoleAction(id, { name });
+          const response = await updateRoleAction(id, roleData);
           if (isSuccessApiResponse(response)) {
             const updatedRole = response.data as Role;
             const sanitizedRole = sanitizeRole(updatedRole);

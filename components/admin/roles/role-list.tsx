@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Shield, Edit, Trash2, Copy, MoreHorizontal } from "lucide-react";
+import { Plus, Shield, Edit, Trash2, Copy, MoreHorizontal, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/popover";
 import { RolePermissions } from "./role-permissions";
 import { RoleCreateDialog } from "./role-create-dialog";
+import { RoleEditDialog } from "./role-edit-dialog";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
 import { formatDateOnly } from "@/lib/utils/date-formatter";
@@ -199,6 +200,17 @@ export function RoleList({ onRoleSelect, selectedRoleId }: RoleListProps) {
                     </PopoverTrigger>
                     <PopoverContent className="w-48" align="end">
                       <div className="space-y-1">
+                        <RoleEditDialog role={role}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start gap-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Settings className="h-4 w-4" />
+                            编辑角色
+                          </Button>
+                        </RoleEditDialog>
                         <Button
                           variant="ghost"
                           size="sm"

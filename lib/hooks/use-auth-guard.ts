@@ -121,6 +121,7 @@ export const isProtectedRoute = (pathname: string): boolean => {
     "/users",
     "/settings",
     "/profile",
+    "/storage-strategies",
   ];
 
   return protectedPatterns.some((pattern) => pathname.startsWith(pattern));
@@ -135,3 +136,4 @@ export const isPublicOnlyRoute = (pathname: string): boolean => {
 
   return publicOnlyPatterns.some((pattern) => pathname.startsWith(pattern));
 };
+

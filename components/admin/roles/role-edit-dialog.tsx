@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,30 +32,52 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { useRoleStore } from "@/lib/store/role-store";
 import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store";
-import { createRoleFormSchema, type CreateRoleFormData } from "@/lib/schema/admin/role";
+import { updateRoleFormSchema, type UpdateRoleFormData } from "@/lib/schema/admin/role";
+import type { Role } from "@/lib/types/user";
 import type { StorageStrategy } from "@/lib/types/storage-strategy";
 
-interface RoleCreateDialogProps {
+interface RoleEditDialogProps {
+  role: Role;
   children?: React.ReactNode;
 }
 
-export function RoleCreateDialog({ children }: RoleCreateDialogProps) {
+export function RoleEditDialog({ role, children }: RoleEditDialogProps) {
   const [open, setOpen] = useState(false);
-  const { createRole, isSubmitting } = useRoleStore();
+  const { updateRole, isSubmitting } = useRoleStore();
   const { strategies, fetchStrategies } = useStorageStrategyStore();
   const [selectedStrategies, setSelectedStrategies] = useState<StorageStrategy[]>([]);
 
-  const form = useForm<CreateRoleFormData>({
-    resolver: zodResolver(createRoleFormSchema),
+  const form = useForm<UpdateRoleFormData>({
+    resolver: zodResolver(updateRoleFormSchema),
     defaultValues: {
       name: "",
       alias: "",
       storageStrategyIds: [],
     },
   });
+
+  // 当对话框打开或角色变化时，更新表单数据
+  useEffect(() => {
+    if (open && role) {
+      form.reset({
+        name: role.name,
+        alias: role.alias || "",
+        storageStrategyIds: role.storageStrategyIds || [],
+      });
+
+      // 根据角色的存储策略ID设置已选中的策略
+      if (role.storageStrategyIds && strategies.length > 0) {
+        const roleStrategies = strategies.filter(s => 
+          role.storageStrategyIds?.includes(s.id)
+        );
+        setSelectedStrategies(roleStrategies);
+      } else {
+        setSelectedStrategies([]);
+      }
+    }
+  }, [open, role, form, strategies]);
 
   // 加载存储策略列表
   useEffect(() => {
@@ -64,36 +86,35 @@ export function RoleCreateDialog({ children }: RoleCreateDialogProps) {
     }
   }, [open, fetchStrategies]);
 
-  const onSubmit = useCallback(async (data: CreateRoleFormData) => {
+  const onSubmit = useCallback(async (data: UpdateRoleFormData) => {
     try {
       // 转换数据格式，去除空的 alias
-      const createData: { name: string; alias?: string; storageStrategyIds?: number[] } = {
+      const updateData: { name?: string; alias?: string; storageStrategyIds?: number[] } = {
         name: data.name,
         storageStrategyIds: data.storageStrategyIds,
       };
 
       // 只有当 alias 有值且不为空时才添加到请求中
       if (data.alias && data.alias.trim()) {
-        createData.alias = data.alias.trim();
+        updateData.alias = data.alias.trim();
+      } else {
+        updateData.alias = undefined; // 清空别名
       }
 
-      const result = await createRole(createData);
+      const result = await updateRole(role.id, updateData);
       if (result) {
-        // 成功创建后重置表单并关闭对话框
-        form.reset();
-        setSelectedStrategies([]);
+        // 成功更新后关闭对话框
         setOpen(false);
       }
     } catch (error) {
-      console.error("创建角色失败:", error);
+      console.error("更新角色失败:", error);
     }
-  }, [createRole, form]);
+  }, [updateRole, role.id]);
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
-      // 关闭时重置表单
-      form.reset();
+      // 关闭时重置选择状态
       setSelectedStrategies([]);
     }
   };
@@ -143,17 +164,16 @@ export function RoleCreateDialog({ children }: RoleCreateDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children || (
-          <ShimmerButton className="gap-2 h-9 px-4 rounded-md">
-            <Plus className="h-4 w-4" />
-            添加角色
-          </ShimmerButton>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Pencil className="h-4 w-4" />
+          </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-w-[95vw] mx-auto">
+      <DialogContent className="sm:max-w-lg max-w-[95vw] mx-auto">
         <DialogHeader>
-          <DialogTitle>创建新角色</DialogTitle>
+          <DialogTitle>编辑角色</DialogTitle>
           <DialogDescription>
-            填写角色信息来创建一个新的系统角色。角色名称将用作系统标识，别名用于界面显示。
+            修改角色 &quot;{role.alias || role.name}&quot; 的基本信息和存储策略关联。
           </DialogDescription>
         </DialogHeader>
 
@@ -290,10 +310,10 @@ export function RoleCreateDialog({ children }: RoleCreateDialogProps) {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    创建中...
+                    更新中...
                   </>
                 ) : (
-                  "创建角色"
+                  "保存更改"
                 )}
               </Button>
             </DialogFooter>

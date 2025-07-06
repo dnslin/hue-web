@@ -53,6 +53,7 @@ export interface RoleResponse {
   name: string;
   alias?: string;
   permissions: PermissionResponse[];
+  storageStrategyIds?: number[]; // 关联的存储策略ID列表
   createdAt: string;
   updatedAt: string;
 }
