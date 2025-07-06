@@ -1,14 +1,31 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import { isAdminRoute } from "@/lib/utils/layout-utils";
 import { MainLayout } from "./main-layout";
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
 }
+
+// 动态导入 Framer Motion 组件，避免 SSR 问题
+const MotionDiv = dynamic(
+  () => import("framer-motion").then((mod) => mod.motion.div),
+  {
+    ssr: false,
+    loading: () => <div className="h-screen overflow-hidden" />,
+  }
+);
+
+const AnimatePresence = dynamic(
+  () => import("framer-motion").then((mod) => mod.AnimatePresence),
+  {
+    ssr: false,
+    loading: () => <></>,
+  }
+);
 
 /**
  * 条件性布局组件
@@ -17,8 +34,26 @@ interface ConditionalLayoutProps {
  */
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // 直接使用路径检测结果，确保服务端客户端一致性
+  // 确保客户端水合完成
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // 在水合完成前返回一个通用的加载状态
+  if (!isHydrated) {
+    return (
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 客户端水合完成后进行路径检测
   const isAdmin = isAdminRoute(pathname);
 
   // 布局切换动画配置
@@ -39,7 +74,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
     return (
       <Suspense fallback={<AdminLayoutFallback />}>
         <AnimatePresence mode="wait">
-          <motion.div
+          <MotionDiv
             key="admin-layout"
             variants={layoutVariants}
             initial="initial"
@@ -49,7 +84,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
             className="h-screen overflow-hidden"
           >
             {children}
-          </motion.div>
+          </MotionDiv>
         </AnimatePresence>
       </Suspense>
     );
@@ -58,8 +93,8 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   // 前台路由：使用 MainLayout 包装
   return (
     <Suspense fallback={<MainLayoutFallback />}>
-              <AnimatePresence mode="wait">
-        <motion.div
+      <AnimatePresence mode="wait">
+        <MotionDiv
           key="main-layout"
           variants={layoutVariants}
           initial="initial"
@@ -69,7 +104,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
           className="h-screen overflow-hidden"
         >
           <MainLayout>{children}</MainLayout>
-        </motion.div>
+        </MotionDiv>
       </AnimatePresence>
     </Suspense>
   );
