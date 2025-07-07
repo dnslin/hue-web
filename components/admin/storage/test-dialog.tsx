@@ -12,8 +12,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store"
-import { StorageStrategy } from "@/lib/types/storage-strategy"
+import { useStorageStrategyStore } from "@/lib/store/storage-store"
+import { StorageStrategy } from "@/lib/types/storage"
 
 interface StorageStrategyTestDialogProps {
   strategy: StorageStrategy

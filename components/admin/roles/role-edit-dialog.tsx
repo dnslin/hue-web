@@ -33,10 +33,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useRoleStore } from "@/lib/store/role-store";
-import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store";
+import { useStorageStrategyStore } from "@/lib/store/storage-store";
 import { updateRoleFormSchema, type UpdateRoleFormData } from "@/lib/schema/admin/role";
 import type { Role } from "@/lib/types/user";
-import type { StorageStrategy } from "@/lib/types/storage-strategy";
+import type { StorageStrategy } from "@/lib/types/storage";
 
 interface RoleEditDialogProps {
   role: Role;

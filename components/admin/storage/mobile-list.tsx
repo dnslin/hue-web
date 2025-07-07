@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { StorageStrategy } from "@/lib/types/storage-strategy";
-import { StorageStrategyMobileCard } from "./storage-strategy-mobile-card";
+import { StorageStrategy } from "@/lib/types/storage";
+import { StorageStrategyMobileCard } from "./mobile-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";

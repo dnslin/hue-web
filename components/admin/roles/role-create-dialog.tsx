@@ -34,9 +34,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { useRoleStore } from "@/lib/store/role-store";
-import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store";
+import { useStorageStrategyStore } from "@/lib/store/storage-store";
 import { createRoleFormSchema, type CreateRoleFormData } from "@/lib/schema/admin/role";
-import type { StorageStrategy } from "@/lib/types/storage-strategy";
+import type { StorageStrategy } from "@/lib/types/storage";
 
 interface RoleCreateDialogProps {
   children?: React.ReactNode;

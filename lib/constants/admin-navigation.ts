@@ -136,12 +136,12 @@ export const adminNavigation: NavigationGroup[] = [
         href: "/storage",
         icon: Database,
         description: "存储配置和空间管理",
-        defaultHref: "/storage-strategies", // 默认跳转到存储策略
+        defaultHref: "/storage", // 默认跳转到存储策略
         children: [
           {
-            id: "storage-strategies",
+            id: "storage",
             label: "存储策略",
-            href: "/storage-strategies",
+            href: "/storage",
             icon: HardDrive,
           },
           {

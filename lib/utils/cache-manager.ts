@@ -409,10 +409,10 @@ export const CACHE_KEYS = {
   SETTINGS_SECURITY: "settings:security",
 
   // 存储策略相关
-  STORAGE_STRATEGIES_LIST: "storage-strategies:list",
-  STORAGE_STRATEGY_DETAIL: (id: number) => `storage-strategies:detail:${id}`,
-  STORAGE_STRATEGY_STATS: "storage-strategies:stats",
-  STORAGE_STRATEGY_TEST: (config: string) => `storage-strategies:test:${config}`,
+  STORAGE_STRATEGIES_LIST: "storage:list",
+  STORAGE_STRATEGY_DETAIL: (id: number) => `storage:detail:${id}`,
+  STORAGE_STRATEGY_STATS: "storage:stats",
+  STORAGE_STRATEGY_TEST: (config: string) => `storage:test:${config}`,
 } as const;
 
 // 缓存工具函数
@@ -446,14 +446,14 @@ export const cacheUtils = {
    * 清理所有业务缓存
    */
   clearBusinessCache(): void {
-    cacheManager.invalidate("^(users|roles|permissions|dashboard|storage-strategies):");
+    cacheManager.invalidate("^(users|roles|permissions|dashboard|storage):");
   },
 
   /**
    * 清理存储策略相关缓存
    */
   clearStorageStrategyCache(): void {
-    cacheManager.invalidate("^storage-strategies:");
+    cacheManager.invalidate("^storage:");
   },
 
   /**
@@ -464,3 +464,4 @@ export const cacheUtils = {
     return `内存: ${stats.memory}, 会话: ${stats.session}, 本地: ${stats.local}`;
   },
 };
+

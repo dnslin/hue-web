@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, Search, Filter, Trash2, Power, PowerOff } from "lucide-react";
-import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store";
+import { useStorageStrategyStore } from "@/lib/store/storage-store";
 import PageContainer from "@/components/layouts/page-container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +24,12 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { showToast } from "@/lib/utils/toast";
-import { StorageStrategy } from "@/lib/types/storage-strategy";
-import { StorageStrategyCreateDialog } from "@/components/admin/storage-strategies/storage-strategy-create-dialog";
-import { StorageStrategyEditDialog } from "@/components/admin/storage-strategies/storage-strategy-edit-dialog";
-import { StorageStrategyDeleteDialog } from "@/components/admin/storage-strategies/storage-strategy-delete-dialog";
-import { StorageStrategyMobileList } from "@/components/admin/storage-strategies/storage-strategy-mobile-list";
-import { StorageStrategyPagination } from "@/components/admin/storage-strategies/storage-strategy-pagination";
+import { StorageStrategy } from "@/lib/types/storage";
+import { StorageStrategyCreateDialog } from "@/components/admin/storage/create-dialog";
+import { StorageStrategyEditDialog } from "@/components/admin/storage/edit-dialog";
+import { StorageStrategyDeleteDialog } from "@/components/admin/storage/delete-dialog";
+import { StorageStrategyMobileList } from "@/components/admin/storage/mobile-list";
+import { StorageStrategyPagination } from "@/components/admin/storage/pagination";
 
 export default function StorageStrategiesPage() {
   const {

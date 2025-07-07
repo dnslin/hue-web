@@ -45,12 +45,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { showToast } from "@/lib/utils/toast";
-import { useStorageStrategyStore } from "@/lib/store/storage-strategy-store";
-import { StorageStrategy } from "@/lib/types/storage-strategy";
+import { useStorageStrategyStore } from "@/lib/store/storage-store";
+import { StorageStrategy } from "@/lib/types/storage";
 import {
   updateStorageStrategyFormSchema,
   type UpdateStorageStrategyFormData,
-} from "@/lib/schema/admin/storage-strategy";
+} from "@/lib/schema/admin/storage";
 
 interface StorageStrategyEditDialogProps {
   strategy: StorageStrategy;

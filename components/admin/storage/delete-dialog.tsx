@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { StorageStrategy } from "@/lib/types/storage-strategy"
+import { StorageStrategy } from "@/lib/types/storage"
 
 interface StorageStrategyDeleteDialogProps {
   strategy: StorageStrategy

@@ -1,9 +1,9 @@
 // 角色管理
-export { 
-  createRoleFormSchema, 
+export {
+  createRoleFormSchema,
   updateRoleFormSchema,
   type CreateRoleFormData,
-  type UpdateRoleFormData
+  type UpdateRoleFormData,
 } from "./role";
 
 // 用户管理
@@ -32,4 +32,5 @@ export {
   type S3ConfigFormData,
   type LocalConfigFormData,
   type StorageType,
-} from "./storage-strategy";
+} from "./storage";
+

@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { StorageStrategy } from "@/lib/types/storage-strategy";
+import { StorageStrategy } from "@/lib/types/storage";
 
 interface StorageStrategyMobileCardProps {
   strategy: StorageStrategy;

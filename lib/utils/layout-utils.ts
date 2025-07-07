@@ -57,7 +57,7 @@ export function isAdminRoute(pathname: string): boolean {
     "/admin", // 管理后台根路径
     "/users", // 用户管理页面
     "/settings", // 系统设置页面
-    "/storage-strategies", // 存储策略管理页面
+    "/storage", // 存储策略管理页面
   ];
 
   // 管理后台路径前缀
@@ -132,3 +132,4 @@ export function getLayoutTypes(
     return acc;
   }, {} as Record<string, LayoutType>);
 }
+
