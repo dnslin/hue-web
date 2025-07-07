@@ -97,19 +97,19 @@ export async function getSettingsAction(): Promise<
 
     return settingsData;
   } catch (error: any) {
-    console.error("getSettingsAction 错误:", error.message);
+    console.error("getSettingsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取设置失败",
+      msg: error.msg || "获取设置失败",
       error,
     };
   }
@@ -144,30 +144,30 @@ export async function getSettingByTypeAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || `获取${type}设置成功`,
+        msg: apiResponse.msg || `获取${type}设置成功`,
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || `获取${type}设置失败`,
+      msg: apiResponse.msg || `获取${type}设置失败`,
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error(`getSettingByTypeAction(${type}) 错误:`, error.message);
+    console.error(`getSettingByTypeAction(${type}) 错误:`, error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || `获取${type}设置失败`,
+      msg: error.msg || `获取${type}设置失败`,
       error,
     };
   }
@@ -195,30 +195,30 @@ export async function updateBasicSettingsAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "基础设置更新成功",
+        msg: apiResponse.msg || "基础设置更新成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "基础设置更新失败",
+      msg: apiResponse.msg || "基础设置更新失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("updateBasicSettingsAction 错误:", error.message);
+    console.error("updateBasicSettingsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "更新基础设置失败",
+      msg: error.msg || "更新基础设置失败",
       error,
     };
   }
@@ -260,30 +260,30 @@ export async function updateEmailSettingsAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "邮件设置更新成功",
+        msg: apiResponse.msg || "邮件设置更新成功",
         data: transformedData,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "邮件设置更新失败",
+      msg: apiResponse.msg || "邮件设置更新失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("updateEmailSettingsAction 错误:", error.message);
+    console.error("updateEmailSettingsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "更新邮件设置失败",
+      msg: error.msg || "更新邮件设置失败",
       error,
     };
   }
@@ -311,30 +311,30 @@ export async function updateImageSettingsAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "图片设置更新成功",
+        msg: apiResponse.msg || "图片设置更新成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "图片设置更新失败",
+      msg: apiResponse.msg || "图片设置更新失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("updateImageSettingsAction 错误:", error.message);
+    console.error("updateImageSettingsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "更新图片设置失败",
+      msg: error.msg || "更新图片设置失败",
       error,
     };
   }
@@ -362,30 +362,30 @@ export async function updateSecuritySettingsAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "安全设置更新成功",
+        msg: apiResponse.msg || "安全设置更新成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "安全设置更新失败",
+      msg: apiResponse.msg || "安全设置更新失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("updateSecuritySettingsAction 错误:", error.message);
+    console.error("updateSecuritySettingsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "更新安全设置失败",
+      msg: error.msg || "更新安全设置失败",
       error,
     };
   }
@@ -457,7 +457,7 @@ export async function updateMultipleSettingsAction(updates: {
 
         // 检查是否有错误
         if ("error" in result) {
-          errors.push(`${type}设置更新失败: ${result.message}`);
+          errors.push(`${type}设置更新失败: ${result.msg}`);
         }
       } else {
         errors.push(
@@ -476,7 +476,7 @@ export async function updateMultipleSettingsAction(updates: {
     return {
       success: false,
       results,
-      errors: [`批量更新失败: ${error.message || "未知错误"}`],
+      errors: [`批量更新失败: ${error.msg || "未知错误"}`],
     };
   }
 }
@@ -505,31 +505,32 @@ export async function testEmailSettingsAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "邮件配置测试成功",
+        msg: apiResponse.msg || "邮件配置测试成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "邮件配置测试失败",
+      msg: apiResponse.msg || "邮件配置测试失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("testEmailSettingsAction 错误:", error.message);
+    console.error("testEmailSettingsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "邮件配置测试失败",
+      msg: error.msg || "邮件配置测试失败",
       error,
     };
   }
 }
+

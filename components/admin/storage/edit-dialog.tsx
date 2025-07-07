@@ -61,7 +61,7 @@ interface StorageStrategyEditDialogProps {
 
 interface TestResult {
   success: boolean;
-  message: string;
+  msg: string;
 }
 
 // 可折叠配置区域组件
@@ -211,7 +211,7 @@ export function StorageStrategyEditDialog({
     } catch {
       setTestResult({
         success: false,
-        message: "测试连接时发生错误",
+        msg: "测试连接时发生错误",
       });
     }
   };
@@ -347,7 +347,7 @@ export function StorageStrategyEditDialog({
                             : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
                         }`}
                       >
-                        {testResult.message}
+                        {testResult.msg}
                       </div>
                     )}
                   </div>

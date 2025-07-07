@@ -29,7 +29,7 @@ export function StorageStrategyTestDialog({
   const { testS3Connection, isTesting } = useStorageStrategyStore()
   const [testResult, setTestResult] = useState<{
     success: boolean
-    message: string
+    msg: string
     details?: string
   } | null>(null)
 
@@ -50,7 +50,7 @@ export function StorageStrategyTestDialog({
     } catch {
       setTestResult({
         success: false,
-        message: "测试连接时发生错误",
+        msg: "测试连接时发生错误",
         details: "请检查网络连接和配置参数",
       })
     }

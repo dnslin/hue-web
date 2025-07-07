@@ -18,10 +18,7 @@ import type {
   ResendActivationEmailRequest,
   UpdateMeRequest,
 } from "@/lib/types/auth";
-import type {
-  ApiResponse,
-  ErrorApiResponse,
-} from "@/lib/types/common";
+import type { ApiResponse, ErrorApiResponse } from "@/lib/types/common";
 
 const AUTH_COOKIE_NAME = "auth_token";
 const AUTH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 天
@@ -103,7 +100,9 @@ export async function registerAction(
  * 用户登出 Action
  * @returns AuthActionResponse 包含操作成功状态或错误信息
  */
-export async function logoutAction(): Promise<ApiResponse<{ success: boolean }>> {
+export async function logoutAction(): Promise<
+  ApiResponse<{ success: boolean }>
+> {
   try {
     const apiService = await getAuthenticatedApiService();
 
@@ -124,7 +123,7 @@ export async function logoutAction(): Promise<ApiResponse<{ success: boolean }>>
 
     return {
       code: 0,
-      message: "登出成功",
+      msg: "登出成功",
       data: { success: true },
     };
   } catch (error: any) {
@@ -169,7 +168,7 @@ export async function getCurrentUserAction(): Promise<User | null> {
     cookieStore.delete({ name: AUTH_COOKIE_NAME, path: "/" });
     return null;
   } catch (error: any) {
-    console.error("[Auth Action] 获取当前用户错误:", error.message);
+    console.error("[Auth Action] 获取当前用户错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       // Token 无效或过期，清除 cookie
@@ -298,3 +297,4 @@ export async function updateMeAction(
     return error as ErrorApiResponse;
   }
 }
+

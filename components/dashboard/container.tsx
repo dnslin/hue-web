@@ -77,7 +77,7 @@ export const DashboardContainer: React.FC<DashboardContainerProps> = ({
         {/* 错误状态 */}
         {error && !loading && (
           <ErrorState
-            error={error.message}
+            error={error.msg}
             onRetry={refetch}
             loading={loading}
           />

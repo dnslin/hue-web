@@ -38,7 +38,7 @@ export async function getUsersAction(
     });
     return response.data;
   } catch (error: any) {
-    console.error("getUsersAction 错误:", error.message);
+    console.error("getUsersAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -57,7 +57,7 @@ export async function createAdminUserAction(
     );
     return response.data;
   } catch (error: any) {
-    console.error("createAdminUserAction 错误:", error.message);
+    console.error("createAdminUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -77,7 +77,7 @@ export async function updateAdminUserAction(
     );
     return response.data;
   } catch (error: any) {
-    console.error("updateAdminUserAction 错误:", error.message);
+    console.error("updateAdminUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -95,7 +95,7 @@ export async function deleteAdminUserAction(
     );
     return response.data;
   } catch (error: any) {
-    console.error("deleteAdminUserAction 错误:", error.message);
+    console.error("deleteAdminUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -113,7 +113,7 @@ export async function approveUserAction(
     );
     return response.data;
   } catch (error: any) {
-    console.error("approveUserAction 错误:", error.message);
+    console.error("approveUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -129,7 +129,7 @@ export async function banUserAction(id: number): Promise<ApiResponse<User>> {
     );
     return response.data;
   } catch (error: any) {
-    console.error("banUserAction 错误:", error.message);
+    console.error("banUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -150,7 +150,7 @@ export async function rejectUserAction(
     );
     return response.data;
   } catch (error: any) {
-    console.error("rejectUserAction 错误:", error.message);
+    console.error("rejectUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -166,7 +166,7 @@ export async function unbanUserAction(id: number): Promise<ApiResponse<User>> {
     );
     return response.data;
   } catch (error: any) {
-    console.error("unbanUserAction 错误:", error.message);
+    console.error("unbanUserAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -186,7 +186,7 @@ export async function batchApproveUsersAction(
     );
     return response.data;
   } catch (error: any) {
-    console.error("batchApproveUsersAction 错误:", error.message);
+    console.error("batchApproveUsersAction 错误:", error.msg);
     return error as ErrorApiResponse;
   }
 }
@@ -210,30 +210,30 @@ export async function batchBanUsersAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "批量封禁用户成功",
+        msg: apiResponse.msg || "批量封禁用户成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "批量封禁用户失败",
+      msg: apiResponse.msg || "批量封禁用户失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("batchBanUsersAction 错误:", error.message);
+    console.error("batchBanUsersAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "批量封禁用户时发生未知错误",
+      msg: error.msg || "批量封禁用户时发生未知错误",
       error,
     };
   }
@@ -262,30 +262,30 @@ export async function batchRejectUsersAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "批量拒绝用户成功",
+        msg: apiResponse.msg || "批量拒绝用户成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "批量拒绝用户失败",
+      msg: apiResponse.msg || "批量拒绝用户失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("batchRejectUsersAction 错误:", error.message);
+    console.error("batchRejectUsersAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "批量拒绝用户时发生未知错误",
+      msg: error.msg || "批量拒绝用户时发生未知错误",
       error,
     };
   }
@@ -310,30 +310,30 @@ export async function batchUnbanUsersAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "批量解封用户成功",
+        msg: apiResponse.msg || "批量解封用户成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "批量解封用户失败",
+      msg: apiResponse.msg || "批量解封用户失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("batchUnbanUsersAction 错误:", error.message);
+    console.error("batchUnbanUsersAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "批量解封用户时发生未知错误",
+      msg: error.msg || "批量解封用户时发生未知错误",
       error,
     };
   }
@@ -362,23 +362,23 @@ export async function getPendingUsersAction(
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取待审核用户列表失败",
+      msg: apiResponse.msg || "获取待审核用户列表失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getPendingUsersAction 错误:", error.message);
+    console.error("getPendingUsersAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取待审核用户列表时发生未知错误",
+      msg: error.msg || "获取待审核用户列表时发生未知错误",
       error,
     };
   }
@@ -433,19 +433,19 @@ export async function getAllUsersForExportAction(
     }
     return allUsers;
   } catch (error: any) {
-    console.error("getAllUsersForExportAction 错误:", error.message);
+    console.error("getAllUsersForExportAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取导出用户数据时发生未知错误",
+      msg: error.msg || "获取导出用户数据时发生未知错误",
       error,
     };
   }
@@ -477,7 +477,7 @@ export async function resetPasswordUserAction(
       };
     }
   } catch (error: any) {
-    console.error("resetPasswordUserAction 错误:", error.message);
+    console.error("resetPasswordUserAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
@@ -488,7 +488,8 @@ export async function resetPasswordUserAction(
 
     return {
       success: false,
-      error: error.message || "重置密码时发生未知错误",
+      error: error.msg || "重置密码时发生未知错误",
     };
   }
 }
+

@@ -9,7 +9,7 @@ export const showToast = {
   /**
    * 显示成功消息
    */
-  success: (message: string, description?: string) => {
+  success: (msg: string, description?: string) => {
     toast.success(message, {
       description,
       duration: 3000,
@@ -19,7 +19,7 @@ export const showToast = {
   /**
    * 显示错误消息
    */
-  error: (message: string, description?: string) => {
+  error: (msg: string, description?: string) => {
     toast.error(message, {
       description,
       duration: 5000,
@@ -29,7 +29,7 @@ export const showToast = {
   /**
    * 显示警告消息
    */
-  warning: (message: string, description?: string) => {
+  warning: (msg: string, description?: string) => {
     toast.warning(message, {
       description,
       duration: 4000,
@@ -39,7 +39,7 @@ export const showToast = {
   /**
    * 显示信息消息
    */
-  info: (message: string, description?: string) => {
+  info: (msg: string, description?: string) => {
     toast.info(message, {
       description,
       duration: 3000,
@@ -49,7 +49,7 @@ export const showToast = {
   /**
    * 显示加载中消息
    */
-  loading: (message: string) => {
+  loading: (msg: string) => {
     return toast.loading(message);
   },
 
@@ -71,3 +71,4 @@ export const showToast = {
     });
   },
 };
+

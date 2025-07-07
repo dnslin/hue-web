@@ -78,7 +78,7 @@ export const createStorageStrategyFormSchema = z
       return true;
     },
     {
-      message: "请配置对应存储类型的参数",
+      msg: "请配置对应存储类型的参数",
       path: ["config"],
     }
   );
@@ -114,7 +114,7 @@ export const updateStorageStrategyFormSchema = z
       return true;
     },
     {
-      message: "请配置对应存储类型的参数",
+      msg: "请配置对应存储类型的参数",
       path: ["config"],
     }
   );
@@ -181,3 +181,4 @@ export type LocalConfigFormData = z.infer<typeof localConfigSchema>;
  * 存储类型数据类型
  */
 export type StorageType = z.infer<typeof storageTypeSchema>;
+

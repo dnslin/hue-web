@@ -15,8 +15,8 @@ import type { ApiResponse, ErrorApiResponse } from "@/lib/types/common";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export class AuthenticationError extends Error {
-  constructor(message: string, public status: number = 401) {
-    super(message);
+  constructor(msg: string, public status: number = 401) {
+    super(msg);
     this.name = "AuthenticationError";
   }
 }
@@ -110,7 +110,7 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
       if (!error.response) {
         const networkError: ErrorApiResponse = {
           code: 500, // 网络错误使用 500
-          message: "Network Error 网络连接失败，请检查网络后重试",
+          msg: "Network Error 网络连接失败，请检查网络后重试",
         };
         return Promise.reject(networkError);
       }
@@ -140,7 +140,7 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
       // 没有响应体的HTTP错误
       const httpError: ErrorApiResponse = {
         code: error.response.status,
-        message: `HTTP错误: ${error.response.status}`,
+        msg: `HTTP错误: ${error.response.status}`,
       };
       return Promise.reject(httpError);
     }
@@ -167,7 +167,7 @@ export const getAuthenticatedApiService = async () => {
     // 抛出一个 ErrorApiResponse 格式的错误
     const apiError: ErrorApiResponse = {
       code: 500,
-      message: "在服务器端获取认证信息时失败",
+      msg: "在服务器端获取认证信息时失败",
     };
     throw apiError;
   }

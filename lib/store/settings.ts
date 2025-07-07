@@ -313,7 +313,7 @@ export const useSettingsStore = create<SettingsState>()(
             return true;
           }
         } catch (error: any) {
-          const errorMsg = error.message || "批量更新设置时发生未知错误";
+          const errorMsg = error.msg || "批量更新设置时发生未知错误";
           set({ isSubmitting: false, error: errorMsg });
           console.error("❌ 批量更新设置异常:", error);
           return false;

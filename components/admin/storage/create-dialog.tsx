@@ -115,7 +115,7 @@ export function StorageStrategyCreateDialog({
   const [showS3Password, setShowS3Password] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
-    message: string;
+    msg: string;
   } | null>(null);
 
   const form = useForm<CreateStorageStrategyFormData>({
@@ -181,7 +181,7 @@ export function StorageStrategyCreateDialog({
     } catch {
       setTestResult({
         success: false,
-        message: "测试连接时发生错误",
+        msg: "测试连接时发生错误",
       });
     }
   };
@@ -319,7 +319,7 @@ export function StorageStrategyCreateDialog({
                             : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
                         }`}
                       >
-                        {testResult.message}
+                        {testResult.msg}
                       </div>
                     )}
                   </div>

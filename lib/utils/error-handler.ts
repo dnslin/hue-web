@@ -17,7 +17,7 @@ export enum ErrorType {
  */
 export interface StandardError {
   type: ErrorType;
-  message: string;
+  msg: string;
   code?: number;
   originalError?: any;
   shouldRedirect?: boolean;
@@ -37,8 +37,8 @@ export const handleStoreError = (
   operation: string
 ): Promise<{ error: string }> => {
   // 处理 API 错误响应（ErrorApiResponse 格式）
-  if (error?.message) {
-    const errorMessage = `${operation}失败: ${error.message}`;
+  if (error?.msg) {
+    const errorMessage = `${operation}失败: ${error.msg}`;
     showToast.error(errorMessage);
     return Promise.resolve({ error: errorMessage });
   }

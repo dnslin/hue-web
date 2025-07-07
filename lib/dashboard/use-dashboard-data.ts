@@ -156,7 +156,7 @@ export const useDashboardData = (
     } catch (err) {
       const dashboardError: DashboardError = {
         code: "FETCH_ERROR",
-        message: err instanceof Error ? err.message : "获取数据失败",
+        msg: err instanceof Error ? err.message : "获取数据失败",
         details: err,
       };
       setError(dashboardError);
@@ -227,3 +227,4 @@ export const useRecentActivity = () => {
     error,
   };
 };
+

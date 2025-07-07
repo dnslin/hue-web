@@ -21,7 +21,7 @@ export interface ApiResponse<TData = any, TMeta = PaginationMeta> {
   /** 业务状态码，0表示成功，其他为各类错误 */
   code: number;
   /** 简短、清晰的提示信息 */
-  message: string;
+  msg: string;
   /** 成功时返回的业务数据，失败时可为 null */
   data?: TData;
   /** 用于追踪和日志记录的唯一请求ID */
@@ -49,7 +49,7 @@ export type SuccessApiResponse<TData = any> = ApiResponse<TData> & {
 export interface ErrorApiResponse
   extends Omit<ApiResponse<null>, "data" | "meta"> {
   code: number; // 非0的业务错误码
-  message: string;
+  msg: string;
   error?: any; // 更详细的原始错误信息
 }
 
@@ -174,7 +174,7 @@ export interface OperationState extends LoadingState {
  */
 export interface ValidationError {
   field: string;
-  message: string;
+  msg: string;
 }
 
 /**

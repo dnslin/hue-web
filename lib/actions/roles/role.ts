@@ -47,23 +47,23 @@ export async function getRolesAction(params?: {
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取角色列表失败",
+      msg: apiResponse.msg || "获取角色列表失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getRolesAction 错误:", error.message);
+    console.error("getRolesAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取角色列表失败",
+      msg: error.msg || "获取角色列表失败",
       error,
     };
   }
@@ -86,30 +86,30 @@ export async function getRoleByIdAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "获取角色详情成功",
+        msg: apiResponse.msg || "获取角色详情成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取角色详情失败",
+      msg: apiResponse.msg || "获取角色详情失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getRoleByIdAction 错误:", error.message);
+    console.error("getRoleByIdAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取角色详情失败",
+      msg: error.msg || "获取角色详情失败",
       error,
     };
   }
@@ -133,30 +133,30 @@ export async function createRoleAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "角色创建成功",
+        msg: apiResponse.msg || "角色创建成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "角色创建失败",
+      msg: apiResponse.msg || "角色创建失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("createRoleAction 错误:", error.message);
+    console.error("createRoleAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "角色创建失败",
+      msg: error.msg || "角色创建失败",
       error,
     };
   }
@@ -181,30 +181,30 @@ export async function updateRoleAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "角色更新成功",
+        msg: apiResponse.msg || "角色更新成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "角色更新失败",
+      msg: apiResponse.msg || "角色更新失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("updateRoleAction 错误:", error.message);
+    console.error("updateRoleAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "角色更新失败",
+      msg: error.msg || "角色更新失败",
       error,
     };
   }
@@ -227,30 +227,30 @@ export async function deleteRoleAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "角色删除成功",
+        msg: apiResponse.msg || "角色删除成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "角色删除失败",
+      msg: apiResponse.msg || "角色删除失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("deleteRoleAction 错误:", error.message);
+    console.error("deleteRoleAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "角色删除失败",
+      msg: error.msg || "角色删除失败",
       error,
     };
   }
@@ -279,23 +279,23 @@ export async function getPermissionsAction(params?: {
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取权限列表失败",
+      msg: apiResponse.msg || "获取权限列表失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getPermissionsAction 错误:", error.message);
+    console.error("getPermissionsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取权限列表失败",
+      msg: error.msg || "获取权限列表失败",
       error,
     };
   }
@@ -321,30 +321,30 @@ export async function syncRolePermissionsAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "角色权限同步成功",
+        msg: apiResponse.msg || "角色权限同步成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "角色权限同步失败",
+      msg: apiResponse.msg || "角色权限同步失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("syncRolePermissionsAction 错误:", error.message);
+    console.error("syncRolePermissionsAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "角色权限同步失败",
+      msg: error.msg || "角色权限同步失败",
       error,
     };
   }
@@ -373,30 +373,30 @@ export async function assignPermissionToRoleAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "权限分配成功",
+        msg: apiResponse.msg || "权限分配成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "权限分配失败",
+      msg: apiResponse.msg || "权限分配失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("assignPermissionToRoleAction 错误:", error.message);
+    console.error("assignPermissionToRoleAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "分配权限失败",
+      msg: error.msg || "分配权限失败",
       error,
     };
   }
@@ -424,31 +424,32 @@ export async function removePermissionFromRoleAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "权限移除成功",
+        msg: apiResponse.msg || "权限移除成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "权限移除失败",
+      msg: apiResponse.msg || "权限移除失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("removePermissionFromRoleAction 错误:", error.message);
+    console.error("removePermissionFromRoleAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "移除权限失败",
+      msg: error.msg || "移除权限失败",
       error,
     };
   }
 }
+

@@ -11,6 +11,7 @@ import {
   StorageStrategyUpdateRequest,
   StorageStrategyQueryParams,
   StorageStrategyTestRequest,
+  BatchUpdateStorageStatusRequest,
 } from "@/lib/types/storage";
 import type {
   ApiResponse,
@@ -43,23 +44,23 @@ export async function getStorageStrategiesAction(
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取存储策略列表失败",
+      msg: apiResponse.msg || "获取存储策略列表失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getStorageStrategiesAction 错误:", error.message);
+    console.error("getStorageStrategiesAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取存储策略列表失败",
+      msg: error.msg || "获取存储策略列表失败",
       error,
     };
   }
@@ -82,30 +83,30 @@ export async function getStorageStrategyByIdAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "获取存储策略详情成功",
+        msg: apiResponse.msg || "获取存储策略详情成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取存储策略详情失败",
+      msg: apiResponse.msg || "获取存储策略详情失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getStorageStrategyByIdAction 错误:", error.message);
+    console.error("getStorageStrategyByIdAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取存储策略详情失败",
+      msg: error.msg || "获取存储策略详情失败",
       error,
     };
   }
@@ -158,30 +159,30 @@ export async function createStorageStrategyAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "存储策略创建成功",
+        msg: apiResponse.msg || "存储策略创建成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "存储策略创建失败",
+      msg: apiResponse.msg || "存储策略创建失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("createStorageStrategyAction 错误:", error.message);
+    console.error("createStorageStrategyAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "存储策略创建失败",
+      msg: error.msg || "存储策略创建失败",
       error,
     };
   }
@@ -236,30 +237,30 @@ export async function updateStorageStrategyAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "存储策略更新成功",
+        msg: apiResponse.msg || "存储策略更新成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "存储策略更新失败",
+      msg: apiResponse.msg || "存储策略更新失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("updateStorageStrategyAction 错误:", error.message);
+    console.error("updateStorageStrategyAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "存储策略更新失败",
+      msg: error.msg || "存储策略更新失败",
       error,
     };
   }
@@ -286,30 +287,29 @@ export async function deleteStorageStrategyAction(
 
       return {
         code: 0,
-        message: apiResponse.message || "存储策略删除成功",
+        msg: apiResponse.msg || "存储策略删除成功",
         data: apiResponse.data,
       };
     }
-
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "存储策略删除失败",
+      msg: apiResponse.msg || "存储策略删除失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("deleteStorageStrategyAction 错误:", error.message);
+    console.error("deleteStorageStrategyAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "存储策略删除失败",
+      msg: error.msg || "存储策略删除失败",
       error,
     };
   }
@@ -345,30 +345,30 @@ export async function testS3ConnectionAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "S3 连接测试成功",
+        msg: apiResponse.msg || "S3 连接测试成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "S3 连接测试失败",
+      msg: apiResponse.msg || "S3 连接测试失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("testS3ConnectionAction 错误:", error.message);
+    console.error("testS3ConnectionAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "S3 连接测试失败",
+      msg: error.msg || "S3 连接测试失败",
       error,
     };
   }
@@ -391,33 +391,84 @@ export async function getUserAvailableStorageStrategiesAction(): Promise<
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        message: apiResponse.message || "获取可用存储策略成功",
+        msg: apiResponse.msg || "获取可用存储策略成功",
         data: apiResponse.data || [],
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      message: apiResponse.message || "获取可用存储策略失败",
+      msg: apiResponse.msg || "获取可用存储策略失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error(
-      "getUserAvailableStorageStrategiesAction 错误:",
-      error.message
-    );
+    console.error("getUserAvailableStorageStrategiesAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
         code: 401,
-        message: "认证失败，请重新登录",
+        msg: "认证失败，请重新登录",
         error: error,
       };
     }
 
     return {
       code: error.code || 500,
-      message: error.message || "获取可用存储策略失败",
+      msg: error.msg || "获取可用存储策略失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 批量更新存储策略状态
+ */
+export async function batchUpdateStorageStatusAction(
+  data: BatchUpdateStorageStatusRequest
+): Promise<SuccessApiResponse<any> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    console.log(data);
+    const response = await apiService.post<ApiResponse<any>>(
+      `${STORAGE_STRATEGIES_API_BASE}/status`,
+      data
+    );
+
+    const apiResponse = response.data;
+    if (apiResponse.code === 0) {
+      // 清除相关缓存
+      cacheManager.delete(CACHE_KEYS.STORAGE_STRATEGIES_LIST);
+      // 清除具体策略的缓存
+      data.ids.forEach((id) => {
+        cacheManager.delete(CACHE_KEYS.STORAGE_STRATEGY_DETAIL(id));
+      });
+
+      return {
+        code: 0,
+        msg: apiResponse.msg || "批量更新存储策略状态成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "批量更新存储策略状态失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("batchUpdateStorageStatusAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "批量更新存储策略状态失败",
       error,
     };
   }

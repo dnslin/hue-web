@@ -8,6 +8,7 @@ import {
   StorageStrategyTestRequest,
   StorageStrategyTestResult,
   StorageStrategyStats,
+  BatchUpdateStorageStatusRequest,
 } from "@/lib/types/storage";
 import type { PaginatedApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
@@ -25,6 +26,7 @@ import {
   updateStorageStrategyAction,
   deleteStorageStrategyAction,
   testS3ConnectionAction,
+  batchUpdateStorageStatusAction,
 } from "@/lib/actions/storage/storage";
 
 interface StorageStrategyStoreState {
@@ -178,7 +180,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
               set({ error: errorResult.error, isLoadingStrategies: false });
             }
           } else {
-            console.error("❌ 获取存储策略列表失败:", response.message);
+            console.error("❌ 获取存储策略列表失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "获取存储策略列表"
@@ -218,7 +220,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
             }));
             return sanitizedStrategy;
           } else {
-            console.error("❌ 获取存储策略详情失败:", response.message);
+            console.error("❌ 获取存储策略详情失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "获取存储策略详情"
@@ -249,7 +251,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
             set({ isSubmitting: false });
             return sanitizeStrategy(newStrategy);
           } else {
-            console.error("❌ 创建存储策略失败:", response.message);
+            console.error("❌ 创建存储策略失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "创建存储策略"
@@ -288,7 +290,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
             }));
             return sanitizedStrategy;
           } else {
-            console.error("❌ 更新存储策略失败:", response.message);
+            console.error("❌ 更新存储策略失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "更新存储策略"
@@ -324,7 +326,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
             }));
             return true;
           } else {
-            console.error("❌ 删除存储策略失败:", response.message);
+            console.error("❌ 删除存储策略失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "删除存储策略"
@@ -346,44 +348,35 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
       batchEnableStrategies: async (ids) => {
         set({ isSubmitting: true, error: null });
         try {
-          // 批量启用操作，传递完整的策略数据
-          const strategies = get().strategies.filter((s) => ids.includes(s.id));
-          const promises = strategies.map((strategy) => {
-            const updateData = {
-              name: strategy.name,
-              type: strategy.type,
-              isEnabled: true,
-              // 根据策略类型包含对应的配置
-              ...(strategy.type === "s3" && {
-                s3Config: {
-                  accessKeyId: strategy.s3AccessKeyId || "",
-                  secretAccessKey: strategy.s3SecretAccessKey || "",
-                  bucket: strategy.s3Bucket || "",
-                  region: strategy.s3Region || "",
-                  endpoint: strategy.s3Endpoint || "",
-                  baseUrl: strategy.s3BaseUrl || "",
-                  forcePathStyle: strategy.s3ForcePathStyle || false,
-                },
-              }),
-              ...(strategy.type === "local" && {
-                localConfig: {
-                  basePath: strategy.localBasePath || "",
-                },
-              }),
-            };
-            return get().updateStrategy(strategy.id, updateData);
-          });
-          const results = await Promise.all(promises);
-          const successCount = results.filter(
-            (result) => result !== null
-          ).length;
-          if (successCount > 0) {
+          const batchRequest: BatchUpdateStorageStatusRequest = {
+            ids,
+            isEnabled: true,
+          };
+
+          const response = await batchUpdateStorageStatusAction(batchRequest);
+
+          if (isSuccessApiResponse(response)) {
+            // 更新本地状态
+            set((state) => ({
+              strategies: state.strategies.map((strategy) =>
+                ids.includes(strategy.id)
+                  ? { ...strategy, isEnabled: true }
+                  : strategy
+              ),
+              isSubmitting: false,
+            }));
+
             // 刷新统计信息
             await get().fetchStats();
-            set({ isSubmitting: false });
+            showToast.success(`成功启用 ${ids.length} 个存储策略`);
             return true;
           } else {
-            set({ isSubmitting: false });
+            console.error("❌ 批量启用存储策略失败:", response.msg);
+            const errorResult = await handleStoreError(
+              response,
+              "批量启用存储策略"
+            );
+            set({ error: errorResult.error, isSubmitting: false });
             return false;
           }
         } catch (err: unknown) {
@@ -397,43 +390,35 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
       batchDisableStrategies: async (ids) => {
         set({ isSubmitting: true, error: null });
         try {
-          const strategies = get().strategies.filter((s) => ids.includes(s.id));
-          const promises = strategies.map((strategy) => {
-            const updateData = {
-              name: strategy.name,
-              type: strategy.type,
-              isEnabled: false,
-              // 根据策略类型包含对应的配置
-              ...(strategy.type === "s3" && {
-                s3Config: {
-                  accessKeyId: strategy.s3AccessKeyId || "",
-                  secretAccessKey: strategy.s3SecretAccessKey || "",
-                  bucket: strategy.s3Bucket || "",
-                  region: strategy.s3Region || "",
-                  endpoint: strategy.s3Endpoint || "",
-                  baseUrl: strategy.s3BaseUrl || "",
-                  forcePathStyle: strategy.s3ForcePathStyle || false,
-                },
-              }),
-              ...(strategy.type === "local" && {
-                localConfig: {
-                  basePath: strategy.localBasePath || "",
-                },
-              }),
-            };
-            return get().updateStrategy(strategy.id, updateData);
-          });
-          const results = await Promise.all(promises);
-          const successCount = results.filter(
-            (result) => result !== null
-          ).length;
-          if (successCount > 0) {
+          const batchRequest: BatchUpdateStorageStatusRequest = {
+            ids,
+            isEnabled: false,
+          };
+
+          const response = await batchUpdateStorageStatusAction(batchRequest);
+
+          if (isSuccessApiResponse(response)) {
+            // 更新本地状态
+            set((state) => ({
+              strategies: state.strategies.map((strategy) =>
+                ids.includes(strategy.id)
+                  ? { ...strategy, isEnabled: false }
+                  : strategy
+              ),
+              isSubmitting: false,
+            }));
+
             // 刷新统计信息
             await get().fetchStats();
-            set({ isSubmitting: false });
+            showToast.success(`成功禁用 ${ids.length} 个存储策略`);
             return true;
           } else {
-            set({ isSubmitting: false });
+            console.error("❌ 批量禁用存储策略失败:", response.msg);
+            const errorResult = await handleStoreError(
+              response,
+              "批量禁用存储策略"
+            );
+            set({ error: errorResult.error, isSubmitting: false });
             return false;
           }
         } catch (err: unknown) {
@@ -472,36 +457,44 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
         const strategy = get().strategies.find((s) => s.id === id);
         if (!strategy) return null;
 
-        // 构建完整的更新数据，包含所有必需字段
-        const updateData = {
-          name: strategy.name,
-          type: strategy.type,
-          isEnabled: !strategy.isEnabled,
-          // 根据策略类型包含对应的配置
-          ...(strategy.type === "s3" && {
-            s3Config: {
-              accessKeyId: strategy.s3AccessKeyId || "",
-              secretAccessKey: strategy.s3SecretAccessKey || "",
-              bucket: strategy.s3Bucket || "",
-              region: strategy.s3Region || "",
-              endpoint: strategy.s3Endpoint || "",
-              baseUrl: strategy.s3BaseUrl || "",
-              forcePathStyle: strategy.s3ForcePathStyle || false,
-            },
-          }),
-          ...(strategy.type === "local" && {
-            localConfig: {
-              basePath: strategy.localBasePath || "",
-            },
-          }),
-        };
+        const newEnabledStatus = !strategy.isEnabled;
 
-        const result = await get().updateStrategy(id, updateData);
-        if (result) {
-          // 刷新统计信息
-          await get().fetchStats();
+        try {
+          const batchRequest: BatchUpdateStorageStatusRequest = {
+            ids: [id],
+            isEnabled: newEnabledStatus,
+          };
+
+          const response = await batchUpdateStorageStatusAction(batchRequest);
+
+          if (isSuccessApiResponse(response)) {
+            // 更新本地状态
+            set((state) => ({
+              strategies: state.strategies.map((s) =>
+                s.id === id ? { ...s, isEnabled: newEnabledStatus } : s
+              ),
+            }));
+
+            // 刷新统计信息
+            await get().fetchStats();
+
+            // 返回更新后的策略
+            return get().strategies.find((s) => s.id === id) || null;
+          } else {
+            console.error("❌ 切换存储策略状态失败:", response.msg);
+            const errorResult = await handleStoreError(
+              response,
+              "切换存储策略状态"
+            );
+            set({ error: errorResult.error });
+            return null;
+          }
+        } catch (err: unknown) {
+          console.error("❌ 切换存储策略状态时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "切换存储策略状态");
+          set({ error: errorResult.error });
+          return null;
         }
-        return result;
       },
 
       testS3Connection: async (config) => {
@@ -511,8 +504,8 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           if (isSuccessApiResponse(response)) {
             const result: StorageStrategyTestResult = {
               success: true,
-              message: "S3 连接测试成功",
-              details: response.message || "连接正常",
+              msg: "S3 连接测试成功",
+              details: response.msg || "连接正常",
             };
             showToast.success("S3 连接测试成功");
             set({
@@ -523,10 +516,10 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           } else {
             const result: StorageStrategyTestResult = {
               success: false,
-              message: "S3 连接测试失败",
-              details: response.message || "连接失败",
+              msg: "S3 连接测试失败",
+              details: response.msg || "连接失败",
             };
-            console.error("❌ S3 连接测试失败:", response.message);
+            console.error("❌ S3 连接测试失败:", response.msg);
             const errorResult = await handleStoreError(response, "S3 连接测试");
             set({
               testError: errorResult.error,
@@ -539,7 +532,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           console.error("❌ S3 连接测试时发生意外错误:", err);
           const result: StorageStrategyTestResult = {
             success: false,
-            message: "S3 连接测试异常",
+            msg: "S3 连接测试异常",
             details: err instanceof Error ? err.message : "未知错误",
           };
           const errorResult = await handleStoreError(err, "S3 连接测试");

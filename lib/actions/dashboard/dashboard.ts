@@ -183,7 +183,7 @@ export async function getDashboardDataAction(): Promise<
     console.error("[Action Error] getDashboardDataAction:", error);
     const dashboardError: DashboardError = {
       code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      message: error.message || "获取仪表盘数据失败",
+      msg: error.msg || "获取仪表盘数据失败",
       details: error instanceof AuthenticationError ? undefined : error,
     };
     // No redirect from server action for auth errors, client should handle

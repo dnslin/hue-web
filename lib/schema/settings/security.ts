@@ -116,7 +116,7 @@ export const securitySettingsSchema = z.object({
         return result.isValid;
       },
       {
-        message: (val) => {
+        msg: (val) => {
           const result = validateIpListWithDetails(val as string[]);
           return result.errors.length > 0
             ? result.errors.join("；")
@@ -134,7 +134,7 @@ export const securitySettingsSchema = z.object({
         return result.isValid;
       },
       {
-        message: (val) => {
+        msg: (val) => {
           const result = validateIpListWithDetails(val as string[]);
           return result.errors.length > 0
             ? result.errors.join("；")
@@ -148,3 +148,4 @@ export const securitySettingsSchema = z.object({
  * 安全设置表单数据类型
  */
 export type SecuritySettingsFormData = z.infer<typeof securitySettingsSchema>;
+

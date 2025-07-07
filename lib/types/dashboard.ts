@@ -99,6 +99,7 @@ export interface DashboardApiResponse {
 // 错误类型
 export interface DashboardError {
   code: string;
-  message: string;
+  msg: string;
   details?: unknown;
 }
+
