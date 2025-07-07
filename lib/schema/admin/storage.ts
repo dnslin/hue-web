@@ -78,7 +78,7 @@ export const createStorageStrategyFormSchema = z
       return true;
     },
     {
-      msg: "请配置对应存储类型的参数",
+      message: "请配置对应存储类型的参数",
       path: ["config"],
     }
   );
@@ -114,7 +114,7 @@ export const updateStorageStrategyFormSchema = z
       return true;
     },
     {
-      msg: "请配置对应存储类型的参数",
+      message: "请配置对应存储类型的参数",
       path: ["config"],
     }
   );

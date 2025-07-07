@@ -203,10 +203,8 @@ export const useAuthStore = create<AuthState>()(
 
           // 检查是否是认证过期（根据后端的业务码）
           if (response.code === 40101) {
-            // Token过期的业务码，需要清理状态并重定向
             get().clearAuth();
             showToast.error(response.msg);
-            // 这里可以添加重定向逻辑，或者由上层处理
           } else {
             // 其他业务错误
             const errorMessage = response.msg || "登录失败";
