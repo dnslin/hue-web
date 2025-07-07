@@ -81,10 +81,10 @@ lib/
 ├── store/               # Zustand stores
 │   ├── auth-store.ts   # Authentication state with persistence
 │   └── user/           # Modular user management stores
-│       ├── user-data.store.ts     # Data management
-│       ├── user-filter.store.ts   # Filtering logic
-│       ├── user-cache.store.ts    # Caching layer
-│       └── user-batch.store.ts    # Batch operations
+│       ├── data.ts     # Data management
+│       ├── filter.ts   # Filtering logic
+│       ├── cache..ts    # Caching layer
+│       └── batch.ts    # Batch operations
 ├── actions/             # Server actions organized by domain
 ├── api/                 # API service layer with case conversion
 ├── schema/              # Zod schemas for validation
