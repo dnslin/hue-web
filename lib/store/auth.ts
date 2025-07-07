@@ -199,7 +199,7 @@ export const useAuthStore = create<AuthState>()(
 
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
-          console.error("❌ 登录失败:", response.message);
+          console.error("❌ 登录失败:", response.msg);
 
           // 检查是否是认证过期（根据后端的业务码）
           if (response.code === 40101) {
@@ -209,7 +209,7 @@ export const useAuthStore = create<AuthState>()(
             // 这里可以添加重定向逻辑，或者由上层处理
           } else {
             // 其他业务错误
-            const errorMessage = response.message || "登录失败";
+            const errorMessage = response.msg || "登录失败";
             showToast.error(errorMessage);
             set({ error: errorMessage });
           }
@@ -244,19 +244,17 @@ export const useAuthStore = create<AuthState>()(
             showToast.success("注册成功并已登录");
           } else {
             // 注册成功但未自动登录 (例如需要邮箱验证)
-            console.log("📝 注册请求成功:", response.message);
+            console.log("📝 注册请求成功:", response.msg);
             set({ isLoadingRegister: false, error: null });
-            showToast.success(
-              response.message || "注册成功，请查收邮件进行验证"
-            );
+            showToast.success(response.msg || "注册成功，请查收邮件进行验证");
           }
           return true;
         }
 
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
-          console.error("❌ 注册失败:", response.message);
-          const errorMessage = response.message || "注册失败";
+          console.error("❌ 注册失败:", response.msg);
+          const errorMessage = response.msg || "注册失败";
           showToast.error(errorMessage);
           set({
             isLoadingRegister: false,
@@ -277,7 +275,7 @@ export const useAuthStore = create<AuthState>()(
           console.log("🚪 用户已成功登出");
           showToast.success("登出成功");
         } else if (isErrorApiResponse(response)) {
-          console.warn("⚠️ 登出操作在服务端可能未完全成功:", response.message);
+          console.warn("⚠️ 登出操作在服务端可能未完全成功:", response.msg);
           // 即使服务端失败，客户端也应清除状态
         }
 
@@ -360,7 +358,7 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (!silent) {
-            showToast.success(response.message || "密码重置邮件已发送");
+            showToast.success(response.msg || "密码重置邮件已发送");
           }
 
           // 根据是否静默模式返回不同格式的结果
@@ -377,9 +375,9 @@ export const useAuthStore = create<AuthState>()(
         if (isErrorApiResponse(response)) {
           console.error(
             `❌ 忘记密码请求失败${silent ? "（静默模式）" : ""}:`,
-            response.message
+            response.msg
           );
-          const errorMessage = response.message || "忘记密码请求失败";
+          const errorMessage = response.msg || "忘记密码请求失败";
 
           // 更新忘记密码专门状态
           set({
@@ -445,7 +443,7 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (!silent) {
-            showToast.success(response.message || "密码重置成功");
+            showToast.success(response.msg || "密码重置成功");
           }
 
           // 根据是否静默模式返回不同格式的结果
@@ -462,9 +460,9 @@ export const useAuthStore = create<AuthState>()(
         if (isErrorApiResponse(response)) {
           console.error(
             `❌ 密码重置失败${silent ? "（静默模式）" : ""}:`,
-            response.message
+            response.msg
           );
-          const errorMessage = response.message || "密码重置失败";
+          const errorMessage = response.msg || "密码重置失败";
 
           // 更新忘记密码专门状态
           set({
@@ -502,14 +500,14 @@ export const useAuthStore = create<AuthState>()(
         if (isSuccessApiResponse(response)) {
           console.log("✅ 账户激活成功");
           set({ isLoadingOther: false, error: null });
-          showToast.success(response.message || "账户激活成功");
+          showToast.success(response.msg || "账户激活成功");
           return true;
         }
 
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
-          console.error("❌ 账户激活失败:", response.message);
-          const errorMessage = response.message || "账户激活失败";
+          console.error("❌ 账户激活失败:", response.msg);
+          const errorMessage = response.msg || "账户激活失败";
           showToast.error(errorMessage);
           set({
             isLoadingOther: false,
@@ -528,14 +526,14 @@ export const useAuthStore = create<AuthState>()(
         if (isSuccessApiResponse(response)) {
           console.log("✅ 激活邮件重发成功");
           set({ isLoadingOther: false, error: null });
-          showToast.success(response.message || "激活邮件已重新发送");
+          showToast.success(response.msg || "激活邮件已重新发送");
           return true;
         }
 
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
-          console.error("❌ 激活邮件重发失败:", response.message);
-          const errorMessage = response.message || "激活邮件重发失败";
+          console.error("❌ 激活邮件重发失败:", response.msg);
+          const errorMessage = response.msg || "激活邮件重发失败";
           showToast.error(errorMessage);
           set({
             isLoadingOther: false,

@@ -122,7 +122,7 @@ export const createUserDataSlice: StateCreator<
         }
       } else {
         // 处理API错误响应
-        console.error("❌ 获取用户列表失败:", response.message);
+        console.error("❌ 获取用户列表失败:", response.msg);
         const errorResult = await handleStoreError(response, "获取用户列表");
         set({ loading: false, error: errorResult.error });
       }

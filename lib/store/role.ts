@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Role, Permission, CreateRoleRequest, UpdateRoleRequest } from "@/lib/types/roles";
+import {
+  Role,
+  Permission,
+  CreateRoleRequest,
+  UpdateRoleRequest,
+} from "@/lib/types/roles";
 import type {
   SuccessApiResponse,
   ErrorApiResponse,
@@ -192,7 +197,7 @@ export const useRoleStore = create<RoleStoreState>()(
               set({ error: errorResult.error, isLoadingRoles: false });
             }
           } else {
-            console.error("❌ 获取角色列表失败:", response.message);
+            console.error("❌ 获取角色列表失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "获取角色列表"
@@ -229,7 +234,7 @@ export const useRoleStore = create<RoleStoreState>()(
             }));
             return sanitizedRole;
           } else {
-            console.error("❌ 获取角色详情失败:", response.message);
+            console.error("❌ 获取角色详情失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "获取角色详情"
@@ -263,7 +268,7 @@ export const useRoleStore = create<RoleStoreState>()(
             set({ isSubmitting: false });
             return sanitizeRole(newRole);
           } else {
-            console.error("❌ 创建角色失败:", response.message);
+            console.error("❌ 创建角色失败:", response.msg);
             const errorResult = await handleStoreError(response, "创建角色");
             set({
               error: errorResult.error,
@@ -298,7 +303,7 @@ export const useRoleStore = create<RoleStoreState>()(
             }));
             return sanitizedRole;
           } else {
-            console.error("❌ 更新角色失败:", response.message);
+            console.error("❌ 更新角色失败:", response.msg);
             const errorResult = await handleStoreError(response, "更新角色");
             set({
               error: errorResult.error,
@@ -333,7 +338,7 @@ export const useRoleStore = create<RoleStoreState>()(
             }));
             return true;
           } else {
-            console.error("❌ 删除角色失败:", response.message);
+            console.error("❌ 删除角色失败:", response.msg);
             const errorResult = await handleStoreError(response, "删除角色");
             set({
               error: errorResult.error,
@@ -423,7 +428,7 @@ export const useRoleStore = create<RoleStoreState>()(
               set({ error: errorResult.error, isLoadingPermissions: false });
             }
           } else {
-            console.error("❌ 获取权限列表失败:", response.message);
+            console.error("❌ 获取权限列表失败:", response.msg);
             const errorResult = await handleStoreError(
               response,
               "获取权限列表"
@@ -454,7 +459,7 @@ export const useRoleStore = create<RoleStoreState>()(
             set({ isSubmitting: false });
             return updatedRole;
           } else {
-            console.error("❌ 同步权限失败:", response.message);
+            console.error("❌ 同步权限失败:", response.msg);
             const errorResult = await handleStoreError(response, "同步权限");
             set({
               error: errorResult.error,
@@ -484,7 +489,7 @@ export const useRoleStore = create<RoleStoreState>()(
             set({ isSubmitting: false });
             return updatedRole;
           } else {
-            console.error("❌ 分配权限失败:", response.message);
+            console.error("❌ 分配权限失败:", response.msg);
             const errorResult = await handleStoreError(response, "分配权限");
             set({
               error: errorResult.error,
@@ -514,7 +519,7 @@ export const useRoleStore = create<RoleStoreState>()(
             set({ isSubmitting: false });
             return true;
           } else {
-            console.error("❌ 移除权限失败:", response.message);
+            console.error("❌ 移除权限失败:", response.msg);
             const errorResult = await handleStoreError(response, "移除权限");
             set({
               error: errorResult.error,
@@ -538,3 +543,4 @@ export const useRoleStore = create<RoleStoreState>()(
     }
   )
 );
+

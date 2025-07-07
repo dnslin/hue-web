@@ -10,7 +10,7 @@ export const showToast = {
    * 显示成功消息
    */
   success: (msg: string, description?: string) => {
-    toast.success(message, {
+    toast.success(msg, {
       description,
       duration: 3000,
     });
@@ -20,7 +20,7 @@ export const showToast = {
    * 显示错误消息
    */
   error: (msg: string, description?: string) => {
-    toast.error(message, {
+    toast.error(msg, {
       description,
       duration: 5000,
     });
@@ -30,7 +30,7 @@ export const showToast = {
    * 显示警告消息
    */
   warning: (msg: string, description?: string) => {
-    toast.warning(message, {
+    toast.warning(msg, {
       description,
       duration: 4000,
     });
@@ -40,7 +40,7 @@ export const showToast = {
    * 显示信息消息
    */
   info: (msg: string, description?: string) => {
-    toast.info(message, {
+    toast.info(msg, {
       description,
       duration: 3000,
     });
@@ -50,7 +50,7 @@ export const showToast = {
    * 显示加载中消息
    */
   loading: (msg: string) => {
-    return toast.loading(message);
+    return toast.loading(msg);
   },
 
   /**
