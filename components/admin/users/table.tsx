@@ -11,7 +11,7 @@ import { User, UserListParams, getUserDisplayName } from "@/lib/types/user";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { useUserSelectionStore } from "@/lib/store/user/user-selection.store";
-import { UserActions } from "./user-actions";
+import { UserActions } from "./actions";
 
 interface UserTableProps {
   users: User[];

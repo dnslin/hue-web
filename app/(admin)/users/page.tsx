@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { PageContainer } from "@/components/layouts/page-container";
-import { UserList } from "@/components/admin/users/user-list";
+import { UserList } from "@/components/admin/users/list";
 
 // export const metadata: Metadata = {
 //   title: "用户管理 - Lsky Pro",

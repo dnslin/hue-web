@@ -1,7 +1,7 @@
 "use client";
 
 import { User } from "@/lib/types/user";
-import { UserMobileCard } from "./user-mobile-card";
+import { UserMobileCard } from "./mobile-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserMobileListProps {

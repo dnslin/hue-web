@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { User, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
-import { UserActions } from "./user-actions";
+import { UserActions } from "./actions";
 
 interface UserMobileCardProps {
   user: User;
