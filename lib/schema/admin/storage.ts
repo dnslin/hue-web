@@ -105,11 +105,11 @@ export const updateStorageStrategyFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.type === "s3" && data.s3Config === undefined) {
-        return false;
+      if (data.type === "s3") {
+        return data.s3Config !== undefined;
       }
-      if (data.type === "local" && data.localConfig === undefined) {
-        return false;
+      if (data.type === "local") {
+        return data.localConfig !== undefined;
       }
       return true;
     },
@@ -181,4 +181,3 @@ export type LocalConfigFormData = z.infer<typeof localConfigSchema>;
  * 存储类型数据类型
  */
 export type StorageType = z.infer<typeof storageTypeSchema>;
-

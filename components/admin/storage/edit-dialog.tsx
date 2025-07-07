@@ -129,15 +129,7 @@ export function StorageStrategyEditDialog({
       name: "",
       type: "local",
       isEnabled: true,
-      s3Config: {
-        accessKeyId: "",
-        secretAccessKey: "",
-        bucket: "",
-        region: "",
-        endpoint: "",
-        baseUrl: "",
-        forcePathStyle: false,
-      },
+      s3Config: undefined,
       localConfig: {
         basePath: "/uploads",
       },
@@ -151,24 +143,53 @@ export function StorageStrategyEditDialog({
         name: strategy.name || "",
         type: strategy.type || "local",
         isEnabled: strategy.isEnabled ?? true,
-        s3Config: {
-          accessKeyId: strategy.s3AccessKeyId || "",
-          secretAccessKey: "", // 不显示原密码，用户需要重新输入
-          bucket: strategy.s3Bucket || "",
-          region: strategy.s3Region || "",
-          endpoint: strategy.s3Endpoint || "",
-          baseUrl: strategy.s3BaseUrl || "",
-          forcePathStyle: strategy.s3ForcePathStyle || false,
-        },
-        localConfig: {
-          basePath: strategy.localBasePath || "/uploads",
-        },
+        s3Config:
+          strategy.type === "s3"
+            ? {
+                accessKeyId: strategy.s3AccessKeyId || "",
+                secretAccessKey: "", // 不显示原密码，用户需要重新输入
+                bucket: strategy.s3Bucket || "",
+                region: strategy.s3Region || "",
+                endpoint: strategy.s3Endpoint || "",
+                baseUrl: strategy.s3BaseUrl || "",
+                forcePathStyle: strategy.s3ForcePathStyle || false,
+              }
+            : undefined,
+        localConfig:
+          strategy.type === "local"
+            ? {
+                basePath: strategy.localBasePath || "/uploads",
+              }
+            : undefined,
       });
       setTestResult(null);
     }
   }, [strategy, open, form]);
 
   const watchedType = form.watch("type");
+
+  // 监听存储类型变化，清理不相关的配置
+  useEffect(() => {
+    if (watchedType === "local") {
+      form.setValue("s3Config", undefined);
+      if (!form.getValues("localConfig")) {
+        form.setValue("localConfig", { basePath: "/uploads" });
+      }
+    } else if (watchedType === "s3") {
+      form.setValue("localConfig", undefined);
+      if (!form.getValues("s3Config")) {
+        form.setValue("s3Config", {
+          accessKeyId: "",
+          secretAccessKey: "",
+          bucket: "",
+          region: "",
+          endpoint: "",
+          baseUrl: "",
+          forcePathStyle: false,
+        });
+      }
+    }
+  }, [watchedType, form]);
 
   const handleSubmit = async (data: UpdateStorageStrategyFormData) => {
     if (!strategy) return;
