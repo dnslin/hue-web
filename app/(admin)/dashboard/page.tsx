@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 import { BoxReveal } from "@/components/magicui/box-reveal";
 import { TextAnimate } from "@/components/magicui/text-animate";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { DashboardContainer } from "@/components/dashboard/dashboard-container";
+import { DashboardContainer } from "@/components/dashboard/container";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // 加载状态组件

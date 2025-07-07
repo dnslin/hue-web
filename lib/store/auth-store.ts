@@ -9,7 +9,7 @@ import {
   resetPasswordAction,
   activateAccountAction,
   resendActivationEmailAction,
-} from "@/lib/actions/auth/auth.actions";
+} from "@/lib/actions/auth/auth";
 import type { User } from "@/lib/types/user";
 import type {
   LoginRequest,
@@ -177,7 +177,7 @@ export const useAuthStore = create<AuthState>()(
         password: string
       ): Promise<boolean> => {
         set({ isLoadingLogin: true, error: null });
-        
+
         const credentials: LoginRequest = { usernameOrEmail, password };
         const response = await loginAction(credentials);
 
@@ -200,7 +200,7 @@ export const useAuthStore = create<AuthState>()(
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
           console.error("❌ 登录失败:", response.message);
-          
+
           // 检查是否是认证过期（根据后端的业务码）
           if (response.code === 40101) {
             // Token过期的业务码，需要清理状态并重定向
@@ -214,7 +214,7 @@ export const useAuthStore = create<AuthState>()(
             set({ error: errorMessage });
           }
         }
-        
+
         set({ isLoadingLogin: false });
         return false;
       },
@@ -226,7 +226,7 @@ export const useAuthStore = create<AuthState>()(
         password: string
       ): Promise<boolean> => {
         set({ isLoadingRegister: true, error: null });
-        
+
         const userData: RegisterRequest = { username, email, password };
         const response = await registerAction(userData);
 
@@ -246,7 +246,9 @@ export const useAuthStore = create<AuthState>()(
             // 注册成功但未自动登录 (例如需要邮箱验证)
             console.log("📝 注册请求成功:", response.message);
             set({ isLoadingRegister: false, error: null });
-            showToast.success(response.message || "注册成功，请查收邮件进行验证");
+            showToast.success(
+              response.message || "注册成功，请查收邮件进行验证"
+            );
           }
           return true;
         }
@@ -261,16 +263,16 @@ export const useAuthStore = create<AuthState>()(
             error: errorMessage,
           });
         }
-        
+
         return false;
       },
 
       // 用户登出
       logout: async () => {
         set({ isLoadingLogout: true });
-        
+
         const response = await logoutAction();
-        
+
         if (isSuccessApiResponse(response)) {
           console.log("🚪 用户已成功登出");
           showToast.success("登出成功");
@@ -278,7 +280,7 @@ export const useAuthStore = create<AuthState>()(
           console.warn("⚠️ 登出操作在服务端可能未完全成功:", response.message);
           // 即使服务端失败，客户端也应清除状态
         }
-        
+
         // 始终清除客户端状态
         get().clearAuth();
         set({
@@ -296,7 +298,7 @@ export const useAuthStore = create<AuthState>()(
       initializeAuth: async () => {
         console.log("🔄 开始初始化认证状态");
         set({ isLoadingInitAuth: true });
-        
+
         try {
           const currentUser = await getCurrentUserAction();
           if (currentUser) {
@@ -343,7 +345,7 @@ export const useAuthStore = create<AuthState>()(
         });
 
         const response = await forgotPasswordAction(email);
-        
+
         if (isSuccessApiResponse(response)) {
           console.log(`✅ 忘记密码请求成功${silent ? "（静默模式）" : ""}`);
 
@@ -370,7 +372,7 @@ export const useAuthStore = create<AuthState>()(
           }
           return true;
         }
-        
+
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
           console.error(
@@ -400,7 +402,7 @@ export const useAuthStore = create<AuthState>()(
             } as AuthOperationResult;
           }
         }
-        
+
         return false;
       },
 
@@ -428,7 +430,7 @@ export const useAuthStore = create<AuthState>()(
           confirmPassword,
           code
         );
-        
+
         if (isSuccessApiResponse(response)) {
           console.log(`✅ 密码重置成功${silent ? "（静默模式）" : ""}`);
 
@@ -455,7 +457,7 @@ export const useAuthStore = create<AuthState>()(
           }
           return true;
         }
-        
+
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
           console.error(
@@ -485,7 +487,7 @@ export const useAuthStore = create<AuthState>()(
             } as AuthOperationResult;
           }
         }
-        
+
         return false;
       },
 
@@ -494,16 +496,16 @@ export const useAuthStore = create<AuthState>()(
         code: string
       ): Promise<boolean> => {
         set({ isLoadingOther: true, error: null });
-        
+
         const response = await activateAccountAction(email, code);
-        
+
         if (isSuccessApiResponse(response)) {
           console.log("✅ 账户激活成功");
           set({ isLoadingOther: false, error: null });
           showToast.success(response.message || "账户激活成功");
           return true;
         }
-        
+
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
           console.error("❌ 账户激活失败:", response.message);
@@ -514,22 +516,22 @@ export const useAuthStore = create<AuthState>()(
             error: errorMessage,
           });
         }
-        
+
         return false;
       },
 
       resendActivationEmail: async (email: string): Promise<boolean> => {
         set({ isLoadingOther: true, error: null });
-        
+
         const response = await resendActivationEmailAction(email);
-        
+
         if (isSuccessApiResponse(response)) {
           console.log("✅ 激活邮件重发成功");
           set({ isLoadingOther: false, error: null });
           showToast.success(response.message || "激活邮件已重新发送");
           return true;
         }
-        
+
         // 业务失败或错误响应
         if (isErrorApiResponse(response)) {
           console.error("❌ 激活邮件重发失败:", response.message);
@@ -540,7 +542,7 @@ export const useAuthStore = create<AuthState>()(
             error: errorMessage,
           });
         }
-        
+
         return false;
       },
 
@@ -616,3 +618,4 @@ export const isLoggedIn = () => {
   const { isAuthenticated, user } = useAuthStore.getState();
   return isAuthenticated && !!user;
 };
+
