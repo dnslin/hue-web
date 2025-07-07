@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { User, UserListParams, getUserDisplayName } from "@/lib/types/user";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
-import { useUserSelectionStore } from "@/lib/store/user/user-selection.store";
+import { useUserSelectionStore } from "@/lib/store/user/selection";
 import { UserActions } from "./actions";
 
 interface UserTableProps {

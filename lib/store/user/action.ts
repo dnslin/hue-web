@@ -17,8 +17,8 @@ import {
   resetPasswordUserAction,
   createAdminUserAction,
 } from "@/lib/actions/users/user";
-import { userDataStore } from "./user-data.store";
-import { useUserCacheStore } from "./user-cache.store";
+import { userDataStore } from "./data";
+import { useUserCacheStore } from "./cache";
 import { handleStoreError } from "@/lib/utils/error-handler";
 
 // 定义加载状态的类型，针对每个具体操作

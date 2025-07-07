@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { userDataStore } from "./user-data.store";
-import { useUserFilterStore } from "./user-filter.store";
-import { useUserSelectionStore } from "./user-selection.store";
-import { useUserCacheStore } from "./user-cache.store";
+import { userDataStore } from "./data";
+import { useUserFilterStore } from "./filter";
+import { useUserSelectionStore } from "./selection";
+import { useUserCacheStore } from "./cache";
 import { User } from "@/lib/types/user";
 
 /**
@@ -104,3 +104,4 @@ useUserFilterStore.subscribe((state, prevState) => {
     );
   }
 });
+

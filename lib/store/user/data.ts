@@ -5,7 +5,7 @@ import { shallow } from "zustand/shallow";
 import { AdminUserResponse, UserListParams } from "@/lib/types/user";
 import type { PaginatedApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
-import { useUserFilterStore } from "./user-filter.store";
+import { useUserFilterStore } from "./filter";
 import { getUsersAction } from "@/lib/actions/users/user";
 import { handleStoreError } from "@/lib/utils/error-handler";
 

@@ -30,7 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { User, UserStatus, UserUpdateRequest } from "@/lib/types/user";
-import { useUserActionStore } from "@/lib/store/user/user-action.store";
+import { useUserActionStore } from "@/lib/store/user/action";
 import { showToast } from "@/lib/utils/toast";
 import { RoleSelect } from "@/components/shared/role-select";
 

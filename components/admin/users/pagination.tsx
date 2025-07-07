@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
-import { userDataStore } from "@/lib/store/user/user-data.store";
+import { useUserFilterStore } from "@/lib/store/user/filter";
+import { userDataStore } from "@/lib/store/user/data";
 
 interface UserPaginationProps {
   isMobile?: boolean;

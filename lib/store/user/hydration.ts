@@ -1,7 +1,7 @@
 // @/lib/store/user/user-hydration.store.ts
 import { useEffect, useState } from "react";
 import { useStore } from "zustand";
-import { userDataStore } from "./user-data.store";
+import { userDataStore } from "./data";
 
 /**
  * @hook useUserDataHydration
@@ -31,3 +31,4 @@ export function useUserDataHydration(): boolean {
 
   return isHydrated;
 }
+

@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { userBatchStore } from "./user-batch.store";
-import type { UserBatchState } from "./user-batch.store";
+import { userBatchStore } from "./batch";
+import type { UserBatchState } from "./batch";
 
 /**
  * 用户选择 Store 状态
@@ -87,3 +87,4 @@ userBatchStore.subscribe((state: UserBatchState, prevState: UserBatchState) => {
     console.log("[用户选择] 批量操作成功，已清空选择。");
   }
 });
+

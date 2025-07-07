@@ -12,27 +12,27 @@
 
 import { useStore } from "zustand";
 import { User } from "@/lib/types/user";
-import { userDataStore, UserDataState } from "./user-data.store";
+import { userDataStore, UserDataState } from "./data";
 import {
   useUserFilterStore,
   UserFilterState,
   UserFilterActions,
-} from "./user-filter.store";
-import { useUserSelectionStore } from "./user-selection.store";
-import { useUserActionStore, UserActionState } from "./user-action.store";
-import { useUserBatchStore, UserBatchState } from "./user-batch.store";
-import { useUserDataHydration } from "./user-hydration.store";
+} from "./filter";
+import { useUserSelectionStore } from "./selection";
+import { useUserActionStore, UserActionState } from "./action";
+import { useUserBatchStore, UserBatchState } from "./batch";
+import { useUserDataHydration } from "./hydration";
 
 // ============================================================================
 // STORE RE-EXPORTS
 // ============================================================================
-export * from "./user-action.store";
-export * from "./user-batch.store";
-export * from "./user-cache.store";
-export * from "./user-data.store";
-export * from "./user-filter.store";
-export * from "./user-hydration.store";
-export * from "./user-selection.store";
+export * from "./action";
+export * from "./batch";
+export * from "./cache";
+export * from "./data";
+export * from "./filter";
+export * from "./hydration";
+export * from "./selection";
 
 // ============================================================================
 // CONVENIENCE SELECTOR HOOKS
@@ -213,3 +213,4 @@ export const useUserBatchActions = () => {
  * @description 确保在服务端渲染 (SSR) 之后，客户端的 store 能够被正确初始化。
  */
 export { useUserDataHydration };
+

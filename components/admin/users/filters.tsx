@@ -22,8 +22,8 @@ import { UserStatus } from "@/lib/types/user";
 import {
   useUserFilterStore,
   UserFilters as UserFilterState,
-} from "@/lib/store/user/user-filter.store";
-import { userDataStore } from "@/lib/store/user/user-data.store";
+} from "@/lib/store/user/filter";
+import { userDataStore } from "@/lib/store/user/data";
 import { useRoleStore } from "@/lib/store/role";
 import { Role } from "@/lib/types/roles";
 

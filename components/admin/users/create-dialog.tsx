@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AdminUserCreateRequest } from "@/lib/types/user";
-import { useUserActionStore } from "@/lib/store/user/user-action.store";
+import { useUserActionStore } from "@/lib/store/user/action";
 import { showToast } from "@/lib/utils/toast";
 import { RoleSelect } from "@/components/shared/role-select";
 import { generateUserPassword } from "@/lib/utils/password";

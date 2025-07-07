@@ -11,9 +11,9 @@ import { UserMobileList } from "./mobile-list";
 import { UserPagination } from "./pagination";
 import { UserCreateDialog } from "./create-dialog";
 import { User } from "@/lib/types/user";
-import { userDataStore } from "@/lib/store/user/user-data.store";
-import { useUserFilterStore } from "@/lib/store/user/user-filter.store";
-import { useUserDataHydration } from "@/lib/store/user/user-hydration.store";
+import { userDataStore } from "@/lib/store/user/data";
+import { useUserFilterStore } from "@/lib/store/user/filter";
+import { useUserDataHydration } from "@/lib/store/user/hydration";
 import { getAllUsersForExportAction } from "@/lib/actions/users/user";
 import { showToast } from "@/lib/utils/toast";
 
