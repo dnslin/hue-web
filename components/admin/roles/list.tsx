@@ -21,9 +21,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RolePermissions } from "./role-permissions";
-import { RoleCreateDialog } from "./role-create-dialog";
-import { RoleEditDialog } from "./role-edit-dialog";
+import { RolePermissions } from "./permissions";
+import { RoleCreateDialog } from "./create-dialog";
+import { RoleEditDialog } from "./edit-dialog";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
 import { useRoleStore } from "@/lib/store/role-store";
 import { formatDateOnly } from "@/lib/utils/date-formatter";
