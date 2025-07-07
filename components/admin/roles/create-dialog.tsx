@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
-import { useRoleStore } from "@/lib/store/role-store";
-import { useStorageStrategyStore } from "@/lib/store/storage-store";
+import { useRoleStore } from "@/lib/store/role";
+import { useStorageStrategyStore } from "@/lib/store/storage";
 import { createRoleFormSchema, type CreateRoleFormData } from "@/lib/schema/admin/role";
 import type { StorageStrategy } from "@/lib/types/storage";
 

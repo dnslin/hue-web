@@ -4,8 +4,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Menu, Search, Bell, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAdminStore } from "@/lib/store/admin-store";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useAdminStore } from "@/lib/store/admin";
+import { useAuthStore } from "@/lib/store/auth";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { UserDropdownMenu } from "@/components/shared/user-dropdown-menu";
 import {

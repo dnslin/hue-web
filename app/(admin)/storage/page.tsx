@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, Search, Filter, Trash2, Power, PowerOff } from "lucide-react";
-import { useStorageStrategyStore } from "@/lib/store/storage-store";
+import { useStorageStrategyStore } from "@/lib/store/storage";
 import PageContainer from "@/components/layouts/page-container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useAuthStore } from "@/lib/store/auth";
 import { ReactNode } from "react";
 import { getGravatarUrl } from "@/lib/utils/gravatar";
 // 定义导航项类型

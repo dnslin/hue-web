@@ -8,7 +8,7 @@ import {
   updateSecuritySettingsAction,
   updateMultipleSettingsAction,
   testEmailSettingsAction,
-} from "@/lib/actions/settings/settings.actions";
+} from "@/lib/actions/settings/settings";
 import { AllSettingsData, SettingType } from "@/lib/types/settings";
 import {
   BasicSettingFormData,
@@ -409,3 +409,4 @@ export const useSettingsData = () => {
     hasUnsavedChanges: store.hasUnsavedChanges,
   };
 };
+

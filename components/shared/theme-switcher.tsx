@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store/use-app-store";
+import { useAppStore } from "@/lib/store/use-app";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 

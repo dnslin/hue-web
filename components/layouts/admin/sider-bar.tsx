@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAdminStore } from "@/lib/store/admin-store";
+import { useAdminStore } from "@/lib/store/admin";
 import { AdminNavigation } from "./admin-navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";

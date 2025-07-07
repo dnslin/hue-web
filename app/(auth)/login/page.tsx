@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AuthLayout from "@/components/layouts/auth-layout";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useAuthStore } from "@/lib/store/auth";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { ForgotPasswordDialog } from "@/components/auth/forgot-password-dialog";

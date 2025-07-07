@@ -17,7 +17,7 @@ import {
   syncRolePermissionsAction,
   assignPermissionToRoleAction,
   removePermissionFromRoleAction,
-} from "@/lib/actions/roles/role.actions";
+} from "@/lib/actions/roles/role";
 import { handleStoreError } from "@/lib/utils/error-handler";
 import { showToast } from "@/lib/utils/toast";
 import {

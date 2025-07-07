@@ -6,7 +6,7 @@ import { AdminUserResponse, UserListParams } from "@/lib/types/user";
 import type { PaginatedApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
 import { useUserFilterStore } from "./user-filter.store";
-import { getUsersAction } from "@/lib/actions/users/user.actions";
+import { getUsersAction } from "@/lib/actions/users/user";
 import { handleStoreError } from "@/lib/utils/error-handler";
 
 /**
@@ -177,3 +177,4 @@ import { createStore } from "zustand";
 
 // 从 createUserDataSlice 创建一个独立的 store 实例
 export const userDataStore = createStore(createUserDataSlice);
+

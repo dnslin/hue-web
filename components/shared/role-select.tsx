@@ -6,7 +6,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
-import { useRoleStore } from "@/lib/store/role-store";
+import { useRoleStore } from "@/lib/store/role";
 import { Role } from "@/lib/types/roles";
 import { cn } from "@/lib/utils";
 

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useSettingsData,
   useSettingsActions,
-} from "@/lib/store/settings-store";
+} from "@/lib/store/settings";
 import { SettingType } from "@/lib/types/settings";
 import { BasicSettingsForm } from "./basic-settings-form";
 import { EmailSettingsForm } from "./email-settings-form";

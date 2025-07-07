@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Role, Permission } from "@/lib/types/roles";
-import { useRoleStore, PermissionGroupFE } from "@/lib/store/role-store";
+import { useRoleStore, PermissionGroupFE } from "@/lib/store/role";
 import {
   permissionItemVariants,
   permissionGroupVariants,

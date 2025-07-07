@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthLayout from "@/components/layouts/auth-layout";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useAuthStore } from "@/lib/store/auth";
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { Mail, CheckCircle2, RefreshCw } from "lucide-react";

@@ -25,7 +25,7 @@ import { RolePermissions } from "./permissions";
 import { RoleCreateDialog } from "./create-dialog";
 import { RoleEditDialog } from "./edit-dialog";
 import { Role } from "@/lib/types/roles"; // 修复：从正确的类型定义文件导入
-import { useRoleStore } from "@/lib/store/role-store";
+import { useRoleStore } from "@/lib/store/role";
 import { formatDateOnly } from "@/lib/utils/date-formatter";
 import { getRoleColor } from "@/lib/utils/role-helpers";
 import {

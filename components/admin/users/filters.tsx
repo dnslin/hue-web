@@ -24,7 +24,7 @@ import {
   UserFilters as UserFilterState,
 } from "@/lib/store/user/user-filter.store";
 import { userDataStore } from "@/lib/store/user/user-data.store";
-import { useRoleStore } from "@/lib/store/role-store";
+import { useRoleStore } from "@/lib/store/role";
 import { Role } from "@/lib/types/roles";
 
 interface UserFiltersProps {

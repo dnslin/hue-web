@@ -45,7 +45,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { showToast } from "@/lib/utils/toast";
-import { useStorageStrategyStore } from "@/lib/store/storage-store";
+import { useStorageStrategyStore } from "@/lib/store/storage";
 import { StorageStrategy } from "@/lib/types/storage";
 import {
   updateStorageStrategyFormSchema,

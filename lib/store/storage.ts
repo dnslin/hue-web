@@ -25,7 +25,7 @@ import {
   updateStorageStrategyAction,
   deleteStorageStrategyAction,
   testS3ConnectionAction,
-} from "@/lib/actions/storage/storage.actions";
+} from "@/lib/actions/storage/storage";
 
 interface StorageStrategyStoreState {
   // 数据状态

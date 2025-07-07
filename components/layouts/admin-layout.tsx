@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useAdminStore } from "@/lib/store/admin-store";
+import { useAdminStore } from "@/lib/store/admin";
 import { generateBreadcrumbs } from "@/lib/constants/admin-navigation";
 import { Sidebar } from "./admin/sider-bar";
 import { TopBar } from "./admin/top-bar";

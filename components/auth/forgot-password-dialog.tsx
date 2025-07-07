@@ -30,7 +30,7 @@ import {
   EyeOff,
   Lock,
 } from "lucide-react";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useAuthStore } from "@/lib/store/auth";
 import {
   forgotPasswordSchema,
   resetPasswordSchema,

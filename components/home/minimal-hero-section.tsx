@@ -6,7 +6,7 @@ import { Image as ImageIcon, Upload, Settings } from "lucide-react";
 import { ReactNode } from "react";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import { TypingAnimation } from "@/components/magicui/typing-animation";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useAuthStore } from "@/lib/store/auth";
 
 // 定义动画变体
 const containerVariants = {

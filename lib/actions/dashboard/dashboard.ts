@@ -16,7 +16,7 @@ import {
   SystemStatus as SystemStatusEnum, // 导入 SystemStatus 枚举以用于状态字段
 } from "@/lib/types/dashboard";
 import { UserListResponse } from "@/lib/types/user";
-import { getUsersAction } from "@/lib/actions/users/user.actions";
+import { getUsersAction } from "@/lib/actions/users/user";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
 
 async function getImagesCount(apiService: any): Promise<number> {
@@ -190,3 +190,4 @@ export async function getDashboardDataAction(): Promise<
     return { error: dashboardError, success: false };
   }
 }
+

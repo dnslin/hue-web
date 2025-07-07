@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAdminStore } from "@/lib/store/admin-store";
+import { useAdminStore } from "@/lib/store/admin";
 import {
   adminNavigation,
   type NavigationItem,

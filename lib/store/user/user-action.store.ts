@@ -16,7 +16,7 @@ import {
   updateAdminUserAction,
   resetPasswordUserAction,
   createAdminUserAction,
-} from "@/lib/actions/users/user.actions";
+} from "@/lib/actions/users/user";
 import { userDataStore } from "./user-data.store";
 import { useUserCacheStore } from "./user-cache.store";
 import { handleStoreError } from "@/lib/utils/error-handler";
@@ -429,3 +429,4 @@ export const useUserActionStore = create<UserActionState>((set) => ({
 }));
 
 export const userActionStore = useUserActionStore;
+
