@@ -473,7 +473,7 @@ export async function resetPasswordUserAction(
     } else {
       return {
         success: false,
-        error: apiResponse.message || "重置密码失败",
+        error: apiResponse.msg || "重置密码失败",
       };
     }
   } catch (error: any) {

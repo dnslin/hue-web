@@ -267,6 +267,18 @@ definitions:
       - resource_id
       - type
     type: object
+  dtos.DailyUploadStatDTO:
+    properties:
+      date:
+        description: "日期, 格式: YYYY-MM-DD"
+        type: string
+      upload_count:
+        description: 上传总数
+        type: integer
+      upload_size:
+        description: 上传总大小 (字节)
+        type: integer
+    type: object
   dtos.ExifInfoDTO:
     properties:
       altitude:
@@ -383,6 +395,25 @@ definitions:
     required:
       - password
       - username_or_email
+    type: object
+  dtos.OrphanedFileResultDTO:
+    properties:
+      cleaned_count:
+        type: integer
+      dry_run:
+        type: boolean
+      failed_to_delete:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      orphaned_files:
+        items:
+          type: string
+        type: array
+      scanned_files:
+        type: integer
     type: object
   dtos.PermissionCreateDTO:
     properties:
@@ -604,6 +635,8 @@ definitions:
     type: object
   dtos.StorageStrategyDTO:
     properties:
+      id:
+        type: integer
       is_enabled:
         type: boolean
       local_config:
@@ -614,11 +647,16 @@ definitions:
         allOf:
           - $ref: "#/definitions/dtos.S3ConfigDTO"
         description: 根据Type的值，S3Config或LocalConfig必须存在一个
+      total_files:
+        type: integer
       type:
         enum:
           - s3
           - local
         type: string
+      used_space_bytes:
+        description: Statistics
+        type: integer
     required:
       - is_enabled
       - name
@@ -643,6 +681,19 @@ definitions:
         type: string
     required:
       - test_email
+    type: object
+  dtos.TopUploaderDTO:
+    properties:
+      upload_count:
+        description: 该用户的总上传数
+        type: integer
+      upload_size:
+        description: 该用户的总上传大小 (字节)
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
     type: object
   dtos.UpdateBasicSiteSettingsInputDTO:
     properties:
@@ -805,6 +856,31 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  models.Album:
+    properties:
+      coverImage:
+        $ref: "#/definitions/models.Image"
+      coverImageID:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
+      description:
+        type: string
+      id:
+        type: integer
+      isPublic:
+        type: boolean
+      name:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: "#/definitions/models.User"
+      userID:
+        type: integer
+    type: object
   models.AuditLogActionType:
     enum:
       - USER_REGISTER
@@ -909,6 +985,111 @@ definitions:
         type: integer
       userRegistrationEnabled:
         type: boolean
+    type: object
+  models.Image:
+    properties:
+      album:
+        $ref: "#/definitions/models.Album"
+      albumID:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
+      exif:
+        $ref: "#/definitions/models.ImageExif"
+      exifID:
+        type: integer
+      filename:
+        type: string
+      filepath:
+        type: string
+      height:
+        type: integer
+      id:
+        type: integer
+      isPublic:
+        type: boolean
+      mimeType:
+        type: string
+      moderationStatus:
+        type: integer
+      size:
+        type: integer
+      storageStrategy:
+        $ref: "#/definitions/models.StorageStrategy"
+      storageStrategyID:
+        type: integer
+      thumbnailFilepath:
+        type: string
+      thumbnailURL:
+        type: string
+      updatedAt:
+        type: string
+      url:
+        type: string
+      user:
+        $ref: "#/definitions/models.User"
+      userID:
+        type: integer
+      width:
+        type: integer
+    type: object
+  models.ImageExif:
+    properties:
+      altitude:
+        type: number
+      cameraModel:
+        type: string
+      createdAt:
+        type: string
+      dateTimeOriginal:
+        description: 拍摄参数
+        type: string
+      deletedAt:
+        $ref: "#/definitions/gorm.DeletedAt"
+      exposureBiasValue:
+        type: number
+      exposureProgram:
+        type: integer
+      exposureTime:
+        type: string
+      filmMode:
+        description: 富士相机特定字段
+        type: string
+      flash:
+        type: integer
+      fnumber:
+        type: number
+      focalLength:
+        type: number
+      highlightTone:
+        type: string
+      id:
+        type: integer
+      isospeedRatings:
+        type: integer
+      latitude:
+        description: GPS 信息
+        type: number
+      lens:
+        type: string
+      longitude:
+        type: number
+      make:
+        description: 相机信息
+        type: string
+      meteringMode:
+        type: integer
+      rawExifData:
+        description: 原始数据
+        type: string
+      shadowTone:
+        type: string
+      updatedAt:
+        type: string
+      whiteBalance:
+        type: integer
     type: object
   models.ImageProcessingSetting:
     properties:
@@ -1054,11 +1235,16 @@ definitions:
         type: string
       s3SecretAccessKey:
         type: string
+      totalFiles:
+        type: integer
       type:
         description: "'s3' or 'local'"
         type: string
       updatedAt:
         type: string
+      usedSpaceBytes:
+        description: Statistics
+        type: integer
     type: object
   models.User:
     properties:
@@ -1129,6 +1315,16 @@ definitions:
         maxLength: 255
         minLength: 1
         type: string
+    type: object
+  utils.Pagination:
+    properties:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      rows: {}
+      total:
+        type: integer
     type: object
   utils.PaginationMeta:
     properties:
@@ -1291,9 +1487,75 @@ paths:
       summary: 查询审计日志
       tags:
         - Admin - Audit
+  /admin/dashboard/daily-stats:
+    get:
+      consumes:
+        - application/json
+      description: 获取最近N天的每日上传统计数据
+      parameters:
+        - default: 30
+          description: 查询天数
+          in: query
+          name: days
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.DailyUploadStatDTO"
+                    type: array
+                type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取每日上传统计
+      tags:
+        - Dashboard
+  /admin/dashboard/top-uploaders:
+    get:
+      consumes:
+        - application/json
+      description: 获取上传数量最多的前10名用户
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.TopUploaderDTO"
+                    type: array
+                type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取热门上传用户
+      tags:
+        - Dashboard
   /admin/storage:
     get:
-      description: 管理员获取存储策略列表（分页）
+      description: 管理员获取存储策略列表（分页），包含统计信息
       parameters:
         - default: 1
           description: 页码
@@ -1328,7 +1590,7 @@ paths:
               - properties:
                   data:
                     items:
-                      $ref: "#/definitions/models.StorageStrategy"
+                      $ref: "#/definitions/dtos.StorageStrategyDTO"
                     type: array
                   meta:
                     $ref: "#/definitions/utils.PaginationMeta"
@@ -1412,7 +1674,7 @@ paths:
       tags:
         - Storage
     get:
-      description: 管理员根据ID获取单个存储策略
+      description: 管理员根据ID获取单个存储策略，包含统计信息
       parameters:
         - description: 存储策略ID
           in: path
@@ -1429,7 +1691,7 @@ paths:
               - $ref: "#/definitions/utils.Response"
               - properties:
                   data:
-                    $ref: "#/definitions/models.StorageStrategy"
+                    $ref: "#/definitions/dtos.StorageStrategyDTO"
                 type: object
         "400":
           description: 请求参数错误
@@ -1491,6 +1753,119 @@ paths:
       security:
         - ApiKeyAuth: []
       summary: 更新存储策略
+      tags:
+        - Storage
+  /admin/storage/{id}/orphaned-files:
+    delete:
+      description: 扫描并删除在物理上存在但在数据库中没有记录的文件
+      parameters:
+        - description: 存储策略ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 清理成功
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/dtos.OrphanedFileResultDTO"
+                type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 资源未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 清理指定存储中的孤立文件
+      tags:
+        - Storage
+    get:
+      description: (Dry Run) 扫描存储空间，找出在物理上存在但在数据库中没有记录的文件
+      parameters:
+        - description: 存储策略ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/dtos.OrphanedFileResultDTO"
+                type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 资源未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 预览指定存储中的孤立文件
+      tags:
+        - Storage
+  /admin/storage/{id}/recalculate:
+    post:
+      description: 管理员手动触发对指定存储策略的用量和文件数进行重新计算
+      parameters:
+        - description: 存储策略ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 校准成功，返回更新后的策略信息
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/dtos.StorageStrategyDTO"
+                type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 资源未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 手动校准存储策略统计数据
       tags:
         - Storage
   /admin/storage/status:
@@ -3165,6 +3540,142 @@ paths:
       tags:
         - Settings
         - Public
+  /recycle-bin:
+    get:
+      consumes:
+        - application/json
+      description: 获取当前用户回收站中的项目列表，支持分页
+      parameters:
+        - description: Page number
+          in: query
+          name: page
+          type: integer
+        - description: Page size
+          in: query
+          name: pageSize
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    allOf:
+                      - $ref: "#/definitions/utils.Pagination"
+                      - properties:
+                          rows:
+                            items:
+                              $ref: "#/definitions/models.Image"
+                            type: array
+                        type: object
+                type: object
+        "400":
+          description: 请求错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "401":
+          description: 未授权
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 列出回收站项目
+      tags:
+        - Recycle Bin
+  /recycle-bin/purge/{id}:
+    delete:
+      consumes:
+        - application/json
+      description: 从回收站中永久删除指定的图片
+      parameters:
+        - description: 图片ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    properties:
+                      message:
+                        type: string
+                    type: object
+                type: object
+        "400":
+          description: 请求错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "401":
+          description: 未授权
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 永久删除图片
+      tags:
+        - Recycle Bin
+  /recycle-bin/restore/{id}:
+    post:
+      consumes:
+        - application/json
+      description: 从回收站中恢复指定的图片
+      parameters:
+        - description: 图片ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    properties:
+                      message:
+                        type: string
+                    type: object
+                type: object
+        "400":
+          description: 请求错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "401":
+          description: 未授权
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 恢复图片
+      tags:
+        - Recycle Bin
   /roles:
     get:
       consumes:
