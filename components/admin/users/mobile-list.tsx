@@ -3,6 +3,9 @@
 import { User } from "@/lib/types/user";
 import { UserMobileCard } from "./mobile-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { useUserSelectionStore } from "@/lib/store/user/selection";
 
 interface UserMobileListProps {
   users: User[];
@@ -13,6 +16,12 @@ export function UserMobileList({
   users,
   loading = false,
 }: UserMobileListProps) {
+  const { selectedUserIds, toggleAllUsersSelection, isAllSelected, clearSelection } = useUserSelectionStore();
+  
+  const allUserIdsOnPage = users.map((u) => u.id);
+  const isAllOnPageSelected = isAllSelected(allUserIdsOnPage);
+  const hasSelection = selectedUserIds.size > 0;
+
   if (loading) {
     return (
       <div className="space-y-3 mobile-scroll-container">
@@ -60,10 +69,41 @@ export function UserMobileList({
   }
 
   return (
-    <div className="space-y-3 mobile-scroll-container">
-      {users.map((user) => (
-        <UserMobileCard key={user.id} user={user} />
-      ))}
+    <div className="space-y-3">
+      {/* 移动端批量选择控制栏 */}
+      {users.length > 0 && (
+        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              checked={isAllOnPageSelected}
+              onCheckedChange={(checked: boolean | "indeterminate") =>
+                toggleAllUsersSelection(allUserIdsOnPage, !!checked)
+              }
+              aria-label="Select all users on this page"
+            />
+            <span className="text-sm font-medium">
+              {isAllOnPageSelected ? "取消全选" : "全选当前页"}
+            </span>
+          </div>
+          {hasSelection && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="text-xs"
+            >
+              清除选择 ({selectedUserIds.size})
+            </Button>
+          )}
+        </div>
+      )}
+      
+      {/* 用户卡片列表 */}
+      <div className="space-y-3 mobile-scroll-container">
+        {users.map((user) => (
+          <UserMobileCard key={user.id} user={user} />
+        ))}
+      </div>
     </div>
   );
 }

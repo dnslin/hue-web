@@ -10,12 +10,15 @@ import { UserTable } from "./table";
 import { UserMobileList } from "./mobile-list";
 import { UserPagination } from "./pagination";
 import { UserCreateDialog } from "./create-dialog";
+import { BatchActions } from "./batch-actions";
 import { User } from "@/lib/types/user";
 import { userDataStore } from "@/lib/store/user/data";
 import { useUserFilterStore } from "@/lib/store/user/filter";
 import { useUserDataHydration } from "@/lib/store/user/hydration";
+import { useUserSelectionStore } from "@/lib/store/user/selection";
 import { getAllUsersForExportAction } from "@/lib/actions/users/user";
 import { showToast } from "@/lib/utils/toast";
+import { cn } from "@/lib/utils";
 
 interface UserListProps {
   isMobile?: boolean;
@@ -24,6 +27,7 @@ interface UserListProps {
 export function UserList({ isMobile = false }: UserListProps) {
   const { users, total, loading, error } = useStore(userDataStore);
   const { filters, setFilters } = useUserFilterStore();
+  const { selectedUserIds } = useUserSelectionStore();
   const isHydrated = useUserDataHydration();
 
   useEffect(() => {
@@ -167,6 +171,11 @@ export function UserList({ isMobile = false }: UserListProps) {
         </CardContent>
       </Card>
 
+      {/* 批量操作工具栏 */}
+      {!isMobile && selectedUserIds.size > 0 && (
+        <BatchActions />
+      )}
+
       {/* 用户列表 */}
       <Card>
         <CardHeader>
@@ -193,11 +202,17 @@ export function UserList({ isMobile = false }: UserListProps) {
       </Card>
 
       {/* 分页 */}
-      <Card className="py-2 mb-1">
+      <Card className={cn(
+        "py-2",
+        isMobile ? "mb-24" : "mb-1" // 移动端增加更多底部空间，为批量操作面板留出空间
+      )}>
         <CardContent className="px-2">
           <UserPagination isMobile={isMobile} />
         </CardContent>
       </Card>
+
+      {/* 移动端批量操作面板 */}
+      {isMobile && <BatchActions isMobile />}
     </div>
   );
 }

@@ -3,16 +3,22 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User, getUserDisplayName } from "@/lib/types/user";
 import { getGravatarUrl, getUserInitials } from "@/lib/utils/gravatar";
 import { getRoleBadgeInfo } from "@/lib/utils/role-helpers";
+import { useUserSelectionStore } from "@/lib/store/user/selection";
 import { UserActions } from "./actions";
+import { cn } from "@/lib/utils";
 
 interface UserMobileCardProps {
   user: User;
 }
 
 export function UserMobileCard({ user }: UserMobileCardProps) {
+  const { toggleUserSelection, isUserSelected } = useUserSelectionStore();
+  const isSelected = isUserSelected(user.id);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("zh-CN", {
       year: "numeric",
@@ -29,28 +35,49 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
     return `${mb} MB`;
   };
 
-  // This logic is now centralized in lib/utils/role-helpers.ts
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 避免点击操作按钮时触发选择
+    if ((e.target as HTMLElement).closest('[data-user-actions]') || 
+        (e.target as HTMLElement).closest('[role="checkbox"]')) {
+      return;
+    }
+    toggleUserSelection(user.id);
+  };
 
   return (
-    <Card className="admin-card mobile-user-card border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+    <Card 
+      className={cn(
+        "admin-card mobile-user-card border-0 shadow-sm bg-card/50 backdrop-blur-sm transition-all duration-200 cursor-pointer",
+        isSelected && "ring-2 ring-primary/50 bg-primary/5"
+      )}
+      onClick={handleCardClick}
+    >
       <CardContent className="p-3">
         <div className="space-y-3">
           {/* 用户基本信息 - 优化布局 */}
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
-              <AvatarImage
-                src={getGravatarUrl(user.email)}
-                alt={user.username}
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => toggleUserSelection(user.id)}
+                aria-label={`Select user ${user.username}`}
+                className="mt-1"
               />
-              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-                {getUserInitials(getUserDisplayName(user))}
-              </AvatarFallback>
-            </Avatar>
+              <Avatar className="h-10 w-10 flex-shrink-0 ring-1 ring-primary/10">
+                <AvatarImage
+                  src={getGravatarUrl(user.email)}
+                  alt={user.username}
+                />
+                <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
+                  {getUserInitials(getUserDisplayName(user))}
+                </AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex-1 min-w-0 pr-2">
               <div className="space-y-1">
                 <div className="flex flex-col gap-2">
                   <h3
-                    className="font-semibold text-sm leading-tight text-foreground truncate max-w-[300px]"
+                    className="font-semibold text-sm leading-tight text-foreground truncate max-w-[200px]"
                     title={getUserDisplayName(user)}
                   >
                     {getUserDisplayName(user)}
@@ -75,7 +102,7 @@ export function UserMobileCard({ user }: UserMobileCardProps) {
                 )}
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-end gap-2" data-user-actions>
               <UserActions user={user} />
             </div>
           </div>
