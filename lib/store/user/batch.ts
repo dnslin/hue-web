@@ -4,11 +4,11 @@ import { useUserFilterStore } from "./filter";
 import { useUserSelectionStore } from "./selection";
 import { useUserCacheStore } from "./cache";
 import { User, UserStatus } from "@/lib/types/user";
-import { 
+import {
   batchApproveUsersAction,
   batchBanUsersAction,
   batchRejectUsersAction,
-  batchUnbanUsersAction
+  batchUnbanUsersAction,
 } from "@/lib/actions/users/user";
 import { showToast } from "@/lib/utils/toast";
 
@@ -57,7 +57,10 @@ export interface UserBatchState {
    * @param action - 批量操作类型
    * @param reason - 拒绝理由 (仅在 reject 操作时需要)
    */
-  executeBatchAction: (action: BatchAction, reason?: string) => Promise<BatchActionResult>;
+  executeBatchAction: (
+    action: BatchAction,
+    reason?: string
+  ) => Promise<BatchActionResult>;
   /**
    * 批量批准用户
    * @param userIds - 用户 ID 列表
@@ -73,7 +76,10 @@ export interface UserBatchState {
    * @param userIds - 用户 ID 列表
    * @param reason - 拒绝理由
    */
-  batchRejectUsers: (userIds: number[], reason?: string) => Promise<BatchActionResult>;
+  batchRejectUsers: (
+    userIds: number[],
+    reason?: string
+  ) => Promise<BatchActionResult>;
   /**
    * 批量解封用户
    * @param userIds - 用户 ID 列表
@@ -108,20 +114,20 @@ const filterUserIdsByStatus = (
   allUsers: User[]
 ): { validIds: number[]; filteredIds: number[]; filterReason: string } => {
   const allowedStatuses = getAllowedStatusesForAction(action);
-  
+
   if (allowedStatuses.length === 0) {
     return {
       validIds: [],
       filteredIds: selectedIds,
-      filterReason: "不支持的操作类型"
+      filterReason: "不支持的操作类型",
     };
   }
 
   const validIds: number[] = [];
   const filteredIds: number[] = [];
 
-  selectedIds.forEach(id => {
-    const user = allUsers.find(u => u.id === id);
+  selectedIds.forEach((id) => {
+    const user = allUsers.find((u) => u.id === id);
     if (user && allowedStatuses.includes(user.status)) {
       validIds.push(id);
     } else {
@@ -131,9 +137,9 @@ const filterUserIdsByStatus = (
 
   const actionNames = {
     approve: "批准",
-    ban: "封禁", 
+    ban: "封禁",
     reject: "拒绝",
-    unban: "解封"
+    unban: "解封",
   };
 
   const statusNames = {
@@ -142,10 +148,12 @@ const filterUserIdsByStatus = (
     [UserStatus.BANNED]: "封禁",
     [UserStatus.REJECTED]: "已拒绝",
     [UserStatus.DELETED]: "已删除",
-    [UserStatus.EMAIL_PENDING]: "待邮件激活"
+    [UserStatus.EMAIL_PENDING]: "待邮件激活",
   };
 
-  const allowedStatusNames = allowedStatuses.map(s => statusNames[s]).join("、");
+  const allowedStatusNames = allowedStatuses
+    .map((s) => statusNames[s])
+    .join("、");
   const filterReason = `${actionNames[action]}操作只能对${allowedStatusNames}状态的用户执行`;
 
   return { validIds, filteredIds, filterReason };
@@ -161,14 +169,17 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
   isBatching: false,
   lastBatchSuccessAt: null,
 
-  executeBatchAction: async (action: BatchAction, reason?: string): Promise<BatchActionResult> => {
+  executeBatchAction: async (
+    action: BatchAction,
+    reason?: string
+  ): Promise<BatchActionResult> => {
     const selectedIds = Array.from(
       useUserSelectionStore.getState().selectedUserIds
     );
     if (selectedIds.length === 0) {
       const result = {
         success: false,
-        message: "未选择任何用户进行批量操作"
+        message: "未选择任何用户进行批量操作",
       };
       showToast.warning(result.message);
       return result;
@@ -176,7 +187,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
 
     // 获取当前页面的所有用户数据，用于状态过滤
     const allUsers = userDataStore.getState().users;
-    
+
     // 根据操作类型过滤用户
     const { validIds, filteredIds, filterReason } = filterUserIdsByStatus(
       selectedIds,
@@ -191,7 +202,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
         message: `无符合条件的用户可执行此操作`,
         actualCount: 0,
         filteredCount: filteredIds.length,
-        filterReason
+        filterReason,
       };
       showToast.warning(`${result.message}：${filterReason}`);
       return result;
@@ -199,14 +210,16 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
 
     // 如果有用户被过滤，显示提示
     if (filteredIds.length > 0) {
-      showToast.info(`已过滤 ${filteredIds.length} 个不符合条件的用户，将对 ${validIds.length} 个用户执行操作`);
+      showToast.info(
+        `已过滤 ${filteredIds.length} 个不符合条件的用户，将对 ${validIds.length} 个用户执行操作`
+      );
     }
 
     set({ isBatching: true });
 
     try {
       let result: BatchActionResult;
-      
+
       switch (action) {
         case "approve":
           result = await get().batchApproveUsers(validIds);
@@ -223,7 +236,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
         default:
           result = {
             success: false,
-            message: "不支持的批量操作类型"
+            message: "不支持的批量操作类型",
           };
       }
 
@@ -246,7 +259,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
         message: "批量操作执行失败",
         actualCount: validIds.length,
         filteredCount: filteredIds.length,
-        filterReason: filteredIds.length > 0 ? filterReason : undefined
+        filterReason: filteredIds.length > 0 ? filterReason : undefined,
       };
       showToast.error(result.message);
       return result;
@@ -258,21 +271,21 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
   batchApproveUsers: async (userIds: number[]): Promise<BatchActionResult> => {
     try {
       const response = await batchApproveUsersAction(userIds);
-      
+
       if (response.code === 0) {
         const result = {
           success: true,
-          message: response.msg || "批量批准用户成功",
+          message: "批量批准用户成功",
           successCount: (response as any).data?.successCount,
           failedCount: (response as any).data?.failedCount,
-          details: (response as any).data
+          details: (response as any).data,
         };
         showToast.success(result.message);
         return result;
       } else {
         const result = {
           success: false,
-          message: response.msg || "批量批准用户失败"
+          message: response.msg || "批量批准用户失败",
         };
         showToast.error(result.message);
         return result;
@@ -280,7 +293,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
     } catch (error: any) {
       const result = {
         success: false,
-        message: error.msg || "批量批准用户时发生错误"
+        message: error.msg || "批量批准用户时发生错误",
       };
       showToast.error(result.message);
       return result;
@@ -290,21 +303,21 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
   batchBanUsers: async (userIds: number[]): Promise<BatchActionResult> => {
     try {
       const response = await batchBanUsersAction(userIds);
-      
+
       if (response.code === 0) {
         const result = {
           success: true,
-          message: response.msg || "批量封禁用户成功",
+          message: "批量封禁用户成功",
           successCount: (response as any).data?.successCount,
           failedCount: (response as any).data?.failedCount,
-          details: (response as any).data
+          details: (response as any).data,
         };
         showToast.success(result.message);
         return result;
       } else {
         const result = {
           success: false,
-          message: response.msg || "批量封禁用户失败"
+          message: response.msg || "批量封禁用户失败",
         };
         showToast.error(result.message);
         return result;
@@ -312,31 +325,34 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
     } catch (error: any) {
       const result = {
         success: false,
-        message: error.msg || "批量封禁用户时发生错误"
+        message: error.msg || "批量封禁用户时发生错误",
       };
       showToast.error(result.message);
       return result;
     }
   },
 
-  batchRejectUsers: async (userIds: number[], reason?: string): Promise<BatchActionResult> => {
+  batchRejectUsers: async (
+    userIds: number[],
+    reason?: string
+  ): Promise<BatchActionResult> => {
     try {
       const response = await batchRejectUsersAction(userIds, reason);
-      
+
       if (response.code === 0) {
         const result = {
           success: true,
-          message: response.msg || "批量拒绝用户成功",
+          message: "批量拒绝用户成功",
           successCount: (response as any).data?.successCount,
           failedCount: (response as any).data?.failedCount,
-          details: (response as any).data
+          details: (response as any).data,
         };
         showToast.success(result.message);
         return result;
       } else {
         const result = {
           success: false,
-          message: response.msg || "批量拒绝用户失败"
+          message: response.msg || "批量拒绝用户失败",
         };
         showToast.error(result.message);
         return result;
@@ -344,7 +360,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
     } catch (error: any) {
       const result = {
         success: false,
-        message: error.msg || "批量拒绝用户时发生错误"
+        message: error.msg || "批量拒绝用户时发生错误",
       };
       showToast.error(result.message);
       return result;
@@ -354,21 +370,21 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
   batchUnbanUsers: async (userIds: number[]): Promise<BatchActionResult> => {
     try {
       const response = await batchUnbanUsersAction(userIds);
-      
+
       if (response.code === 0) {
         const result = {
           success: true,
-          message: response.msg || "批量解封用户成功",
+          message: "批量解封用户成功",
           successCount: (response as any).data?.successCount,
           failedCount: (response as any).data?.failedCount,
-          details: (response as any).data
+          details: (response as any).data,
         };
         showToast.success(result.message);
         return result;
       } else {
         const result = {
           success: false,
-          message: response.msg || "批量解封用户失败"
+          message: response.msg || "批量解封用户失败",
         };
         showToast.error(result.message);
         return result;
@@ -376,7 +392,7 @@ export const useUserBatchStore = create<UserBatchState>((set, get) => ({
     } catch (error: any) {
       const result = {
         success: false,
-        message: error.msg || "批量解封用户时发生错误"
+        message: error.msg || "批量解封用户时发生错误",
       };
       showToast.error(result.message);
       return result;
