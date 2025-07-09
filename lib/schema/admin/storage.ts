@@ -31,6 +31,7 @@ export const s3ConfigSchema = z.object({
   endpoint: z.string().min(1, "终端节点不能为空").url("请输入有效的URL地址"),
   baseUrl: z.string().url("请输入有效的URL地址").optional().or(z.literal("")),
   forcePathStyle: z.boolean().default(false),
+  forcePresignedUrl: z.boolean().default(false),
 });
 
 /**
@@ -58,6 +59,7 @@ export const s3ConfigUpdateSchema = z.object({
   endpoint: z.string().min(1, "终端节点不能为空").url("请输入有效的URL地址"),
   baseUrl: z.string().url("请输入有效的URL地址").optional().or(z.literal("")),
   forcePathStyle: z.boolean().default(false),
+  forcePresignedUrl: z.boolean().default(false),
 });
 
 /**

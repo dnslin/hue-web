@@ -170,6 +170,7 @@ const sanitizeStrategy = (strategy: StorageStrategy): StorageStrategy => {
       sanitizedStrategy.s3Endpoint = strategy.s3Config.endpoint;
       sanitizedStrategy.s3BaseUrl = strategy.s3Config.baseUrl;
       sanitizedStrategy.s3ForcePathStyle = strategy.s3Config.forcePathStyle;
+      sanitizedStrategy.s3ForcePresignedUrl = strategy.s3Config.forcePresignedUrl;
     } else {
       // 使用平铺字段构建嵌套配置
       sanitizedStrategy.s3Config = {
@@ -180,6 +181,7 @@ const sanitizeStrategy = (strategy: StorageStrategy): StorageStrategy => {
         endpoint: strategy.s3Endpoint || "",
         baseUrl: strategy.s3BaseUrl,
         forcePathStyle: strategy.s3ForcePathStyle,
+        forcePresignedUrl: strategy.s3ForcePresignedUrl,
       };
       // 确保敏感信息安全处理
       sanitizedStrategy.s3SecretAccessKey = strategy.s3SecretAccessKey ? "••••••••" : "";

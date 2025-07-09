@@ -148,6 +148,7 @@ export function StorageStrategyEditDialog({
         endpoint: strategy.s3Config?.endpoint || strategy.s3Endpoint || "",
         baseUrl: strategy.s3Config?.baseUrl || strategy.s3BaseUrl || "",
         forcePathStyle: strategy.s3Config?.forcePathStyle ?? strategy.s3ForcePathStyle ?? false,
+        forcePresignedUrl: strategy.s3Config?.forcePresignedUrl ?? strategy.s3ForcePresignedUrl ?? false,
       } : undefined;
 
       // 构建本地配置对象
@@ -186,6 +187,7 @@ export function StorageStrategyEditDialog({
           endpoint: "",
           baseUrl: "",
           forcePathStyle: false,
+          forcePresignedUrl: false,
         });
       }
     }
@@ -227,6 +229,7 @@ export function StorageStrategyEditDialog({
         endpoint: s3Config.endpoint,
         baseUrl: s3Config.baseUrl,
         forcePathStyle: s3Config.forcePathStyle,
+        forcePresignedUrl: s3Config.forcePresignedUrl,
       });
       setTestResult(result);
     } catch {
@@ -529,6 +532,29 @@ export function StorageStrategyEditDialog({
                             </FormLabel>
                             <FormDescription>
                               启用后使用路径样式访问（适用于 MinIO 等）
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="s3Config.forcePresignedUrl"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              强制预签名 URL
+                            </FormLabel>
+                            <FormDescription>
+                              启用后使用预签名 URL 直接从 S3 获取文件，减少服务器负载
                             </FormDescription>
                           </div>
                           <FormControl>

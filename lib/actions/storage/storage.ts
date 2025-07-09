@@ -137,6 +137,7 @@ export async function createStorageStrategyAction(
             endpoint: data.s3Config.endpoint,
             base_url: data.s3Config.baseUrl,
             force_path_style: data.s3Config.forcePathStyle,
+            force_presigned_url: data.s3Config.forcePresignedUrl,
           },
         }),
       ...(data.type === "local" &&
@@ -214,6 +215,7 @@ export async function updateStorageStrategyAction(
             endpoint: data.s3Config.endpoint,
             base_url: data.s3Config.baseUrl,
             force_path_style: data.s3Config.forcePathStyle,
+            force_presigned_url: data.s3Config.forcePresignedUrl,
           },
         }),
       ...(data.type === "local" &&
@@ -334,6 +336,7 @@ export async function testS3ConnectionAction(
       endpoint: config.endpoint,
       base_url: config.baseUrl,
       force_path_style: config.forcePathStyle,
+      force_presigned_url: config.forcePresignedUrl,
     };
 
     const response = await apiService.post<ApiResponse<any>>(

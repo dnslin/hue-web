@@ -17,6 +17,7 @@ export interface S3Config {
   endpoint: string;
   baseUrl?: string;
   forcePathStyle?: boolean;
+  forcePresignedUrl?: boolean;
 }
 
 // 存储策略基础接口 (匹配 swagger.yaml dtos.StorageStrategyDTO)
@@ -41,6 +42,7 @@ export interface StorageStrategy {
   s3Endpoint?: string;
   s3BaseUrl?: string;
   s3ForcePathStyle?: boolean;
+  s3ForcePresignedUrl?: boolean;
   localBasePath?: string;
 }
 
@@ -71,6 +73,7 @@ export interface StorageStrategyTestRequest {
   endpoint: string;
   baseUrl?: string;
   forcePathStyle?: boolean;
+  forcePresignedUrl?: boolean;
 }
 
 // 存储策略响应接口（用于列表展示）
@@ -146,6 +149,7 @@ export interface StorageStrategyFormData {
   s3Endpoint: string;
   s3BaseUrl: string;
   s3ForcePathStyle: boolean;
+  s3ForcePresignedUrl: boolean;
   // 本地配置
   localBasePath: string;
 }
