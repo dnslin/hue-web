@@ -11,7 +11,6 @@ import {
   Globe,
   Mail,
   Bell,
-  HardDrive,
   Server,
 } from "lucide-react";
 import React from "react";
@@ -132,31 +131,10 @@ export const adminNavigation: NavigationGroup[] = [
       },
       {
         id: "storage",
-        label: "存储管理",
+        label: "存储策略",
         href: "/storage",
         icon: Database,
-        description: "存储配置和空间管理",
-        defaultHref: "/storage", // 默认跳转到存储策略
-        children: [
-          {
-            id: "storage",
-            label: "存储策略",
-            href: "/storage",
-            icon: HardDrive,
-          },
-          {
-            id: "storage-usage",
-            label: "使用统计",
-            href: "/storage/usage",
-            icon: BarChart3,
-          },
-          {
-            id: "storage-cleanup",
-            label: "空间清理",
-            href: "/storage/cleanup",
-            icon: Database,
-          },
-        ],
+        description: "存储配置和策略管理",
       },
       {
         id: "appearance",
