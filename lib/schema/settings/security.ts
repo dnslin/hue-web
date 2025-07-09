@@ -109,37 +109,31 @@ export const securitySettingsSchema = z.object({
   ipWhitelist: z
     .string()
     .default("")
-    .transform((val) => parseIpListInput(val))
+    .optional()
+    .transform((val) => val ? parseIpListInput(val) : [])
     .refine(
       (ips) => {
+        if (!ips || ips.length === 0) return true; // 空数组是有效的
         const result = validateIpListWithDetails(ips);
         return result.isValid;
       },
       {
-        msg: (val) => {
-          const result = validateIpListWithDetails(val as string[]);
-          return result.errors.length > 0
-            ? result.errors.join("；")
-            : "IP白名单包含无效的IP地址或CIDR格式";
-        },
+        message: "IP白名单包含无效的IP地址或CIDR格式",
       }
     ),
   ipBlacklist: z
     .string()
     .default("")
-    .transform((val) => parseIpListInput(val))
+    .optional()
+    .transform((val) => val ? parseIpListInput(val) : [])
     .refine(
       (ips) => {
+        if (!ips || ips.length === 0) return true; // 空数组是有效的
         const result = validateIpListWithDetails(ips);
         return result.isValid;
       },
       {
-        msg: (val) => {
-          const result = validateIpListWithDetails(val as string[]);
-          return result.errors.length > 0
-            ? result.errors.join("；")
-            : "IP黑名单包含无效的IP地址或CIDR格式";
-        },
+        message: "IP黑名单包含无效的IP地址或CIDR格式",
       }
     ),
 });

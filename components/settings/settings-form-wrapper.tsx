@@ -48,7 +48,7 @@ export function SettingsFormWrapper<T extends Record<string, any>>({
   footer,
 }: SettingsFormWrapperProps<T>) {
   const { handleSubmit, formState, reset } = form;
-  const { isDirty, isValid } = formState;
+  const { isDirty } = formState;
 
   // 成功后重置表单
   useEffect(() => {
@@ -134,7 +134,7 @@ export function SettingsFormWrapper<T extends Record<string, any>>({
                   {/* 保存按钮 */}
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !isDirty || !isValid}
+                    disabled={isSubmitting || !isDirty}
                     className="min-w-[100px]"
                   >
                     {isSubmitting ? (
