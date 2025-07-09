@@ -8,12 +8,16 @@ import {
   Trash2,
   Server,
   HardDrive,
+  Calculator,
+  X,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StorageStrategy } from "@/lib/types/storage";
+import { StorageCleanupDialog } from "./cleanup-dialog";
+import { RecalculateDialog } from "./recalculate-dialog";
 
 interface StorageStrategyMobileCardProps {
   strategy: StorageStrategy;
@@ -22,6 +26,8 @@ interface StorageStrategyMobileCardProps {
   onToggleEnabled?: (strategy: StorageStrategy) => void;
   onEdit?: (strategy: StorageStrategy) => void;
   onDelete?: (strategy: StorageStrategy) => void;
+  onCleanupSuccess?: () => void;
+  onRecalculateSuccess?: () => void;
   isSubmitting?: boolean;
 }
 
@@ -32,6 +38,8 @@ export function StorageStrategyMobileCard({
   onToggleEnabled,
   onEdit,
   onDelete,
+  onCleanupSuccess,
+  onRecalculateSuccess,
   isSubmitting = false,
 }: StorageStrategyMobileCardProps) {
   const formatDate = (dateString: string) => {
@@ -129,45 +137,69 @@ export function StorageStrategyMobileCard({
           </div>
 
           {/* 操作按钮 */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-5 gap-1">
             <Button
               size="sm"
               variant="outline"
               onClick={() => onToggleEnabled?.(strategy)}
               disabled={isSubmitting}
-              className="mobile-action-button text-xs"
+              className="mobile-action-button text-xs px-1"
             >
               {strategy.isEnabled ? (
                 <>
-                  <PowerOff className="mr-1 h-3 w-3" />
-                  禁用
+                  <PowerOff className="h-3 w-3" />
                 </>
               ) : (
                 <>
-                  <Power className="mr-1 h-3 w-3" />
-                  启用
+                  <Power className="h-3 w-3" />
                 </>
               )}
             </Button>
+
+            <StorageCleanupDialog
+              strategy={strategy}
+              onSuccess={onCleanupSuccess}
+              trigger={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mobile-action-button text-xs px-1"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              }
+            />
+
+            <RecalculateDialog
+              strategy={strategy}
+              onSuccess={onRecalculateSuccess}
+              trigger={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mobile-action-button text-xs px-1"
+                >
+                  <Calculator className="h-3 w-3" />
+                </Button>
+              }
+            />
 
             <Button
               size="sm"
               variant="outline"
               onClick={() => onEdit?.(strategy)}
-              className="mobile-action-button text-xs"
+              className="mobile-action-button text-xs px-1"
             >
-              <Edit3 className="mr-1 h-3 w-3" />
-              编辑
+              <Edit3 className="h-3 w-3" />
             </Button>
 
             <Button
               size="sm"
               variant="outline"
               onClick={() => onDelete?.(strategy)}
-              className="mobile-action-button text-xs hover:bg-destructive hover:text-destructive-foreground"
+              className="mobile-action-button text-xs px-1 hover:bg-destructive hover:text-destructive-foreground"
             >
-              <Trash2 className="mr-1 h-3 w-3" />
-              删除
+              <X className="h-3 w-3" />
             </Button>
           </div>
         </div>

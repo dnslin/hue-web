@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Search, Filter, Trash2, Power, PowerOff } from "lucide-react";
+import { Plus, Search, Filter, Trash2, Power, PowerOff, Calculator } from "lucide-react";
 import { useStorageStrategyStore } from "@/lib/store/storage";
 import PageContainer from "@/components/layouts/page-container";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,8 @@ import { StorageStrategyEditDialog } from "@/components/admin/storage/edit-dialo
 import { StorageStrategyDeleteDialog } from "@/components/admin/storage/delete-dialog";
 import { StorageStrategyMobileList } from "@/components/admin/storage/mobile-list";
 import { StorageStrategyPagination } from "@/components/admin/storage/pagination";
+import { StorageCleanupDialog } from "@/components/admin/storage/cleanup-dialog";
+import { RecalculateDialog } from "@/components/admin/storage/recalculate-dialog";
 
 export default function StorageStrategiesPage() {
   const {
@@ -416,6 +418,14 @@ export default function StorageStrategiesPage() {
               onEdit={setEditingStrategy}
               onDelete={setDeletingStrategy}
               onCreateNew={() => setShowCreateDialog(true)}
+              onCleanupSuccess={() => {
+                fetchStrategies();
+                fetchStats();
+              }}
+              onRecalculateSuccess={() => {
+                fetchStrategies();
+                fetchStats();
+              }}
               isSubmitting={isSubmitting}
             />
           ) : isLoadingStrategies ? (
@@ -529,6 +539,7 @@ export default function StorageStrategiesPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {/* 启用/禁用按钮 */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -547,6 +558,38 @@ export default function StorageStrategiesPage() {
                               </>
                             )}
                           </Button>
+                          
+                          {/* 清理按钮 */}
+                          <StorageCleanupDialog
+                            strategy={strategy}
+                            onSuccess={() => {
+                              fetchStrategies();
+                              fetchStats();
+                            }}
+                            trigger={
+                              <Button size="sm" variant="outline">
+                                <Trash2 className="mr-1 h-3 w-3" />
+                                {isMobile ? "清理" : "空间清理"}
+                              </Button>
+                            }
+                          />
+                          
+                          {/* 校准按钮 */}
+                          <RecalculateDialog
+                            strategy={strategy}
+                            onSuccess={() => {
+                              fetchStrategies();
+                              fetchStats();
+                            }}
+                            trigger={
+                              <Button size="sm" variant="outline">
+                                <Calculator className="mr-1 h-3 w-3" />
+                                {isMobile ? "校准" : "统计校准"}
+                              </Button>
+                            }
+                          />
+                          
+                          {/* 编辑按钮 */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -554,6 +597,8 @@ export default function StorageStrategiesPage() {
                           >
                             编辑
                           </Button>
+                          
+                          {/* 删除按钮 */}
                           <Button
                             size="sm"
                             variant="outline"

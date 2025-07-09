@@ -16,6 +16,8 @@ interface StorageStrategyMobileListProps {
   onEdit?: (strategy: StorageStrategy) => void;
   onDelete?: (strategy: StorageStrategy) => void;
   onCreateNew?: () => void;
+  onCleanupSuccess?: () => void;
+  onRecalculateSuccess?: () => void;
   isSubmitting?: boolean;
 }
 
@@ -28,6 +30,8 @@ export function StorageStrategyMobileList({
   onEdit,
   onDelete,
   onCreateNew,
+  onCleanupSuccess,
+  onRecalculateSuccess,
   isSubmitting = false,
 }: StorageStrategyMobileListProps) {
   if (loading) {
@@ -97,6 +101,8 @@ export function StorageStrategyMobileList({
           onToggleEnabled={onToggleEnabled}
           onEdit={onEdit}
           onDelete={onDelete}
+          onCleanupSuccess={onCleanupSuccess}
+          onRecalculateSuccess={onRecalculateSuccess}
           isSubmitting={isSubmitting}
         />
       ))}

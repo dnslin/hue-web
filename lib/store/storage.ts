@@ -9,6 +9,7 @@ import {
   StorageStrategyTestResult,
   StorageStrategyStats,
   BatchUpdateStorageStatusRequest,
+  OrphanedFileResult,
 } from "@/lib/types/storage";
 import type { PaginatedApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
@@ -27,6 +28,9 @@ import {
   deleteStorageStrategyAction,
   testS3ConnectionAction,
   batchUpdateStorageStatusAction,
+  previewOrphanedFilesAction,
+  cleanOrphanedFilesAction,
+  recalculateStorageStatsAction,
 } from "@/lib/actions/storage/storage";
 
 interface StorageStrategyStoreState {
@@ -40,6 +44,12 @@ interface StorageStrategyStoreState {
   isLoadingStats: boolean;
   isSubmitting: boolean;
   isTesting: boolean;
+
+  // 清理和校准状态
+  isCleaningOrphaned: boolean;
+  isRecalculating: boolean;
+  orphanedResult: OrphanedFileResult | null;
+  cleanupError: string | null;
 
   // 错误状态
   error: string | null;
@@ -86,6 +96,13 @@ interface StorageStrategyStoreState {
   // 统计信息
   fetchStats: () => Promise<void>;
 
+  // 清理和校准操作
+  previewOrphanedFiles: (id: number) => Promise<OrphanedFileResult | null>;
+  cleanOrphanedFiles: (id: number) => Promise<OrphanedFileResult | null>;
+  recalculateStorageStats: (id: number) => Promise<StorageStrategy | null>;
+  clearOrphanedResult: () => void;
+  clearCleanupError: () => void;
+
   // UI 辅助方法
   setSelectedStrategy: (strategy: StorageStrategy | null) => void;
   setQueryParams: (params: Partial<StorageStrategyQueryParams>) => void;
@@ -102,6 +119,10 @@ const initialState = {
   isLoadingStats: false,
   isSubmitting: false,
   isTesting: false,
+  isCleaningOrphaned: false,
+  isRecalculating: false,
+  orphanedResult: null,
+  cleanupError: null,
   error: null,
   testError: null,
   pagination: {
@@ -655,6 +676,123 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
         }
       },
 
+      // 清理和校准操作
+      previewOrphanedFiles: async (id) => {
+        set({ isCleaningOrphaned: true, cleanupError: null, orphanedResult: null });
+        try {
+          const response = await previewOrphanedFilesAction(id);
+          if (isSuccessApiResponse(response)) {
+            const result = response.data as OrphanedFileResult;
+            set({
+              orphanedResult: result,
+              isCleaningOrphaned: false,
+            });
+            return result;
+          } else {
+            console.error("❌ 预览孤立文件失败:", response.msg);
+            const errorResult = await handleStoreError(response, "预览孤立文件");
+            set({
+              cleanupError: errorResult.error,
+              isCleaningOrphaned: false,
+            });
+            return null;
+          }
+        } catch (err: unknown) {
+          console.error("❌ 预览孤立文件时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "预览孤立文件");
+          set({
+            cleanupError: errorResult.error,
+            isCleaningOrphaned: false,
+          });
+          return null;
+        }
+      },
+
+      cleanOrphanedFiles: async (id) => {
+        set({ isCleaningOrphaned: true, cleanupError: null });
+        try {
+          const response = await cleanOrphanedFilesAction(id);
+          if (isSuccessApiResponse(response)) {
+            const result = response.data as OrphanedFileResult;
+            showToast.success("孤立文件清理成功", 
+              `清理了 ${result.cleanedCount} 个孤立文件`);
+            set({
+              orphanedResult: result,
+              isCleaningOrphaned: false,
+            });
+            // 刷新策略数据和统计信息
+            await get().fetchStrategies(get().queryParams);
+            await get().fetchStats();
+            return result;
+          } else {
+            console.error("❌ 清理孤立文件失败:", response.msg);
+            const errorResult = await handleStoreError(response, "清理孤立文件");
+            set({
+              cleanupError: errorResult.error,
+              isCleaningOrphaned: false,
+            });
+            return null;
+          }
+        } catch (err: unknown) {
+          console.error("❌ 清理孤立文件时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "清理孤立文件");
+          set({
+            cleanupError: errorResult.error,
+            isCleaningOrphaned: false,
+          });
+          return null;
+        }
+      },
+
+      recalculateStorageStats: async (id) => {
+        set({ isRecalculating: true, error: null });
+        try {
+          const response = await recalculateStorageStatsAction(id);
+          if (isSuccessApiResponse(response)) {
+            const updatedStrategy = response.data as StorageStrategy;
+            const sanitizedStrategy = sanitizeStrategy(updatedStrategy);
+            showToast.success("统计数据校准成功", 
+              `存储策略 "${sanitizedStrategy.name}" 统计数据已更新`);
+            
+            // 更新本地状态
+            set((state) => ({
+              strategies: state.strategies.map((s) =>
+                s.id === id ? sanitizedStrategy : s
+              ),
+              selectedStrategy:
+                state.selectedStrategy?.id === id
+                  ? sanitizedStrategy
+                  : state.selectedStrategy,
+              isRecalculating: false,
+            }));
+            
+            // 刷新统计信息
+            await get().fetchStats();
+            return sanitizedStrategy;
+          } else {
+            console.error("❌ 校准统计数据失败:", response.msg);
+            const errorResult = await handleStoreError(response, "校准统计数据");
+            set({
+              error: errorResult.error,
+              isRecalculating: false,
+            });
+            return null;
+          }
+        } catch (err: unknown) {
+          console.error("❌ 校准统计数据时发生意外错误:", err);
+          const errorResult = await handleStoreError(err, "校准统计数据");
+          set({
+            error: errorResult.error,
+            isRecalculating: false,
+          });
+          return null;
+        }
+      },
+
+      clearOrphanedResult: () => set({ orphanedResult: null }),
+      
+      clearCleanupError: () => set({ cleanupError: null }),
+
       // UI 辅助方法
       setSelectedStrategy: (strategy) => set({ selectedStrategy: strategy }),
 
@@ -663,7 +801,7 @@ export const useStorageStrategyStore = create<StorageStrategyStoreState>()(
           queryParams: { ...state.queryParams, ...params },
         })),
 
-      clearError: () => set({ error: null, testError: null }),
+      clearError: () => set({ error: null, testError: null, cleanupError: null }),
 
       clearTestResult: () => set({ testResult: null, testError: null }),
 

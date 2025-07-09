@@ -12,6 +12,7 @@ import {
   StorageStrategyQueryParams,
   StorageStrategyTestRequest,
   BatchUpdateStorageStatusRequest,
+  OrphanedFileResult,
 } from "@/lib/types/storage";
 import type {
   ApiResponse,
@@ -469,6 +470,155 @@ export async function batchUpdateStorageStatusAction(
     return {
       code: error.code || 500,
       msg: error.msg || "批量更新存储策略状态失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 预览指定存储中的孤立文件
+ * GET /admin/storage/{id}/orphaned-files
+ */
+export async function previewOrphanedFilesAction(
+  id: number
+): Promise<SuccessApiResponse<OrphanedFileResult> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.get<ApiResponse<OrphanedFileResult>>(
+      `${STORAGE_STRATEGIES_API_BASE}/${id}/orphaned-files`
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "预览孤立文件成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "预览孤立文件失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("previewOrphanedFilesAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "预览孤立文件失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 清理指定存储中的孤立文件
+ * DELETE /admin/storage/{id}/orphaned-files
+ */
+export async function cleanOrphanedFilesAction(
+  id: number
+): Promise<SuccessApiResponse<OrphanedFileResult> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.delete<ApiResponse<OrphanedFileResult>>(
+      `${STORAGE_STRATEGIES_API_BASE}/${id}/orphaned-files`
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      // 清除相关缓存，因为存储内容已改变
+      cacheManager.delete(CACHE_KEYS.STORAGE_STRATEGY_DETAIL(id));
+      cacheManager.delete(CACHE_KEYS.STORAGE_STRATEGIES_LIST);
+
+      return {
+        code: 0,
+        msg: apiResponse.msg || "清理孤立文件成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "清理孤立文件失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("cleanOrphanedFilesAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "清理孤立文件失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 手动校准存储策略统计数据
+ * POST /admin/storage/{id}/recalculate
+ */
+export async function recalculateStorageStatsAction(
+  id: number
+): Promise<SuccessApiResponse<StorageStrategy> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.post<ApiResponse<StorageStrategy>>(
+      `${STORAGE_STRATEGIES_API_BASE}/${id}/recalculate`
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      // 清除相关缓存，因为统计数据已更新
+      cacheManager.delete(CACHE_KEYS.STORAGE_STRATEGY_DETAIL(id));
+      cacheManager.delete(CACHE_KEYS.STORAGE_STRATEGIES_LIST);
+
+      return {
+        code: 0,
+        msg: apiResponse.msg || "手动校准统计数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "手动校准统计数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("recalculateStorageStatsAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "手动校准统计数据失败",
       error,
     };
   }

@@ -188,3 +188,25 @@ export interface BatchUpdateStorageStatusResponse {
   failedIds?: number[];
 }
 
+export interface OrphanedFileResult {
+  dryRun: boolean;
+  scannedFiles: number;
+  orphanedFiles: string[];
+  cleanedCount: number;
+  failedToDelete: string[];
+  message: string;
+}
+
+// 存储清理参数
+export interface StorageCleanupParams {
+  storageId: number;
+  dryRun?: boolean;
+}
+
+// 存储校准结果
+export interface StorageRecalculateResult {
+  success: boolean;
+  message: string;
+  updatedStrategy: StorageStrategy;
+}
+
