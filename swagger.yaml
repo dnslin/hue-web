@@ -267,6 +267,15 @@ definitions:
       - resource_id
       - type
     type: object
+  dtos.DailyAccessStatDTO:
+    properties:
+      access_count:
+        description: 访问总数
+        type: integer
+      date:
+        description: "日期, 格式: YYYY-MM-DD"
+        type: string
+    type: object
   dtos.DailyUploadStatDTO:
     properties:
       date:
@@ -277,6 +286,15 @@ definitions:
         type: integer
       upload_size:
         description: 上传总大小 (字节)
+        type: integer
+    type: object
+  dtos.DistributionStatDTO:
+    properties:
+      key:
+        description: 维度 (e.g., "China", "direct")
+        type: string
+      value:
+        description: 数量
         type: integer
     type: object
   dtos.ExifInfoDTO:
@@ -314,6 +332,15 @@ definitions:
         type: string
     required:
       - email
+    type: object
+  dtos.GlobalStatsDTO:
+    properties:
+      total_accesses:
+        type: integer
+      total_storage:
+        type: integer
+      total_uploads:
+        type: integer
     type: object
   dtos.ImageDetailDTO:
     properties:
@@ -635,6 +662,8 @@ definitions:
     type: object
   dtos.StorageStrategyDTO:
     properties:
+      created_at:
+        type: string
       id:
         type: integer
       is_enabled:
@@ -653,6 +682,8 @@ definitions:
         enum:
           - s3
           - local
+        type: string
+      updated_at:
         type: string
       used_space_bytes:
         description: Statistics
@@ -682,13 +713,31 @@ definitions:
     required:
       - test_email
     type: object
+  dtos.TopImageDTO:
+    properties:
+      file_name:
+        type: string
+      image_id:
+        type: integer
+      uploaded_at:
+        type: string
+      uploader:
+        type: string
+      url:
+        type: string
+      view_count:
+        type: integer
+    type: object
   dtos.TopUploaderDTO:
     properties:
+      total_image_size:
+        description: 总图片大小
+        type: integer
+      total_image_views:
+        description: 总图片浏览量
+        type: integer
       upload_count:
         description: 该用户的总上传数
-        type: integer
-      upload_size:
-        description: 该用户的总上传大小 (字节)
         type: integer
       user_id:
         type: integer
@@ -1031,6 +1080,8 @@ definitions:
       user:
         $ref: "#/definitions/models.User"
       userID:
+        type: integer
+      viewCount:
         type: integer
       width:
         type: integer
@@ -1487,16 +1538,240 @@ paths:
       summary: 查询审计日志
       tags:
         - Admin - Audit
-  /admin/dashboard/daily-stats:
+  /admin/dashboard/access-stats:
     get:
-      consumes:
-        - application/json
-      description: 获取最近N天的每日上传统计数据
+      description: 根据时间周期获取访问量的统计
       parameters:
+        - default: daily
+          description: 周期 (daily, weekly, monthly)
+          in: query
+          name: period
+          type: string
         - default: 30
-          description: 查询天数
+          description: 最近天数 (当 period=daily 时)
           in: query
           name: days
+          type: integer
+        - default: 12
+          description: 最近月数 (当 period=monthly 时)
+          in: query
+          name: months
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.DailyAccessStatDTO"
+                    type: array
+                type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取访问统计
+      tags:
+        - Dashboard
+  /admin/dashboard/distribution/geo:
+    get:
+      description: 按国家/地区统计访问量
+      parameters:
+        - default: 10
+          description: 返回数量
+          in: query
+          name: limit
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.DistributionStatDTO"
+                    type: array
+                type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取地区访问分布
+      tags:
+        - Dashboard
+  /admin/dashboard/distribution/referrer:
+    get:
+      description: 按访问来源域名统计访问量
+      parameters:
+        - default: 10
+          description: 返回数量
+          in: query
+          name: limit
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.DistributionStatDTO"
+                    type: array
+                type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取来源(Referrer)统计
+      tags:
+        - Dashboard
+  /admin/dashboard/global-stats:
+    get:
+      description: 获取总上传图片数、总访问量、总存储用量等核心指标
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/dtos.GlobalStatsDTO"
+                type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取全局统计
+      tags:
+        - Dashboard
+  /admin/dashboard/top-images:
+    get:
+      description: 获取按浏览量排序的热门图片列表
+      parameters:
+        - default: 10
+          description: 返回数量
+          in: query
+          name: limit
+          type: integer
+        - default: views_total
+          description: 排序依据 (views_total, views_month, views_day)
+          in: query
+          name: sort_by
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.TopImageDTO"
+                    type: array
+                type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取热门图片排行
+      tags:
+        - Dashboard
+  /admin/dashboard/top-users:
+    get:
+      description: 获取按上传量或总浏览量排序的用户列表
+      parameters:
+        - default: 10
+          description: 返回数量
+          in: query
+          name: limit
+          type: integer
+        - default: uploads_total
+          description: 排序依据 (uploads_total, views_total)
+          in: query
+          name: sort_by
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    items:
+                      $ref: "#/definitions/dtos.TopUploaderDTO"
+                    type: array
+                type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取热门用户排行
+      tags:
+        - Dashboard
+  /admin/dashboard/upload-stats:
+    get:
+      description: 根据时间周期获取上传数量和大小的统计
+      parameters:
+        - default: daily
+          description: 周期 (daily, weekly, monthly)
+          in: query
+          name: period
+          type: string
+        - default: 30
+          description: 最近天数 (当 period=daily 时)
+          in: query
+          name: days
+          type: integer
+        - default: 12
+          description: 最近月数 (当 period=monthly 时)
+          in: query
+          name: months
           type: integer
       produces:
         - application/json
@@ -1522,35 +1797,7 @@ paths:
             $ref: "#/definitions/utils.Response"
       security:
         - ApiKeyAuth: []
-      summary: 获取每日上传统计
-      tags:
-        - Dashboard
-  /admin/dashboard/top-uploaders:
-    get:
-      consumes:
-        - application/json
-      description: 获取上传数量最多的前10名用户
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-              - $ref: "#/definitions/utils.Response"
-              - properties:
-                  data:
-                    items:
-                      $ref: "#/definitions/dtos.TopUploaderDTO"
-                    type: array
-                type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/utils.Response"
-      security:
-        - ApiKeyAuth: []
-      summary: 获取热门上传用户
+      summary: 获取上传统计
       tags:
         - Dashboard
   /admin/storage:

@@ -36,18 +36,16 @@ export function StorageStrategyDeleteDialog({
             确认删除存储策略
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
-            <p>
-              您即将删除存储策略 <strong>&quot;{strategy.name}&quot;</strong>。
-            </p>
-            <div className="text-sm bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-1">
-              <p className="font-medium text-destructive">⚠️ 警告：此操作不可撤销</p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                <li>删除后，所有关联的角色将失去此存储策略权限</li>
-                <li>使用此策略上传的文件不会被删除，但可能无法访问</li>
-                <li>正在进行的上传操作可能会失败</li>
-              </ul>
-            </div>
+            您即将删除存储策略 <strong>&quot;{strategy.name}&quot;</strong>。
           </AlertDialogDescription>
+          <div className="text-sm bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-1">
+            <div className="font-medium text-destructive">⚠️ 警告：此操作不可撤销</div>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1">
+              <li>删除后，所有关联的角色将失去此存储策略权限</li>
+              <li>使用此策略上传的文件不会被删除，但可能无法访问</li>
+              <li>正在进行的上传操作可能会失败</li>
+            </ul>
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>

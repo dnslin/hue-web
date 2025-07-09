@@ -116,17 +116,73 @@ const initialState = {
   testResult: null,
 };
 
-// Helper 函数：清理存储策略数据
+// Helper 函数：清理存储策略数据并处理API响应映射
 const sanitizeStrategy = (strategy: StorageStrategy): StorageStrategy => {
   if (!strategy) return strategy;
-  return {
+  
+  // 创建基础策略对象
+  const sanitizedStrategy: StorageStrategy = {
     ...strategy,
     name: strategy.name || "未命名策略",
     type: strategy.type || "local",
     isEnabled: strategy.isEnabled ?? false,
-    // 确保敏感信息安全处理
-    s3SecretAccessKey: strategy.s3SecretAccessKey ? "••••••••" : undefined,
+    createdAt: strategy.createdAt || new Date().toISOString(),
+    updatedAt: strategy.updatedAt || new Date().toISOString(),
+    totalFiles: strategy.totalFiles || 0,
+    usedSpaceBytes: strategy.usedSpaceBytes || 0,
   };
+
+  // 处理S3配置映射 (支持嵌套和平铺两种格式)
+  if (strategy.type === "s3") {
+    // 优先使用嵌套配置对象
+    if (strategy.s3Config) {
+      sanitizedStrategy.s3Config = {
+        ...strategy.s3Config,
+        // 敏感信息脱敏
+        secretAccessKey: strategy.s3Config.secretAccessKey ? "••••••••" : "",
+      };
+      // 同时维护平铺字段以保持兼容性
+      sanitizedStrategy.s3AccessKeyId = strategy.s3Config.accessKeyId;
+      sanitizedStrategy.s3SecretAccessKey = "••••••••";
+      sanitizedStrategy.s3Bucket = strategy.s3Config.bucket;
+      sanitizedStrategy.s3Region = strategy.s3Config.region;
+      sanitizedStrategy.s3Endpoint = strategy.s3Config.endpoint;
+      sanitizedStrategy.s3BaseUrl = strategy.s3Config.baseUrl;
+      sanitizedStrategy.s3ForcePathStyle = strategy.s3Config.forcePathStyle;
+    } else {
+      // 使用平铺字段构建嵌套配置
+      sanitizedStrategy.s3Config = {
+        accessKeyId: strategy.s3AccessKeyId || "",
+        secretAccessKey: "••••••••",
+        bucket: strategy.s3Bucket || "",
+        region: strategy.s3Region || "",
+        endpoint: strategy.s3Endpoint || "",
+        baseUrl: strategy.s3BaseUrl,
+        forcePathStyle: strategy.s3ForcePathStyle,
+      };
+      // 确保敏感信息安全处理
+      sanitizedStrategy.s3SecretAccessKey = strategy.s3SecretAccessKey ? "••••••••" : "";
+    }
+  }
+
+  // 处理本地存储配置映射
+  if (strategy.type === "local") {
+    // 优先使用嵌套配置对象
+    if (strategy.localConfig) {
+      sanitizedStrategy.localConfig = {
+        ...strategy.localConfig,
+      };
+      // 同时维护平铺字段以保持兼容性
+      sanitizedStrategy.localBasePath = strategy.localConfig.basePath;
+    } else {
+      // 使用平铺字段构建嵌套配置
+      sanitizedStrategy.localConfig = {
+        basePath: strategy.localBasePath || "/uploads",
+      };
+    }
+  }
+
+  return sanitizedStrategy;
 };
 
 // Helper 函数：生成缓存键

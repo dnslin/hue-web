@@ -139,28 +139,28 @@ export function StorageStrategyEditDialog({
   // 监听 strategy 变化，更新表单数据
   useEffect(() => {
     if (strategy && open) {
+      // 构建S3配置对象
+      const s3ConfigData = strategy.type === "s3" ? {
+        accessKeyId: strategy.s3Config?.accessKeyId || strategy.s3AccessKeyId || "",
+        secretAccessKey: "", // 不显示原密码，用户需要重新输入
+        bucket: strategy.s3Config?.bucket || strategy.s3Bucket || "",
+        region: strategy.s3Config?.region || strategy.s3Region || "",
+        endpoint: strategy.s3Config?.endpoint || strategy.s3Endpoint || "",
+        baseUrl: strategy.s3Config?.baseUrl || strategy.s3BaseUrl || "",
+        forcePathStyle: strategy.s3Config?.forcePathStyle ?? strategy.s3ForcePathStyle ?? false,
+      } : undefined;
+
+      // 构建本地配置对象
+      const localConfigData = strategy.type === "local" ? {
+        basePath: strategy.localConfig?.basePath || strategy.localBasePath || "/uploads",
+      } : undefined;
+
       form.reset({
         name: strategy.name || "",
         type: strategy.type || "local",
         isEnabled: strategy.isEnabled ?? true,
-        s3Config:
-          strategy.type === "s3"
-            ? {
-                accessKeyId: strategy.s3AccessKeyId || "",
-                secretAccessKey: "", // 不显示原密码，用户需要重新输入
-                bucket: strategy.s3Bucket || "",
-                region: strategy.s3Region || "",
-                endpoint: strategy.s3Endpoint || "",
-                baseUrl: strategy.s3BaseUrl || "",
-                forcePathStyle: strategy.s3ForcePathStyle || false,
-              }
-            : undefined,
-        localConfig:
-          strategy.type === "local"
-            ? {
-                basePath: strategy.localBasePath || "/uploads",
-              }
-            : undefined,
+        s3Config: s3ConfigData,
+        localConfig: localConfigData,
       });
       setTestResult(null);
     }

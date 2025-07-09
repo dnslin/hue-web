@@ -129,7 +129,7 @@ export function StorageStrategyTestDialog({
                     <p className={`font-medium ${
                       testResult.success ? "text-green-700" : "text-red-700"
                     }`}>
-                      {testResult.message}
+                      {testResult.msg}
                     </p>
                     {testResult.details && (
                       <p className="text-sm text-muted-foreground">

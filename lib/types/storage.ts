@@ -19,13 +19,21 @@ export interface S3Config {
   forcePathStyle?: boolean;
 }
 
-// 存储策略基础接口
+// 存储策略基础接口 (匹配 swagger.yaml dtos.StorageStrategyDTO)
 export interface StorageStrategy {
   id: number;
   name: string;
   type: StorageType;
   isEnabled: boolean;
-  // S3配置（仅当 type === 's3' 时存在）
+  createdAt: string;
+  updatedAt: string;
+  // 统计信息
+  totalFiles?: number;
+  usedSpaceBytes?: number;
+  // 嵌套配置对象 (基于 API 响应结构)
+  localConfig?: LocalConfig;
+  s3Config?: S3Config;
+  // 兼容平铺字段 (为了向后兼容)
   s3AccessKeyId?: string;
   s3SecretAccessKey?: string;
   s3Bucket?: string;
@@ -33,10 +41,7 @@ export interface StorageStrategy {
   s3Endpoint?: string;
   s3BaseUrl?: string;
   s3ForcePathStyle?: boolean;
-  // 本地存储配置（仅当 type === 'local' 时存在）
   localBasePath?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 // 存储策略创建请求 DTO（基于 dtos.StorageStrategyDTO）

@@ -8,7 +8,7 @@ export const storageTypeSchema = z.enum(["s3", "local"], {
 });
 
 /**
- * S3配置验证模式
+ * S3配置验证模式 (用于创建时，secretAccessKey必填)
  */
 export const s3ConfigSchema = z.object({
   accessKeyId: z
@@ -19,6 +19,33 @@ export const s3ConfigSchema = z.object({
     .string()
     .min(1, "Secret Access Key 不能为空")
     .max(255, "Secret Access Key 不能超过255个字符"),
+  bucket: z
+    .string()
+    .min(1, "存储桶名称不能为空")
+    .max(63, "存储桶名称不能超过63个字符")
+    .regex(
+      /^[a-z0-9][a-z0-9.-]*[a-z0-9]$/,
+      "存储桶名称格式不正确，只能包含小写字母、数字、点和连字符，且必须以字母或数字开头和结尾"
+    ),
+  region: z.string().min(1, "区域不能为空").max(50, "区域名称不能超过50个字符"),
+  endpoint: z.string().min(1, "终端节点不能为空").url("请输入有效的URL地址"),
+  baseUrl: z.string().url("请输入有效的URL地址").optional().or(z.literal("")),
+  forcePathStyle: z.boolean().default(false),
+});
+
+/**
+ * S3配置验证模式 (用于更新时，secretAccessKey可以为空)
+ */
+export const s3ConfigUpdateSchema = z.object({
+  accessKeyId: z
+    .string()
+    .min(1, "Access Key ID 不能为空")
+    .max(128, "Access Key ID 不能超过128个字符"),
+  secretAccessKey: z
+    .string()
+    .max(255, "Secret Access Key 不能超过255个字符")
+    .optional()
+    .or(z.literal("")), // 允许为空，表示不更新密码
   bucket: z
     .string()
     .min(1, "存储桶名称不能为空")
@@ -98,8 +125,8 @@ export const updateStorageStrategyFormSchema = z
       ),
     type: storageTypeSchema,
     isEnabled: z.boolean().default(true),
-    // S3配置
-    s3Config: s3ConfigSchema.optional(),
+    // S3配置 (更新时使用宽松的验证)
+    s3Config: s3ConfigUpdateSchema.optional(),
     // 本地配置
     localConfig: localConfigSchema.optional(),
   })
