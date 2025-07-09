@@ -630,6 +630,8 @@ definitions:
         type: string
       force_path_style:
         type: boolean
+      force_presigned_url:
+        type: boolean
       region:
         type: string
       secret_access_key:
@@ -1281,6 +1283,8 @@ definitions:
       s3Endpoint:
         type: string
       s3ForcePathStyle:
+        type: boolean
+      s3ForcePresignedURL:
         type: boolean
       s3Region:
         type: string
