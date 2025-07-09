@@ -51,37 +51,52 @@ export const PasswordStrengthIndicator = React.memo(
     requiresSpecialChar,
     className,
   }: PasswordStrengthIndicatorProps) => {
+    // 确保 minLength 是有效数字
+    const validMinLength = typeof minLength === 'number' && !isNaN(minLength) ? minLength : 8;
     // 计算密码强度级别
     const calculateStrength = () => {
       let score = 0;
 
-      // 基础分数：长度要求
-      if (minLength >= 8) score += 1;
-      if (minLength >= 12) score += 1;
-
-      // 字符类型要求
+      // 基于五个策略要求计算分数
+      // 1. 长度要求
+      if (validMinLength >= 6) score += 1;
+      // 2. 大写字母要求
       if (requiresUppercase) score += 1;
+      // 3. 小写字母要求
       if (requiresLowercase) score += 1;
+      // 4. 数字要求
       if (requiresNumber) score += 1;
+      // 5. 特殊字符要求
       if (requiresSpecialChar) score += 1;
 
-      // 映射到强度级别
+      // 映射到强度级别（基于满足的策略要求数量）
       if (score <= 1) return STRENGTH_LEVELS.WEAK;
-      if (score <= 2) return STRENGTH_LEVELS.FAIR;
-      if (score <= 3) return STRENGTH_LEVELS.GOOD;
-      if (score <= 4) return STRENGTH_LEVELS.STRONG;
+      if (score === 2) return STRENGTH_LEVELS.FAIR;
+      if (score === 3) return STRENGTH_LEVELS.GOOD;
+      if (score === 4) return STRENGTH_LEVELS.STRONG;
       return STRENGTH_LEVELS.VERY_STRONG;
     };
 
     const currentStrength = calculateStrength();
-    const progressValue = (currentStrength.level / 5) * 100;
+    
+    // 计算满足的策略要求数量
+    const satisfiedRequirements = [
+      validMinLength >= 6,
+      requiresUppercase,
+      requiresLowercase,
+      requiresNumber,
+      requiresSpecialChar,
+    ].filter(Boolean).length;
+    
+    // 进度条基于满足的策略要求数量计算
+    const progressValue = (satisfiedRequirements / 5) * 100;
 
     // 策略要求列表
     const requirements = [
       {
-        label: `最少 ${minLength} 个字符`,
-        met: minLength >= 6, // 基本要求
-        icon: minLength >= 6 ? Check : X,
+        label: `最少 ${validMinLength} 个字符`,
+        met: validMinLength >= 8, // 基本要求
+        icon: validMinLength >= 8 ? Check : X,
       },
       {
         label: "包含大写字母 (A-Z)",
