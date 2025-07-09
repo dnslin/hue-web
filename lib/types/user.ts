@@ -137,6 +137,7 @@ export interface UserUpdateRequest {
   password?: string;
   roleId?: number;
   status?: number;
+  storageCapacityMb?: number;
 }
 
 /**

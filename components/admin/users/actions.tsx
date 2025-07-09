@@ -51,6 +51,7 @@ export function UserActions({ user }: UserActionsProps) {
     username: user.username,
     email: user.email,
     roleId: user.roleId,
+    storageCapacityMb: user.storageCapacityMb || 0,
   });
 
   const {
@@ -161,6 +162,7 @@ export function UserActions({ user }: UserActionsProps) {
       username: editForm.username,
       email: editForm.email,
       roleId: editForm.roleId,
+      storageCapacityMb: editForm.storageCapacityMb,
     };
 
     const result = await updateUser(user.id, updateData);
@@ -509,6 +511,31 @@ export function UserActions({ user }: UserActionsProps) {
                     required
                     portalContainer={editDialogContentRef.current}
                   />
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-storage-capacity">存储容量 (MB)</Label>
+                    <Input
+                      id="edit-storage-capacity"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={editForm.storageCapacityMb}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // 允许空值或有效数字
+                        if (value === '' || /^\d+$/.test(value)) {
+                          const numValue = value === '' ? 0 : parseInt(value);
+                          // 确保值不为负数
+                          if (numValue >= 0) {
+                            setEditForm({ ...editForm, storageCapacityMb: numValue });
+                          }
+                        }
+                      }}
+                      placeholder="请输入存储容量（MB）"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      用户可使用的存储容量，单位为 MB。0 表示无限制。
+                    </p>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button

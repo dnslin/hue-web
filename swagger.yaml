@@ -53,14 +53,6 @@ definitions:
       user_registration_enabled:
         type: boolean
     type: object
-  dtos.AdminUpdateUserCapacityRequest:
-    properties:
-      storage_capacity_mb:
-        description: 使用指针以区分0和未设置
-        type: integer
-    required:
-      - storage_capacity_mb
-    type: object
   dtos.AdminUserCreateRequest:
     properties:
       email:
@@ -120,9 +112,21 @@ definitions:
     type: object
   dtos.AdminUserUpdateRequest:
     properties:
-      storage_capacity_mb:
-        description: 使用指针以区分0和未设置
+      email:
+        description: 邮箱
+        type: string
+      role_id:
+        description: 角色ID
         type: integer
+      status:
+        description: 用户状态
+        type: integer
+      storage_capacity_mb:
+        description: 存储容量 (MB)
+        type: integer
+      username:
+        description: 用户名
+        type: string
     type: object
   dtos.AlbumResponseDTO:
     properties:
@@ -2341,62 +2345,17 @@ paths:
       summary: 管理员物理删除用户
       tags:
         - Admin User Management
-    patch:
-      consumes:
-        - application/json
-      description: 管理员更新指定用户的存储容量
-      parameters:
-        - description: 用户ID
-          in: path
-          name: id
-          required: true
-          type: integer
-        - description: 存储容量信息
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/dtos.AdminUpdateUserCapacityRequest"
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: 成功响应
-          schema:
-            allOf:
-              - $ref: "#/definitions/utils.Response"
-              - properties:
-                  data:
-                    $ref: "#/definitions/models.User"
-                type: object
-        "400":
-          description: 请求参数错误或无效的用户ID
-          schema:
-            $ref: "#/definitions/utils.Response"
-        "404":
-          description: 用户未找到
-          schema:
-            $ref: "#/definitions/utils.Response"
-        "500":
-          description: 服务器内部错误
-          schema:
-            $ref: "#/definitions/utils.Response"
-      security:
-        - ApiKeyAuth: []
-      summary: 管理员更新用户存储容量
-      tags:
-        - Admin User Management
     put:
       consumes:
         - application/json
-      description: 管理员更新指定用户的通用信息，包括用户的存储容量。
+      description: 管理员更新指定用户的通用信息，包括用户名、邮箱、昵称、角色、状态和存储容量。
       parameters:
         - description: 用户ID
           in: path
           name: id
           required: true
           type: integer
-        - description: 要更新的用户信息，例如存储容量
+        - description: 要更新的用户信息
           in: body
           name: user
           required: true
