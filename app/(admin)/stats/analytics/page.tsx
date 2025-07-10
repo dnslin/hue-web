@@ -1,20 +1,14 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { PieChart } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/layouts/page-container";
 import { AnalyticsContainer } from "@/components/stats/analytics/container";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // 加载状态组件
 function AnalyticsPageSkeleton() {
   return (
     <div className="space-y-6">
-      {/* 页面标题骨架 */}
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-5 w-96" />
-      </div>
-
       {/* 分析图表骨架 */}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 p-6 border rounded-lg">
@@ -52,22 +46,13 @@ function AnalyticsPageSkeleton() {
 
 export default function AnalyticsPage() {
   return (
-    <div className="space-y-6">
-      {/* 页面标题 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <PieChart className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">分布分析</h1>
-        </div>
-        <p className="text-muted-foreground">
-          用户分布、来源分析和热门内容排行榜
-        </p>
-      </div>
-
-      {/* 分析内容 */}
+    <PageContainer
+      title="分布分析"
+      description="用户分布、来源分析和热门内容排行榜"
+    >
       <Suspense fallback={<AnalyticsPageSkeleton />}>
         <AnalyticsContainer />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

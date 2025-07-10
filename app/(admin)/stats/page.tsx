@@ -1,20 +1,14 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { BarChart3 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/layouts/page-container";
 import { OverviewContainer } from "@/components/stats/overview/container";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // 加载状态组件
 function OverviewPageSkeleton() {
   return (
     <div className="space-y-6">
-      {/* 页面标题骨架 */}
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-5 w-96" />
-      </div>
-
       {/* 关键指标卡片骨架 */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -46,22 +40,13 @@ function OverviewPageSkeleton() {
 
 export default function StatsOverviewPage() {
   return (
-    <div className="space-y-6">
-      {/* 页面标题 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">统计概览</h1>
-        </div>
-        <p className="text-muted-foreground">
-          快速了解您的 Lsky Pro 平台的关键指标和整体表现
-        </p>
-      </div>
-
-      {/* 概览内容 */}
+    <PageContainer
+      title="统计概览"
+      description="快速了解您的 Lsky Pro 平台的关键指标和整体表现"
+    >
       <Suspense fallback={<OverviewPageSkeleton />}>
         <OverviewContainer />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }
