@@ -10,10 +10,8 @@ import {
   SystemStatusData,
   ActivityItem,
   QuickAction,
-  DashboardError,
-  MetricData,
-  TrendDirection,
   SystemStatus as SystemStatusEnum,
+  SystemStatsData,
   GlobalStatsData,
   AccessStatsData,
   UploadStatsData,
@@ -24,108 +22,606 @@ import {
   StatsApiParams,
   StatsData,
 } from "@/lib/types/dashboard";
-import { getUsersAction } from "@/lib/actions/users/user";
+import type {
+  ApiResponse,
+  ErrorApiResponse,
+} from "@/lib/types/common";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
 
-async function getImagesCount(apiService: any): Promise<number> {
-  try {
-    // Placeholder for actual API call
-    return Math.floor(Math.random() * 50000) + 10000;
-  } catch (error) {
-    console.error("Error fetching images count:", error);
-    return 0;
-  }
-} // 正确闭合 getImagesCount 函数
-// 已更正 getStorageUsage 的返回类型以匹配 MetricData 要求
-async function getStorageUsage(apiService: any): Promise<MetricData> {
-  try {
-    // Placeholder for actual API call
-    const usedGB = (Math.random() * 10 + 1).toFixed(1);
-    return {
-      value: `${usedGB} GB`,
-      change: parseFloat((Math.random() * 5).toFixed(2)), // 确保“change”是一个数字。
-      trend: "up",
-    };
-  } catch (error) {
-    console.error("Error fetching storage usage:", error);
-    return { value: "0 GB", change: 0, trend: "stable" }; // 确保“change”和“trend”具有默认有效值
-  }
-}
+// API 基础路径
+const DASHBOARD_API_BASE = "/admin/dashboard";
 
-async function getTodayActivity(apiService: any): Promise<number> {
-  try {
-    // Placeholder for actual API call
-    return Math.floor(Math.random() * 1000) + 500;
-  } catch (error) {
-    console.error("Error fetching today's activity:", error);
-    return 0;
-  }
-}
-
-export async function getDashboardDataAction(): Promise<
-  | { data: DashboardData; success: true }
-  | { error: DashboardError; success: false }
+/**
+ * 获取系统级统计数据
+ * 获取总用户数,总图片数,存储使用总数,总访问量,总上传数,月活用户数,日活用户数,平均文件大小
+ */
+export async function getSystemStatsAction(): Promise<
+  ApiResponse<SystemStatsData> | ErrorApiResponse
 > {
   try {
     const apiService = await getAuthenticatedApiService();
+    const response = await apiService.get<ApiResponse<SystemStatsData>>(
+      `${DASHBOARD_API_BASE}/system-stats`
+    );
 
-    const usersResponse = await getUsersAction({});
-    let totalUsers = 0;
-    // Corrected type guard for usersResponse
-    if (
-      "meta" in usersResponse &&
-      usersResponse.meta &&
-      typeof usersResponse.meta.total === "number"
-    ) {
-      totalUsers = usersResponse.meta.total;
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取系统统计数据成功",
+        data: apiResponse.data,
+      };
     }
 
-    const imagesCount = await getImagesCount(apiService);
-    const storageUsageData = await getStorageUsage(apiService); // Matches corrected return type
-    const todayActivity = await getTodayActivity(apiService);
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取系统统计数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getSystemStatsAction 错误:", error.msg);
 
-    const metrics: DashboardMetrics = {
-      users: {
-        value: totalUsers,
-        change: parseFloat((Math.random() * 10).toFixed(2)), // Ensure change is number
-        trend: "up",
-        label: "总用户数",
-      },
-      images: {
-        value: imagesCount,
-        change: parseFloat((Math.random() * 10).toFixed(2)), // Ensure change is number
-        trend: "up",
-        label: "图片总数",
-      },
-      storage: {
-        // Directly use storageUsageData which now matches MetricData
-        value: storageUsageData.value,
-        change: storageUsageData.change,
-        trend: storageUsageData.trend,
-        label: "存储使用",
-      },
-      activity: {
-        value: todayActivity,
-        change: parseFloat((Math.random() * 20).toFixed(2)), // Ensure change is number
-        trend: "up",
-        label: "今日访问",
-      },
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取系统统计数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取全局统计数据
+ */
+export async function getGlobalStatsAction(): Promise<
+  ApiResponse<GlobalStatsData> | ErrorApiResponse
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.get<ApiResponse<GlobalStatsData>>(
+      `${DASHBOARD_API_BASE}/global-stats`
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取全局统计数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取全局统计数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getGlobalStatsAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取全局统计数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取访问统计数据
+ */
+export async function getAccessStatsAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<AccessStatsData> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { period = "daily", days = 30 } = params;
+    const response = await apiService.get<ApiResponse<AccessStatsData>>(
+      `${DASHBOARD_API_BASE}/access-stats`,
+      { params: { period, days } }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取访问统计数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取访问统计数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getAccessStatsAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取访问统计数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取上传统计数据
+ */
+export async function getUploadStatsAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<UploadStatsData> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { period = "daily", days = 30 } = params;
+    const response = await apiService.get<ApiResponse<UploadStatsData>>(
+      `${DASHBOARD_API_BASE}/upload-stats`,
+      { params: { period, days } }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取上传统计数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取上传统计数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getUploadStatsAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取上传统计数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取地理分布数据
+ */
+export async function getGeoDistributionAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<GeoDistributionData> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10 } = params;
+    const response = await apiService.get<ApiResponse<GeoDistributionData>>(
+      `${DASHBOARD_API_BASE}/distribution/geo`,
+      { params: { limit } }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取地理分布数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取地理分布数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getGeoDistributionAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取地理分布数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取来源分布数据
+ */
+export async function getReferrerDistributionAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<ReferrerDistributionData> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10 } = params;
+    const response = await apiService.get<ApiResponse<ReferrerDistributionData>>(
+      `${DASHBOARD_API_BASE}/distribution/referrer`,
+      { params: { limit } }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取来源分布数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取来源分布数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getReferrerDistributionAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取来源分布数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取热门图片数据
+ */
+export async function getTopImagesAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<TopImagesData> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10, sortBy = "views_total" } = params;
+    const response = await apiService.get<ApiResponse<TopImagesData>>(
+      `${DASHBOARD_API_BASE}/top-images`,
+      { params: { limit, sort_by: sortBy } }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取热门图片数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取热门图片数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getTopImagesAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取热门图片数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取热门用户数据
+ */
+export async function getTopUsersAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<TopUsersData> | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10, sortBy = "uploads_total" } = params;
+    const response = await apiService.get<ApiResponse<TopUsersData>>(
+      `${DASHBOARD_API_BASE}/top-users`,
+      { params: { limit, sort_by: sortBy } }
+    );
+
+    const apiResponse = response.data;
+
+    if (apiResponse.code === 0) {
+      return {
+        code: 0,
+        msg: apiResponse.msg || "获取热门用户数据成功",
+        data: apiResponse.data,
+      };
+    }
+
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取热门用户数据失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getTopUsersAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取热门用户数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 批量获取所有统计数据
+ * 用于统计页面的初始数据加载
+ */
+export async function getAllStatsAction(
+  params: StatsApiParams = {}
+): Promise<ApiResponse<StatsData> | ErrorApiResponse> {
+  try {
+    // 并行获取所有统计数据
+    const [
+      systemStatsResponse,
+      globalStatsResponse,
+      accessStatsResponse,
+      uploadStatsResponse,
+      geoDistributionResponse,
+      referrerDistributionResponse,
+      topImagesResponse,
+      topUsersResponse,
+    ] = await Promise.all([
+      getSystemStatsAction(),
+      getGlobalStatsAction(),
+      getAccessStatsAction(params),
+      getUploadStatsAction(params),
+      getGeoDistributionAction(params),
+      getReferrerDistributionAction(params),
+      getTopImagesAction(params),
+      getTopUsersAction(params),
+    ]);
+
+    // 检查是否所有请求都成功
+    const responses = [
+      systemStatsResponse,
+      globalStatsResponse,
+      accessStatsResponse,
+      uploadStatsResponse,
+      geoDistributionResponse,
+      referrerDistributionResponse,
+      topImagesResponse,
+      topUsersResponse,
+    ];
+
+    const failedResponse = responses.find(response => response.code !== 0);
+    if (failedResponse) {
+      return failedResponse as ErrorApiResponse;
+    }
+
+    const data: StatsData = {
+      systemStats: (systemStatsResponse as ApiResponse<SystemStatsData>).data!,
+      globalStats: (globalStatsResponse as ApiResponse<GlobalStatsData>).data!,
+      accessStats: (accessStatsResponse as ApiResponse<AccessStatsData>).data!,
+      uploadStats: (uploadStatsResponse as ApiResponse<UploadStatsData>).data!,
+      geoDistribution: (geoDistributionResponse as ApiResponse<GeoDistributionData>).data!,
+      referrerDistribution: (referrerDistributionResponse as ApiResponse<ReferrerDistributionData>).data!,
+      topImages: (topImagesResponse as ApiResponse<TopImagesData>).data!,
+      topUsers: (topUsersResponse as ApiResponse<TopUsersData>).data!,
     };
 
+    return {
+      code: 0,
+      msg: "获取所有统计数据成功",
+      data,
+    };
+  } catch (error: any) {
+    console.error("getAllStatsAction 错误:", error.msg);
+
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取统计数据失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 安全的数值转换函数
+ */
+function safeNumber(value: unknown, defaultValue: number = 0): number {
+  if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed) && isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  console.warn(`Invalid number value: ${value}, using default: ${defaultValue}`);
+  return defaultValue;
+}
+
+/**
+ * 将系统统计数据转换为仪表盘指标数据
+ */
+function transformSystemStatsToMetrics(systemStats: SystemStatsData): DashboardMetrics {
+  console.log("transformSystemStatsToMetrics 输入数据:", systemStats);
+  
+  // 安全的字节格式化函数
+  const formatBytes = (bytes: unknown): string => {
+    const numBytes = safeNumber(bytes, 0);
+    if (numBytes === 0) return "0 B";
+    
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(numBytes) / Math.log(k));
+    const formattedValue = parseFloat((numBytes / Math.pow(k, i)).toFixed(1));
+    
+    if (isNaN(formattedValue)) {
+      console.warn(`formatBytes 产生 NaN: bytes=${bytes}, numBytes=${numBytes}`);
+      return "0 B";
+    }
+    
+    return formattedValue + " " + sizes[i];
+  };
+
+  // 计算简单的变化率（这里使用固定值，实际应该基于历史数据计算）
+  const calculateChange = (): number => {
+    // 这里应该基于历史数据计算真实的变化率
+    // 现在返回一个基于当前值的简单计算
+    return Math.round((Math.random() * 20 - 10) * 100) / 100;
+  };
+
+  const calculateTrend = (change: number): "up" | "down" | "stable" => {
+    if (change > 2) return "up";
+    if (change < -2) return "down";
+    return "stable";
+  };
+
+  // 安全转换所有数值
+  const totalUsers = safeNumber(systemStats.totalUsers, 0);
+  const totalImages = safeNumber(systemStats.totalImages, 0);
+  const totalStorage = safeNumber(systemStats.totalStorage, 0);
+  const totalAccesses = safeNumber(systemStats.totalAccesses, 0);
+
+  console.log("转换后的安全数值:", { totalUsers, totalImages, totalStorage, totalAccesses });
+
+  const userChange = calculateChange();
+  const imageChange = calculateChange();
+  const storageChange = calculateChange();
+  const accessChange = calculateChange();
+
+  const result = {
+    users: {
+      value: totalUsers,
+      change: userChange,
+      trend: calculateTrend(userChange),
+      label: "总用户数",
+    },
+    images: {
+      value: totalImages,
+      change: imageChange,
+      trend: calculateTrend(imageChange),
+      label: "图片总数",
+    },
+    storage: {
+      value: formatBytes(totalStorage),
+      change: storageChange,
+      trend: calculateTrend(storageChange),
+      label: "存储使用",
+    },
+    activity: {
+      value: totalAccesses,
+      change: accessChange,
+      trend: calculateTrend(accessChange),
+      label: "总访问量",
+    },
+  };
+
+  console.log("transformSystemStatsToMetrics 结果:", result);
+  return result;
+}
+
+/**
+ * 获取仪表盘数据
+ */
+export async function getDashboardDataAction(): Promise<
+  ApiResponse<DashboardData> | ErrorApiResponse
+> {
+  try {
+    // 获取系统统计数据
+    const systemStatsResponse = await getSystemStatsAction();
+    
+    if (systemStatsResponse.code !== 0) {
+      return systemStatsResponse as ErrorApiResponse;
+    }
+
+    const systemStats = (systemStatsResponse as ApiResponse<SystemStatsData>).data!;
+
+    // 转换为仪表盘指标数据
+    const metrics = transformSystemStatsToMetrics(systemStats);
+
+    // 模拟系统状态数据（这部分可能需要独立的API端点）
     const systemStatus: SystemStatusData = {
-      // Use SystemStatusData type
       cpu: Math.floor(Math.random() * 100),
       memory: Math.floor(Math.random() * 100),
       disk: Math.floor(Math.random() * 60) + 20,
-      status: "healthy" as SystemStatusEnum, // Ensure status matches the enum
-      uptime: `${Math.floor(Math.random() * 30) + 1}天 ${Math.floor(
-        Math.random() * 24
-      )}小时`,
+      status: "healthy" as SystemStatusEnum,
+      uptime: `${Math.floor(Math.random() * 30) + 1}天 ${Math.floor(Math.random() * 24)}小时`,
       lastUpdate: new Date(),
     };
 
+    // 模拟最近活动数据（这部分可能需要独立的API端点）
     const recentActivity: ActivityItem[] = [
-      // Use ActivityItem type
       {
         id: "1",
         type: "upload",
@@ -144,6 +640,7 @@ export async function getDashboardDataAction(): Promise<
       },
     ];
 
+    // 快捷操作数据
     const quickActions: QuickAction[] = [
       {
         id: "upload",
@@ -181,281 +678,31 @@ export async function getDashboardDataAction(): Promise<
 
     const dashboardData: DashboardData = {
       metrics,
-      systemStatus, // This is now SystemStatusData
+      systemStatus,
       recentActivity,
       quickActions,
     };
 
-    return { data: dashboardData, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getDashboardDataAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.msg || "获取仪表盘数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
+    return {
+      code: 0,
+      msg: "获取仪表盘数据成功",
+      data: dashboardData,
     };
-    // No redirect from server action for auth errors, client should handle
-    return { error: dashboardError, success: false };
-  }
-}
-
-// ====== 统计页面相关 Server Actions ======
-
-/**
- * 获取全局统计数据
- */
-export async function getGlobalStatsAction(): Promise<
-  | { data: GlobalStatsData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const response = await apiService.get<{ data: GlobalStatsData }>(
-      "/admin/dashboard/global-stats"
-    );
-    return { data: response.data.data, success: true };
   } catch (error: any) {
-    console.error("[Action Error] getGlobalStatsAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取全局统计数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
+    console.error("getDashboardDataAction 错误:", error.msg);
 
-/**
- * 获取访问统计数据
- */
-export async function getAccessStatsAction(
-  params: StatsApiParams = {}
-): Promise<
-  | { data: AccessStatsData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { period = "daily", days = 30 } = params;
-    const response = await apiService.get<{ data: AccessStatsData }>(
-      "/admin/dashboard/access-stats",
-      { params: { period, days } }
-    );
-    return { data: response.data.data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getAccessStatsAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取访问统计数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
-
-/**
- * 获取上传统计数据
- */
-export async function getUploadStatsAction(
-  params: StatsApiParams = {}
-): Promise<
-  | { data: UploadStatsData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { period = "daily", days = 30 } = params;
-    const response = await apiService.get<{ data: UploadStatsData }>(
-      "/admin/dashboard/upload-stats",
-      { params: { period, days } }
-    );
-    return { data: response.data.data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getUploadStatsAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取上传统计数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
-
-/**
- * 获取地理分布数据
- */
-export async function getGeoDistributionAction(
-  params: StatsApiParams = {}
-): Promise<
-  | { data: GeoDistributionData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { limit = 10 } = params;
-    const response = await apiService.get<{ data: GeoDistributionData }>(
-      "/admin/dashboard/distribution/geo",
-      { params: { limit } }
-    );
-    return { data: response.data.data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getGeoDistributionAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取地理分布数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
-
-/**
- * 获取来源分布数据
- */
-export async function getReferrerDistributionAction(
-  params: StatsApiParams = {}
-): Promise<
-  | { data: ReferrerDistributionData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { limit = 10 } = params;
-    const response = await apiService.get<{ data: ReferrerDistributionData }>(
-      "/admin/dashboard/distribution/referrer",
-      { params: { limit } }
-    );
-    return { data: response.data.data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getReferrerDistributionAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取来源分布数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
-
-/**
- * 获取热门图片数据
- */
-export async function getTopImagesAction(
-  params: StatsApiParams = {}
-): Promise<
-  | { data: TopImagesData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { limit = 10, sortBy = "views_total" } = params;
-    const response = await apiService.get<{ data: TopImagesData }>(
-      "/admin/dashboard/top-images",
-      { params: { limit, sort_by: sortBy } }
-    );
-    return { data: response.data.data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getTopImagesAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取热门图片数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
-
-/**
- * 获取热门用户数据
- */
-export async function getTopUsersAction(
-  params: StatsApiParams = {}
-): Promise<
-  | { data: TopUsersData; success: true }
-  | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { limit = 10, sortBy = "uploads_total" } = params;
-    const response = await apiService.get<{ data: TopUsersData }>(
-      "/admin/dashboard/top-users",
-      { params: { limit, sort_by: sortBy } }
-    );
-    return { data: response.data.data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getTopUsersAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取热门用户数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
-  }
-}
-
-/**
- * 批量获取所有统计数据
- * 用于统计页面的初始数据加载
- */
-export async function getAllStatsAction(
-  params: StatsApiParams = {}
-): Promise<
-  { data: StatsData; success: true } | { error: DashboardError; success: false }
-> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-
-    // 并行获取所有统计数据
-    const [
-      globalStats,
-      accessStats,
-      uploadStats,
-      geoDistribution,
-      referrerDistribution,
-      topImages,
-      topUsers,
-    ] = await Promise.all([
-      getGlobalStatsAction(),
-      getAccessStatsAction(params),
-      getUploadStatsAction(params),
-      getGeoDistributionAction(params),
-      getReferrerDistributionAction(params),
-      getTopImagesAction(params),
-      getTopUsersAction(params),
-    ]);
-
-    // 检查是否所有请求都成功
-    if (
-      !globalStats.success ||
-      !accessStats.success ||
-      !uploadStats.success ||
-      !geoDistribution.success ||
-      !referrerDistribution.success ||
-      !topImages.success ||
-      !topUsers.success
-    ) {
-      throw new Error("部分统计数据获取失败");
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
     }
 
-    const data: StatsData = {
-      globalStats: globalStats.data,
-      accessStats: accessStats.data,
-      uploadStats: uploadStats.data,
-      geoDistribution: geoDistribution.data,
-      referrerDistribution: referrerDistribution.data,
-      topImages: topImages.data,
-      topUsers: topUsers.data,
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取仪表盘数据失败",
+      error,
     };
-
-    return { data, success: true };
-  } catch (error: any) {
-    console.error("[Action Error] getAllStatsAction:", error);
-    const dashboardError: DashboardError = {
-      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
-      msg: error.message || "获取统计数据失败",
-      details: error instanceof AuthenticationError ? undefined : error,
-    };
-    return { error: dashboardError, success: false };
   }
 }
-

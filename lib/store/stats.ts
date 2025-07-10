@@ -13,6 +13,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
   StatsData,
+  SystemStatsData,
   GlobalStatsData,
   AccessStatsData,
   UploadStatsData,
@@ -21,10 +22,14 @@ import type {
   TopImagesData,
   TopUsersData,
   StatsApiParams,
-  DashboardError,
 } from "@/lib/types/dashboard";
+import type {
+  ApiResponse,
+  ErrorApiResponse,
+} from "@/lib/types/common";
 import {
   getAllStatsAction,
+  getSystemStatsAction,
   getGlobalStatsAction,
   getAccessStatsAction,
   getUploadStatsAction,
@@ -60,6 +65,9 @@ interface StatsState {
 interface StatsActions {
   // 获取所有统计数据
   fetchAllStats: (params?: StatsApiParams) => Promise<void>;
+  
+  // 获取系统统计数据
+  fetchSystemStats: () => Promise<SystemStatsData | null>;
   
   // 获取全局统计数据
   fetchGlobalStats: () => Promise<GlobalStatsData | null>;
@@ -115,7 +123,7 @@ const initialState: StatsState = {
 /**
  * 错误处理工具函数
  */
-const handleError = (error: any): string => {
+const handleError = (error: ErrorApiResponse | any): string => {
   if (error && typeof error === 'object') {
     if (error.msg) return error.msg;
     if (error.message) return error.message;
@@ -142,16 +150,18 @@ export const useStatsStore = create<StatsStore>()(
         try {
           const response = await getAllStatsAction(currentParams);
           
-          if (response.success) {
+          if (response.code === 0) {
+            const apiResponse = response as ApiResponse<StatsData>;
             set({ 
-              data: response.data, 
+              data: apiResponse.data!, 
               loading: false, 
               error: null,
               lastUpdated: Date.now(),
               params: currentParams,
             });
           } else {
-            const errorMsg = handleError(response.error);
+            const errorResponse = response as ErrorApiResponse;
+            const errorMsg = handleError(errorResponse);
             set({ 
               loading: false, 
               error: errorMsg 
@@ -166,11 +176,28 @@ export const useStatsStore = create<StatsStore>()(
         }
       },
 
+      // 获取系统统计数据
+      fetchSystemStats: async () => {
+        try {
+          const response = await getSystemStatsAction();
+          if (response.code === 0) {
+            return (response as ApiResponse<SystemStatsData>).data!;
+          }
+          return null;
+        } catch (error) {
+          console.error('获取系统统计数据失败:', error);
+          return null;
+        }
+      },
+
       // 获取全局统计数据
       fetchGlobalStats: async () => {
         try {
           const response = await getGlobalStatsAction();
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<GlobalStatsData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取全局统计数据失败:', error);
           return null;
@@ -183,7 +210,10 @@ export const useStatsStore = create<StatsStore>()(
         
         try {
           const response = await getAccessStatsAction(currentParams);
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<AccessStatsData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取访问统计数据失败:', error);
           return null;
@@ -196,7 +226,10 @@ export const useStatsStore = create<StatsStore>()(
         
         try {
           const response = await getUploadStatsAction(currentParams);
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<UploadStatsData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取上传统计数据失败:', error);
           return null;
@@ -209,7 +242,10 @@ export const useStatsStore = create<StatsStore>()(
         
         try {
           const response = await getGeoDistributionAction(currentParams);
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<GeoDistributionData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取地理分布数据失败:', error);
           return null;
@@ -222,7 +258,10 @@ export const useStatsStore = create<StatsStore>()(
         
         try {
           const response = await getReferrerDistributionAction(currentParams);
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<ReferrerDistributionData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取来源分布数据失败:', error);
           return null;
@@ -235,7 +274,10 @@ export const useStatsStore = create<StatsStore>()(
         
         try {
           const response = await getTopImagesAction(currentParams);
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<TopImagesData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取热门图片数据失败:', error);
           return null;
@@ -248,7 +290,10 @@ export const useStatsStore = create<StatsStore>()(
         
         try {
           const response = await getTopUsersAction(currentParams);
-          return response.success ? response.data : null;
+          if (response.code === 0) {
+            return (response as ApiResponse<TopUsersData>).data!;
+          }
+          return null;
         } catch (error) {
           console.error('获取热门用户数据失败:', error);
           return null;
@@ -308,6 +353,7 @@ export const useStatsParams = () => useStatsStore((state) => state.params);
 // 获取操作函数
 export const useStatsActions = () => {
   const fetchAllStats = useStatsStore((state) => state.fetchAllStats);
+  const fetchSystemStats = useStatsStore((state) => state.fetchSystemStats);
   const fetchGlobalStats = useStatsStore((state) => state.fetchGlobalStats);
   const fetchAccessStats = useStatsStore((state) => state.fetchAccessStats);
   const fetchUploadStats = useStatsStore((state) => state.fetchUploadStats);
@@ -322,6 +368,7 @@ export const useStatsActions = () => {
 
   return {
     fetchAllStats,
+    fetchSystemStats,
     fetchGlobalStats,
     fetchAccessStats,
     fetchUploadStats,
@@ -339,6 +386,7 @@ export const useStatsActions = () => {
 /**
  * 特定数据选择器
  */
+export const useSystemStats = () => useStatsStore((state) => state.data?.systemStats);
 export const useGlobalStats = () => useStatsStore((state) => state.data?.globalStats);
 export const useAccessStats = () => useStatsStore((state) => state.data?.accessStats);
 export const useUploadStats = () => useStatsStore((state) => state.data?.uploadStats);

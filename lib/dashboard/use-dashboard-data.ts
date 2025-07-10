@@ -1,142 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { Upload, Users, Settings, BarChart3 } from "lucide-react";
-import { DashboardData, DashboardError } from "@/lib/types/dashboard";
-
-// 模拟 API 数据 - 实际项目中应该从真实 API 获取
-const mockDashboardData: DashboardData = {
-  metrics: {
-    users: {
-      value: 1234,
-      change: 12.5,
-      trend: "up",
-      label: "总用户数",
-    },
-    images: {
-      value: 45678,
-      change: 8.3,
-      trend: "up",
-      label: "图片总数",
-    },
-    storage: {
-      value: "2.4 GB",
-      change: 15.2,
-      trend: "up",
-      label: "存储使用",
-    },
-    activity: {
-      value: 892,
-      change: 23.1,
-      trend: "up",
-      label: "今日访问",
-    },
-  },
-  systemStatus: {
-    cpu: 45,
-    memory: 62,
-    disk: 28,
-    status: "healthy",
-    uptime: "7天 12小时",
-    lastUpdate: new Date(),
-  },
-  recentActivity: [
-    {
-      id: "1",
-      type: "upload",
-      title: "用户上传了新图片",
-      description: "screenshot-2024.png",
-      timestamp: new Date(Date.now() - 5 * 60 * 1000),
-      user: {
-        name: "张三",
-        avatar: "/avatars/user1.jpg",
-      },
-    },
-    {
-      id: "2",
-      type: "user_register",
-      title: "新用户注册",
-      description: "user@example.com",
-      timestamp: new Date(Date.now() - 15 * 60 * 1000),
-      user: {
-        name: "李四",
-      },
-    },
-    {
-      id: "3",
-      type: "system",
-      title: "系统备份完成",
-      description: "数据库备份成功",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    },
-  ],
-  quickActions: [
-    {
-      id: "upload",
-      title: "批量上传",
-      description: "上传多个图片文件",
-      icon: Upload,
-      href: "/images/upload",
-      variant: "primary",
-    },
-    {
-      id: "users",
-      title: "用户管理",
-      description: "管理系统用户",
-      icon: Users,
-      href: "/users",
-      variant: "default",
-    },
-    {
-      id: "settings",
-      title: "系统设置",
-      description: "配置系统参数",
-      icon: Settings,
-      href: "/settings",
-      variant: "default",
-    },
-    {
-      id: "analytics",
-      title: "数据统计",
-      description: "查看详细统计",
-      icon: BarChart3,
-      href: "/analytics",
-      variant: "default",
-    },
-  ],
-};
+import { DashboardData } from "@/lib/types/dashboard";
+import { getDashboardDataAction } from "@/lib/actions/dashboard/dashboard";
+import type { ApiResponse, ErrorApiResponse } from "@/lib/types/common";
 
 interface UseDashboardDataReturn {
   data: DashboardData | null;
   loading: boolean;
-  error: DashboardError | null;
+  error: string | null;
   refetch: () => Promise<void>;
   lastUpdated: Date | null;
 }
-
-// 模拟 API 请求函数
-const fetchDashboardData = async (): Promise<DashboardData> => {
-  // 模拟网络延迟
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // 模拟随机错误（5% 概率）
-  if (Math.random() < 0.05) {
-    throw new Error("网络请求失败");
-  }
-
-  // 模拟数据变化
-  const data = { ...mockDashboardData };
-
-  // 随机更新一些数值
-  data.metrics.users.value =
-    (data.metrics.users.value as number) + Math.floor(Math.random() * 10);
-  data.metrics.images.value =
-    (data.metrics.images.value as number) + Math.floor(Math.random() * 50);
-  data.systemStatus.cpu = Math.floor(Math.random() * 100);
-  data.systemStatus.memory = Math.floor(Math.random() * 100);
-  data.systemStatus.disk = Math.floor(Math.random() * 100);
-  data.systemStatus.lastUpdate = new Date();
-
-  return data;
-};
 
 export const useDashboardData = (
   autoRefresh: boolean = true,
@@ -144,22 +17,25 @@ export const useDashboardData = (
 ): UseDashboardDataReturn => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<DashboardError | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const result = await fetchDashboardData();
-      setData(result);
-      setLastUpdated(new Date());
+      const result = await getDashboardDataAction();
+      
+      if (result.code === 0) {
+        setData((result as ApiResponse<DashboardData>).data!);
+        setLastUpdated(new Date());
+      } else {
+        const errorResponse = result as ErrorApiResponse;
+        setError(errorResponse.msg || "获取仪表盘数据失败");
+      }
     } catch (err) {
-      const dashboardError: DashboardError = {
-        code: "FETCH_ERROR",
-        msg: err instanceof Error ? err.message : "获取数据失败",
-        details: err,
-      };
-      setError(dashboardError);
+      const errorMsg = err instanceof Error ? err.message : "获取数据失败";
+      setError(errorMsg);
+      console.error("useDashboardData fetchData error:", err);
     } finally {
       setLoading(false);
     }
@@ -227,4 +103,3 @@ export const useRecentActivity = () => {
     error,
   };
 };
-

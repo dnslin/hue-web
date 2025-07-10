@@ -711,6 +711,25 @@ definitions:
           type: integer
         type: array
     type: object
+  dtos.SystemStatsDTO:
+    properties:
+      average_file_size:
+        type: number
+      daily_active_users:
+        type: integer
+      monthly_active_users:
+        type: integer
+      total_accesses:
+        type: integer
+      total_images:
+        type: integer
+      total_storage:
+        type: integer
+      total_uploads:
+        type: integer
+      total_users:
+        type: integer
+    type: object
   dtos.TestEmailDTO:
     properties:
       test_email:
@@ -1678,6 +1697,30 @@ paths:
       security:
         - ApiKeyAuth: []
       summary: 获取全局统计
+      tags:
+        - Dashboard
+  /admin/dashboard/system-stats:
+    get:
+      description: 获取总用户数,总图片数,存储使用总数,总访问量,总上传数,月活用户数,日活用户数,平均文件大小
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+              - $ref: "#/definitions/utils.Response"
+              - properties:
+                  data:
+                    $ref: "#/definitions/dtos.SystemStatsDTO"
+                type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 获取系统级统计
       tags:
         - Dashboard
   /admin/dashboard/top-images:

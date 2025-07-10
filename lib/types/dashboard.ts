@@ -97,16 +97,21 @@ export interface DashboardApiResponse {
   timestamp: string;
 }
 
-// 错误类型
-export interface DashboardError {
-  code: string;
-  msg: string;
-  details?: unknown;
-}
-
 // ====== 统计页面相关类型 ======
 
-// 全局统计数据
+// 系统级统计数据 (对应新的 /admin/dashboard/system-stats 接口)
+export interface SystemStatsData {
+  totalUsers: number;
+  totalImages: number;
+  totalStorage: number;          // 存储使用总数 (字节)
+  totalAccesses: number;         // 总访问量
+  totalUploads: number;          // 总上传数
+  monthlyActiveUsers: number;    // 月活用户数
+  dailyActiveUsers: number;      // 日活用户数
+  averageFileSize: number;       // 平均文件大小 (字节)
+}
+
+// 全局统计数据 (保持向后兼容)
 export interface GlobalStatsData {
   totalUsers: number;
   totalImages: number;
@@ -233,6 +238,7 @@ export interface TopUsersData {
 
 // 统计页面完整数据类型
 export interface StatsData {
+  systemStats: SystemStatsData;
   globalStats: GlobalStatsData;
   accessStats: AccessStatsData;
   uploadStats: UploadStatsData;
