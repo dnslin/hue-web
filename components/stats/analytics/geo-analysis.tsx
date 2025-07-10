@@ -37,16 +37,16 @@ export function GeoAnalysis() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="animate-pulse">
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+        <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-32" />
           </CardHeader>
           <CardContent>
-            <div className="h-80 bg-muted rounded" />
+            <div className="h-64 md:h-80 bg-muted rounded" />
           </CardContent>
         </Card>
-        <Card className="animate-pulse">
+        <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-32" />
           </CardHeader>
@@ -64,8 +64,8 @@ export function GeoAnalysis() {
 
   if (error || !geoData) {
     return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+        <Card className="min-w-0">
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground">
               无法加载地理分布数据
@@ -80,9 +80,9 @@ export function GeoAnalysis() {
   const topCountries = geoData.data?.slice(0, 5) || [];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
       {/* 地理分布图表 */}
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
@@ -96,7 +96,7 @@ export function GeoAnalysis() {
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-80">
+          <ChartContainer config={chartConfig} className="h-64 md:h-80">
             <BarChart data={geoData.data || []} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
@@ -143,7 +143,7 @@ export function GeoAnalysis() {
       </Card>
 
       {/* 详细排行榜 */}
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">

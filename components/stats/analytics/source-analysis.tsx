@@ -70,16 +70,16 @@ export function SourceAnalysis() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="animate-pulse">
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+        <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-32" />
           </CardHeader>
           <CardContent>
-            <div className="h-80 bg-muted rounded" />
+            <div className="h-64 md:h-80 bg-muted rounded" />
           </CardContent>
         </Card>
-        <Card className="animate-pulse">
+        <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-32" />
           </CardHeader>
@@ -97,8 +97,8 @@ export function SourceAnalysis() {
 
   if (error || !referrerData) {
     return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+        <Card className="min-w-0">
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground">
               无法加载来源分布数据
@@ -120,9 +120,9 @@ export function SourceAnalysis() {
   }));
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
       {/* 来源分布饼图 */}
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
