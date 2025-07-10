@@ -25,21 +25,21 @@ export function QuickTrends() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="animate-pulse">
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+        <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-24" />
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-muted rounded" />
+            <div className="h-48 md:h-64 bg-muted rounded" />
           </CardContent>
         </Card>
-        <Card className="animate-pulse">
+        <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-24" />
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-muted rounded" />
+            <div className="h-48 md:h-64 bg-muted rounded" />
           </CardContent>
         </Card>
       </div>
@@ -66,10 +66,10 @@ export function QuickTrends() {
   const uploadTrend = calculateTrend(uploadData?.data || []);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
       {/* 访问趋势 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Card className="min-w-0">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
           <CardTitle className="text-base font-medium">访问趋势</CardTitle>
           <div className="flex items-center text-sm text-muted-foreground">
             {accessTrend.isPositive ? (
@@ -83,7 +83,7 @@ export function QuickTrends() {
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-64">
+          <ChartContainer config={chartConfig} className="h-48 md:h-64">
             <AreaChart data={accessData?.data || []}>
               <XAxis
                 dataKey="date"
@@ -139,8 +139,8 @@ export function QuickTrends() {
       </Card>
 
       {/* 上传趋势 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Card className="min-w-0">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
           <CardTitle className="text-base font-medium">上传趋势</CardTitle>
           <div className="flex items-center text-sm text-muted-foreground">
             {uploadTrend.isPositive ? (
@@ -154,7 +154,7 @@ export function QuickTrends() {
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-64">
+          <ChartContainer config={chartConfig} className="h-48 md:h-64">
             <AreaChart data={uploadData?.data || []}>
               <XAxis
                 dataKey="date"
