@@ -141,8 +141,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: systemData.totalUsers ?? 0,
       icon: metricIcons.users,
       description: "注册用户总数",
-      bgColor: "bg-gradient-to-br from-blue-500/10 to-blue-600/30",
-      iconBg: "bg-gradient-to-br from-blue-500 to-blue-600",
+      iconBgColor: "bg-blue-50 dark:bg-blue-950",
+      iconColor: "text-blue-600",
       chartColor: "#3B82F6",
     },
     {
@@ -151,8 +151,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: systemData.totalImages ?? 0,
       icon: metricIcons.images,
       description: "已上传图片数量",
-      bgColor: "bg-gradient-to-br from-green-500/10 to-green-600/20",
-      iconBg: "bg-gradient-to-br from-green-500 to-green-600",
+      iconBgColor: "bg-green-50 dark:bg-green-950",
+      iconColor: "text-green-600",
       chartColor: "#10B981",
     },
     {
@@ -161,8 +161,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: formatBytes(systemData.totalStorage ?? 0),
       icon: metricIcons.storage,
       description: "当前存储空间使用",
-      bgColor: "bg-gradient-to-br from-orange-500/10 to-orange-600/20",
-      iconBg: "bg-gradient-to-br from-orange-500 to-orange-600",
+      iconBgColor: "bg-orange-50 dark:bg-orange-950",
+      iconColor: "text-orange-600",
       chartColor: "#F59E0B",
     },
     {
@@ -171,8 +171,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: systemData.totalAccesses ?? 0,
       icon: metricIcons.access,
       description: "累计访问次数",
-      bgColor: "bg-gradient-to-br from-purple-500/10 to-purple-600/20",
-      iconBg: "bg-gradient-to-br from-purple-500 to-purple-600",
+      iconBgColor: "bg-purple-50 dark:bg-purple-950",
+      iconColor: "text-purple-600",
       chartColor: "#8B5CF6",
     },
     {
@@ -181,8 +181,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: systemData.totalUploads ?? 0,
       icon: metricIcons.upload,
       description: "累计上传次数",
-      bgColor: "bg-gradient-to-br from-indigo-500/10 to-indigo-600/20",
-      iconBg: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+      iconBgColor: "bg-indigo-50 dark:bg-indigo-950",
+      iconColor: "text-indigo-600",
       chartColor: "#6366F1",
     },
     {
@@ -191,8 +191,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: systemData.monthlyActiveUsers ?? 0,
       icon: metricIcons.monthly,
       description: "本月活跃用户",
-      bgColor: "bg-gradient-to-br from-pink-500/10 to-pink-600/20",
-      iconBg: "bg-gradient-to-br from-pink-500 to-pink-600",
+      iconBgColor: "bg-pink-50 dark:bg-pink-950",
+      iconColor: "text-pink-600",
       chartColor: "#EC4899",
     },
     {
@@ -201,8 +201,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: systemData.dailyActiveUsers ?? 0,
       icon: metricIcons.daily,
       description: "今日活跃用户",
-      bgColor: "bg-gradient-to-br from-cyan-500/10 to-cyan-600/20",
-      iconBg: "bg-gradient-to-br from-cyan-500 to-cyan-600",
+      iconBgColor: "bg-cyan-50 dark:bg-cyan-950",
+      iconColor: "text-cyan-600",
       chartColor: "#06B6D4",
     },
     {
@@ -211,8 +211,8 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       value: formatBytes(systemData.averageFileSize ?? 0),
       icon: metricIcons.size,
       description: "文件平均大小",
-      bgColor: "bg-gradient-to-br from-emerald-500/10 to-emerald-600/20",
-      iconBg: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+      iconBgColor: "bg-emerald-50 dark:bg-emerald-950",
+      iconColor: "text-emerald-600",
       chartColor: "#10B981",
     },
   ];
@@ -261,12 +261,7 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Card
-                className={cn(
-                  "relative overflow-hidden transition-all duration-300 hover:shadow-lg border-0",
-                  metric.bgColor
-                )}
-              >
+              <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <div className="space-y-1 flex-1">
                     <p className="text-sm font-medium text-foreground leading-none">
@@ -280,11 +275,16 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
                   <div className="flex-shrink-0">
                     <div
                       className={cn(
-                        "p-2.5 rounded-xl shadow-lg transition-all duration-300 hover:scale-110",
-                        metric.iconBg
+                        "p-1.5 sm:p-2 rounded-md transition-all duration-300 hover:scale-110",
+                        metric.iconBgColor
                       )}
                     >
-                      <Icon className="h-5 w-5 text-white" />
+                      <Icon
+                        className={cn(
+                          "h-3 w-3 sm:h-4 sm:w-4",
+                          metric.iconColor
+                        )}
+                      />
                     </div>
                   </div>
                 </CardHeader>
@@ -335,17 +335,6 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
                     />
                   </div>
                 </CardContent>
-
-                {/* 底部装饰线 */}
-                <motion.div
-                  className={cn(
-                    "absolute bottom-0 left-0 h-1 rounded-full",
-                    metric.iconBg
-                  )}
-                  initial={{ width: 0 }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
-                />
               </Card>
             </motion.div>
           );
