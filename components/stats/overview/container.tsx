@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useStatsLoading, useStatsError, useStatsLastUpdated, useStatsActions } from "@/lib/store/stats";
 import { KeyMetrics } from "./key-metrics";
 import { QuickTrends } from "./quick-trends";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -94,31 +94,6 @@ export function OverviewContainer() {
         </div>
         <QuickTrends />
       </div>
-
-      {/* 系统状态 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">系统状态</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">正常</div>
-              <div className="text-sm text-muted-foreground">服务状态</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {isLoading ? "..." : "< 100ms"}
-              </div>
-              <div className="text-sm text-muted-foreground">响应时间</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">99.9%</div>
-              <div className="text-sm text-muted-foreground">可用性</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
