@@ -22,10 +22,7 @@ import {
   StatsApiParams,
   StatsData,
 } from "@/lib/types/dashboard";
-import type {
-  ApiResponse,
-  ErrorApiResponse,
-} from "@/lib/types/common";
+import type { ApiResponse, ErrorApiResponse } from "@/lib/types/common";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
 
 // API 基础路径
@@ -277,10 +274,9 @@ export async function getReferrerDistributionAction(
   try {
     const apiService = await getAuthenticatedApiService();
     const { limit = 10 } = params;
-    const response = await apiService.get<ApiResponse<ReferrerDistributionData>>(
-      `${DASHBOARD_API_BASE}/distribution/referrer`,
-      { params: { limit } }
-    );
+    const response = await apiService.get<
+      ApiResponse<ReferrerDistributionData>
+    >(`${DASHBOARD_API_BASE}/distribution/referrer`, { params: { limit } });
 
     const apiResponse = response.data;
 
@@ -453,7 +449,7 @@ export async function getAllStatsAction(
       topUsersResponse,
     ];
 
-    const failedResponse = responses.find(response => response.code !== 0);
+    const failedResponse = responses.find((response) => response.code !== 0);
     if (failedResponse) {
       return failedResponse as ErrorApiResponse;
     }
@@ -463,8 +459,12 @@ export async function getAllStatsAction(
       globalStats: (globalStatsResponse as ApiResponse<GlobalStatsData>).data!,
       accessStats: (accessStatsResponse as ApiResponse<AccessStatsData>).data!,
       uploadStats: (uploadStatsResponse as ApiResponse<UploadStatsData>).data!,
-      geoDistribution: (geoDistributionResponse as ApiResponse<GeoDistributionData>).data!,
-      referrerDistribution: (referrerDistributionResponse as ApiResponse<ReferrerDistributionData>).data!,
+      geoDistribution: (
+        geoDistributionResponse as ApiResponse<GeoDistributionData>
+      ).data!,
+      referrerDistribution: (
+        referrerDistributionResponse as ApiResponse<ReferrerDistributionData>
+      ).data!,
       topImages: (topImagesResponse as ApiResponse<TopImagesData>).data!,
       topUsers: (topUsersResponse as ApiResponse<TopUsersData>).data!,
     };
@@ -497,40 +497,46 @@ export async function getAllStatsAction(
  * 安全的数值转换函数
  */
 function safeNumber(value: unknown, defaultValue: number = 0): number {
-  if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+  if (typeof value === "number" && !isNaN(value) && isFinite(value)) {
     return value;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const parsed = parseFloat(value);
     if (!isNaN(parsed) && isFinite(parsed)) {
       return parsed;
     }
   }
-  console.warn(`Invalid number value: ${value}, using default: ${defaultValue}`);
+  console.warn(
+    `Invalid number value: ${value}, using default: ${defaultValue}`
+  );
   return defaultValue;
 }
 
 /**
  * 将系统统计数据转换为仪表盘指标数据
  */
-function transformSystemStatsToMetrics(systemStats: SystemStatsData): DashboardMetrics {
+function transformSystemStatsToMetrics(
+  systemStats: SystemStatsData
+): DashboardMetrics {
   console.log("transformSystemStatsToMetrics 输入数据:", systemStats);
-  
+
   // 安全的字节格式化函数
   const formatBytes = (bytes: unknown): string => {
     const numBytes = safeNumber(bytes, 0);
     if (numBytes === 0) return "0 B";
-    
+
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(numBytes) / Math.log(k));
     const formattedValue = parseFloat((numBytes / Math.pow(k, i)).toFixed(1));
-    
+
     if (isNaN(formattedValue)) {
-      console.warn(`formatBytes 产生 NaN: bytes=${bytes}, numBytes=${numBytes}`);
+      console.warn(
+        `formatBytes 产生 NaN: bytes=${bytes}, numBytes=${numBytes}`
+      );
       return "0 B";
     }
-    
+
     return formattedValue + " " + sizes[i];
   };
 
@@ -553,7 +559,12 @@ function transformSystemStatsToMetrics(systemStats: SystemStatsData): DashboardM
   const totalStorage = safeNumber(systemStats.totalStorage, 0);
   const totalAccesses = safeNumber(systemStats.totalAccesses, 0);
 
-  console.log("转换后的安全数值:", { totalUsers, totalImages, totalStorage, totalAccesses });
+  console.log("转换后的安全数值:", {
+    totalUsers,
+    totalImages,
+    totalStorage,
+    totalAccesses,
+  });
 
   const userChange = calculateChange();
   const imageChange = calculateChange();
@@ -600,12 +611,13 @@ export async function getDashboardDataAction(): Promise<
   try {
     // 获取系统统计数据
     const systemStatsResponse = await getSystemStatsAction();
-    
+
     if (systemStatsResponse.code !== 0) {
       return systemStatsResponse as ErrorApiResponse;
     }
 
-    const systemStats = (systemStatsResponse as ApiResponse<SystemStatsData>).data!;
+    const systemStats = (systemStatsResponse as ApiResponse<SystemStatsData>)
+      .data!;
 
     // 转换为仪表盘指标数据
     const metrics = transformSystemStatsToMetrics(systemStats);
@@ -616,7 +628,9 @@ export async function getDashboardDataAction(): Promise<
       memory: Math.floor(Math.random() * 100),
       disk: Math.floor(Math.random() * 60) + 20,
       status: "healthy" as SystemStatusEnum,
-      uptime: `${Math.floor(Math.random() * 30) + 1}天 ${Math.floor(Math.random() * 24)}小时`,
+      uptime: `${Math.floor(Math.random() * 30) + 1}天 ${Math.floor(
+        Math.random() * 24
+      )}小时`,
       lastUpdate: new Date(),
     };
 

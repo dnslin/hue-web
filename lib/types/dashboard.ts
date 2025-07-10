@@ -103,24 +103,27 @@ export interface DashboardApiResponse {
 export interface SystemStatsData {
   totalUsers: number;
   totalImages: number;
-  totalStorage: number;          // 存储使用总数 (字节)
-  totalAccesses: number;         // 总访问量
-  totalUploads: number;          // 总上传数
-  monthlyActiveUsers: number;    // 月活用户数
-  dailyActiveUsers: number;      // 日活用户数
-  averageFileSize: number;       // 平均文件大小 (字节)
+  totalStorage: number; // 存储使用总数 (字节)
+  totalAccesses: number; // 总访问量
+  totalUploads: number; // 总上传数
+  monthlyActiveUsers: number; // 月活用户数
+  dailyActiveUsers: number; // 日活用户数
+  averageFileSize: number; // 平均文件大小 (字节)
 }
 
 // 全局统计数据 (保持向后兼容)
 export interface GlobalStatsData {
-  totalUsers: number;
-  totalImages: number;
-  totalStorageUsed: number; // 字节
-  totalViews: number;
-  totalUploads: number;
-  monthlyActiveUsers: number;
-  dailyActiveUsers: number;
-  averageFileSize: number; // 字节
+  totalAccesses: number; // 对应 total_accesses
+  totalStorage: number; // 对应 total_storage
+  totalUploads: number; // 对应 total_uploads
+  // 以下字段GlobalStatsDTO不提供，组件应使用SystemStatsData
+  totalUsers?: number;
+  totalImages?: number;
+  totalStorageUsed?: number; // 为兼容性保留
+  totalViews?: number; // 为兼容性保留
+  monthlyActiveUsers?: number;
+  dailyActiveUsers?: number;
+  averageFileSize?: number;
   topStorageUser?: string;
   systemUptime?: string;
 }
@@ -134,7 +137,7 @@ export interface TimeSeriesDataPoint {
 
 // 访问统计数据
 export interface AccessStatsData {
-  period: 'daily' | 'weekly' | 'monthly';
+  period: "daily" | "weekly" | "monthly";
   data: TimeSeriesDataPoint[];
   totalViews: number;
   averageDaily: number;
@@ -144,7 +147,7 @@ export interface AccessStatsData {
 
 // 上传统计数据
 export interface UploadStatsData {
-  period: 'daily' | 'weekly' | 'monthly';
+  period: "daily" | "weekly" | "monthly";
   data: TimeSeriesDataPoint[];
   totalUploads: number;
   totalSize: number; // 字节
@@ -177,7 +180,7 @@ export interface ReferrerDistributionItem {
   domain: string;
   visits: number;
   percentage: number;
-  type: 'search' | 'social' | 'direct' | 'referral' | 'other';
+  type: "search" | "social" | "direct" | "referral" | "other";
   icon?: string;
 }
 
@@ -211,7 +214,7 @@ export interface TopImagesData {
   data: TopImageItem[];
   totalImages: number;
   mostViewed: TopImageItem | null;
-  sortBy: 'views_total' | 'views_month' | 'views_day';
+  sortBy: "views_total" | "views_month" | "views_day";
 }
 
 // 热门用户数据
@@ -233,7 +236,7 @@ export interface TopUsersData {
   data: TopUserItem[];
   totalUsers: number;
   topUser: TopUserItem | null;
-  sortBy: 'uploads_total' | 'views_total';
+  sortBy: "uploads_total" | "views_total";
 }
 
 // 统计页面完整数据类型
@@ -250,7 +253,7 @@ export interface StatsData {
 
 // API请求参数类型
 export interface StatsApiParams {
-  period?: 'daily' | 'weekly' | 'monthly';
+  period?: "daily" | "weekly" | "monthly";
   days?: number;
   limit?: number;
   sortBy?: string;
@@ -274,7 +277,7 @@ export interface StatsCardProps {
   loading?: boolean;
   className?: string;
   unit?: string;
-  format?: 'number' | 'bytes' | 'percentage';
+  format?: "number" | "bytes" | "percentage";
 }
 
 export interface ChartContainerProps {
@@ -310,9 +313,11 @@ export interface RankingTableProps {
   columns: Array<{
     key: string;
     title: string;
-    render?: (value: unknown, record: Record<string, unknown>) => React.ReactNode;
+    render?: (
+      value: unknown,
+      record: Record<string, unknown>
+    ) => React.ReactNode;
   }>;
   loading?: boolean;
   className?: string;
 }
-
