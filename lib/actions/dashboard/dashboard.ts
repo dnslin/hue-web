@@ -7,15 +7,23 @@ import {
 import {
   DashboardData,
   DashboardMetrics,
-  SystemStatusData, // 更正：对象应为 SystemStatusData，之前为 SystemStatus
-  ActivityItem, // 更正：之前为 RecentActivity，现为 ActivityItem
+  SystemStatusData,
+  ActivityItem,
   QuickAction,
   DashboardError,
-  MetricData, // 更正：之前为 MetricItem，现为 MetricData
-  TrendDirection, // 导入 TrendDirection
-  SystemStatus as SystemStatusEnum, // 导入 SystemStatus 枚举以用于状态字段
+  MetricData,
+  TrendDirection,
+  SystemStatus as SystemStatusEnum,
+  GlobalStatsData,
+  AccessStatsData,
+  UploadStatsData,
+  GeoDistributionData,
+  ReferrerDistributionData,
+  TopImagesData,
+  TopUsersData,
+  StatsApiParams,
+  StatsData,
 } from "@/lib/types/dashboard";
-import { UserListResponse } from "@/lib/types/user";
 import { getUsersAction } from "@/lib/actions/users/user";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
 
@@ -187,6 +195,266 @@ export async function getDashboardDataAction(): Promise<
       details: error instanceof AuthenticationError ? undefined : error,
     };
     // No redirect from server action for auth errors, client should handle
+    return { error: dashboardError, success: false };
+  }
+}
+
+// ====== 统计页面相关 Server Actions ======
+
+/**
+ * 获取全局统计数据
+ */
+export async function getGlobalStatsAction(): Promise<
+  | { data: GlobalStatsData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const response = await apiService.get<{ data: GlobalStatsData }>(
+      "/admin/dashboard/global-stats"
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getGlobalStatsAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取全局统计数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 获取访问统计数据
+ */
+export async function getAccessStatsAction(
+  params: StatsApiParams = {}
+): Promise<
+  | { data: AccessStatsData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { period = "daily", days = 30 } = params;
+    const response = await apiService.get<{ data: AccessStatsData }>(
+      "/admin/dashboard/access-stats",
+      { params: { period, days } }
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getAccessStatsAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取访问统计数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 获取上传统计数据
+ */
+export async function getUploadStatsAction(
+  params: StatsApiParams = {}
+): Promise<
+  | { data: UploadStatsData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { period = "daily", days = 30 } = params;
+    const response = await apiService.get<{ data: UploadStatsData }>(
+      "/admin/dashboard/upload-stats",
+      { params: { period, days } }
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getUploadStatsAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取上传统计数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 获取地理分布数据
+ */
+export async function getGeoDistributionAction(
+  params: StatsApiParams = {}
+): Promise<
+  | { data: GeoDistributionData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10 } = params;
+    const response = await apiService.get<{ data: GeoDistributionData }>(
+      "/admin/dashboard/distribution/geo",
+      { params: { limit } }
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getGeoDistributionAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取地理分布数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 获取来源分布数据
+ */
+export async function getReferrerDistributionAction(
+  params: StatsApiParams = {}
+): Promise<
+  | { data: ReferrerDistributionData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10 } = params;
+    const response = await apiService.get<{ data: ReferrerDistributionData }>(
+      "/admin/dashboard/distribution/referrer",
+      { params: { limit } }
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getReferrerDistributionAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取来源分布数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 获取热门图片数据
+ */
+export async function getTopImagesAction(
+  params: StatsApiParams = {}
+): Promise<
+  | { data: TopImagesData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10, sortBy = "views_total" } = params;
+    const response = await apiService.get<{ data: TopImagesData }>(
+      "/admin/dashboard/top-images",
+      { params: { limit, sort_by: sortBy } }
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getTopImagesAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取热门图片数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 获取热门用户数据
+ */
+export async function getTopUsersAction(
+  params: StatsApiParams = {}
+): Promise<
+  | { data: TopUsersData; success: true }
+  | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const { limit = 10, sortBy = "uploads_total" } = params;
+    const response = await apiService.get<{ data: TopUsersData }>(
+      "/admin/dashboard/top-users",
+      { params: { limit, sort_by: sortBy } }
+    );
+    return { data: response.data.data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getTopUsersAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取热门用户数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
+    return { error: dashboardError, success: false };
+  }
+}
+
+/**
+ * 批量获取所有统计数据
+ * 用于统计页面的初始数据加载
+ */
+export async function getAllStatsAction(
+  params: StatsApiParams = {}
+): Promise<
+  { data: StatsData; success: true } | { error: DashboardError; success: false }
+> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+
+    // 并行获取所有统计数据
+    const [
+      globalStats,
+      accessStats,
+      uploadStats,
+      geoDistribution,
+      referrerDistribution,
+      topImages,
+      topUsers,
+    ] = await Promise.all([
+      getGlobalStatsAction(),
+      getAccessStatsAction(params),
+      getUploadStatsAction(params),
+      getGeoDistributionAction(params),
+      getReferrerDistributionAction(params),
+      getTopImagesAction(params),
+      getTopUsersAction(params),
+    ]);
+
+    // 检查是否所有请求都成功
+    if (
+      !globalStats.success ||
+      !accessStats.success ||
+      !uploadStats.success ||
+      !geoDistribution.success ||
+      !referrerDistribution.success ||
+      !topImages.success ||
+      !topUsers.success
+    ) {
+      throw new Error("部分统计数据获取失败");
+    }
+
+    const data: StatsData = {
+      globalStats: globalStats.data,
+      accessStats: accessStats.data,
+      uploadStats: uploadStats.data,
+      geoDistribution: geoDistribution.data,
+      referrerDistribution: referrerDistribution.data,
+      topImages: topImages.data,
+      topUsers: topUsers.data,
+    };
+
+    return { data, success: true };
+  } catch (error: any) {
+    console.error("[Action Error] getAllStatsAction:", error);
+    const dashboardError: DashboardError = {
+      code: error instanceof AuthenticationError ? "AUTH_ERROR" : "FETCH_ERROR",
+      msg: error.message || "获取统计数据失败",
+      details: error instanceof AuthenticationError ? undefined : error,
+    };
     return { error: dashboardError, success: false };
   }
 }

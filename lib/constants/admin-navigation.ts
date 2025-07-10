@@ -12,6 +12,8 @@ import {
   Mail,
   Bell,
   Server,
+  TrendingUp,
+  PieChart,
 } from "lucide-react";
 import React from "react";
 
@@ -123,11 +125,32 @@ export const adminNavigation: NavigationGroup[] = [
     label: "系统管理",
     items: [
       {
-        id: "analytics",
+        id: "stats",
         label: "数据统计",
-        href: "/analytics",
+        href: "/stats",
         icon: BarChart3,
-        description: "访问统计和数据分析",
+        description: "详细的数据分析和可视化统计",
+        defaultHref: "/stats",
+        children: [
+          {
+            id: "stats-overview",
+            label: "统计概览",
+            href: "/stats",
+            icon: BarChart3,
+          },
+          {
+            id: "stats-trends",
+            label: "访问趋势",
+            href: "/stats/trends",
+            icon: TrendingUp,
+          },
+          {
+            id: "stats-analytics",
+            label: "分布分析",
+            href: "/stats/analytics",
+            icon: PieChart,
+          },
+        ],
       },
       {
         id: "storage",

@@ -1,0 +1,52 @@
+/* 统计页面响应式优化 */
+
+/* 移动端隐藏滚动条 */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 移动端图表优化 */
+@media (max-width: 768px) {
+  /* 图表容器优化 */
+  .recharts-responsive-container {
+    min-height: 200px !important;
+  }
+  
+  /* 饼图图例优化 */
+  .recharts-legend-wrapper {
+    padding-top: 16px !important;
+  }
+  
+  /* 工具提示优化 */
+  .recharts-tooltip-wrapper {
+    max-width: 280px !important;
+  }
+  
+  /* 坐标轴文字大小 */
+  .recharts-cartesian-axis-tick-value {
+    font-size: 10px !important;
+  }
+  
+  /* 图表边距优化 */
+  .recharts-surface {
+    overflow: visible !important;
+  }
+}
+
+/* 小屏幕图表调整 */
+@media (max-width: 640px) {
+  .recharts-responsive-container {
+    min-height: 180px !important;
+  }
+  
+  .recharts-cartesian-axis-tick-value {
+    font-size: 9px !important;
+  }
+}

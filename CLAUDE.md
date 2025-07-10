@@ -6,7 +6,7 @@ You must communicate with me in Chinese.
 
 **Essential Commands:**
 - `pnpm dev` - Start development server with Turbopack
-- `pnpm build` - Build for production (creates standalone output)
+- `pnpm build` - Build for production (creates standalone output) [No execution without my permission.]
 - `pnpm start` - Start production server
 - `pnpm lint` - Run ESLint
 

@@ -58,12 +58,14 @@ export function isAdminRoute(pathname: string): boolean {
     "/users", // 用户管理页面
     "/settings", // 系统设置页面
     "/storage", // 存储策略管理页面
+    "/stats",
   ];
 
   // 管理后台路径前缀
   const adminPrefixes = [
     "/admin/", // 以 /admin/ 开头的路径
     "/users/", // 以 /users/ 开头的路径
+    "/stats/",
   ];
 
   // 路由组模式 - 检查是否包含 (admin) 路由组

@@ -110,7 +110,7 @@ export const useSettingsStore = create<SettingsState>()(
           // getSettingsAction 返回 AllSettingsData | ErrorApiResponse
           if ("code" in result) {
             // 错误响应
-            console.error("❌ 加载设置失败:", result.message);
+            console.error("❌ 加载设置失败:", result.msg);
             const errorResult = await handleStoreError(result, "加载设置");
             set({
               isLoading: false,
@@ -165,7 +165,7 @@ export const useSettingsStore = create<SettingsState>()(
             return true;
           } else {
             // 错误响应
-            console.error("❌ 更新基础设置失败:", result.message);
+            console.error("❌ 更新基础设置失败:", result.msg);
             const errorResult = await handleStoreError(result, "更新基础设置");
             set({ isSubmitting: false, error: errorResult.error });
             return false;
@@ -201,7 +201,7 @@ export const useSettingsStore = create<SettingsState>()(
             console.log("✅ 邮件设置更新成功");
             return true;
           } else {
-            console.error("❌ 更新邮件设置失败:", result.message);
+            console.error("❌ 更新邮件设置失败:", result.msg);
             const errorResult = await handleStoreError(result, "更新邮件设置");
             set({ isSubmitting: false, error: errorResult.error });
             return false;
@@ -237,7 +237,7 @@ export const useSettingsStore = create<SettingsState>()(
             console.log("✅ 图片设置更新成功");
             return true;
           } else {
-            console.error("❌ 更新图片设置失败:", result.message);
+            console.error("❌ 更新图片设置失败:", result.msg);
             const errorResult = await handleStoreError(result, "更新图片设置");
             set({ isSubmitting: false, error: errorResult.error });
             return false;
@@ -273,7 +273,7 @@ export const useSettingsStore = create<SettingsState>()(
             console.log("✅ 安全设置更新成功");
             return true;
           } else {
-            console.error("❌ 更新安全设置失败:", result.message);
+            console.error("❌ 更新安全设置失败:", result.msg);
             const errorResult = await handleStoreError(result, "更新安全设置");
             set({ isSubmitting: false, error: errorResult.error });
             return false;
@@ -339,7 +339,7 @@ export const useSettingsStore = create<SettingsState>()(
             console.log("✅ Store: 邮件配置测试成功");
             return true;
           } else {
-            console.error("❌ Store: 邮件配置测试失败:", result.message);
+            console.error("❌ Store: 邮件配置测试失败:", result.msg);
             const errorResult = await handleStoreError(result, "邮件配置测试");
             set({ isTestingEmail: false, error: errorResult.error });
             return false;
