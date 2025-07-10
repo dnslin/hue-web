@@ -1,11 +1,13 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { BoxReveal } from "@/components/magicui/box-reveal";
 import { TextAnimate } from "@/components/magicui/text-animate";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { DashboardContainer } from "@/components/dashboard/container";
+import { EnhancedMetricsGrid } from "@/components/dashboard/enhanced-metrics-grid";
+import { QuickTrends } from "@/components/stats/overview/quick-trends";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useStatsActions } from "@/lib/store/stats";
 
 // 加载状态组件
 function DashboardSkeleton() {
@@ -18,8 +20,8 @@ function DashboardSkeleton() {
       </div>
 
       {/* 指标卡片骨架 */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 relative z-10">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 relative z-10">
+        {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="space-y-3 p-6 border rounded-lg">
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-20" />
@@ -30,37 +32,17 @@ function DashboardSkeleton() {
           </div>
         ))}
       </div>
-
-      {/* 其他内容骨架 */}
-      <div className="grid gap-6 lg:grid-cols-2 relative z-10">
-        <div className="space-y-4 p-6 border rounded-lg">
-          <Skeleton className="h-6 w-24" />
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        </div>
-        <div className="space-y-4 p-6 border rounded-lg">
-          <Skeleton className="h-6 w-24" />
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-12" />
-                </div>
-                <Skeleton className="h-2 w-full" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
 
 export default function DashboardPage() {
+  const { fetchAllStats } = useStatsActions();
+
+  useEffect(() => {
+    fetchAllStats();
+  }, [fetchAllStats]);
+
   return (
     <div className="relative overflow-hidden h-full">
       {/* 背景网格动画 */}
@@ -97,10 +79,35 @@ export default function DashboardPage() {
             </BoxReveal>
           </div>
 
-          {/* Dashboard 主要内容 */}
+          {/* 关键指标展示 */}
           <Suspense fallback={<DashboardSkeleton />}>
-            <DashboardContainer />
+            <EnhancedMetricsGrid />
           </Suspense>
+
+          {/* 快速趋势 */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">快速趋势</h2>
+            <Suspense
+              fallback={
+                <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+                  <div className="animate-pulse min-w-0">
+                    <div className="space-y-4 p-6 border rounded-lg">
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-48 md:h-64 w-full" />
+                    </div>
+                  </div>
+                  <div className="animate-pulse min-w-0">
+                    <div className="space-y-4 p-6 border rounded-lg">
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-48 md:h-64 w-full" />
+                    </div>
+                  </div>
+                </div>
+              }
+            >
+              <QuickTrends />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>

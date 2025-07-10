@@ -133,12 +133,6 @@ export const adminNavigation: NavigationGroup[] = [
         defaultHref: "/stats",
         children: [
           {
-            id: "stats-overview",
-            label: "统计概览",
-            href: "/stats",
-            icon: BarChart3,
-          },
-          {
             id: "stats-trends",
             label: "访问趋势",
             href: "/stats/trends",
@@ -256,4 +250,3 @@ export const generateBreadcrumbs = (path: string) => {
 
   return breadcrumbs;
 };
-

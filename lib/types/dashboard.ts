@@ -75,6 +75,8 @@ export interface MetricCardProps {
   loading?: boolean;
   className?: string;
   description?: string;
+  gradientFrom?: string;
+  gradientTo?: string;
 }
 
 export interface ActionCardProps {
