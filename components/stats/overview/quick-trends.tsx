@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, XAxis, YAxis } from "recharts";
 import { useAccessStats, useUploadStats, useStatsLoading } from "@/lib/store/stats";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -84,55 +84,53 @@ export function QuickTrends() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={accessData?.data || []}>
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("zh-CN", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000) {
-                      return `${(value / 1000).toFixed(1)}K`;
-                    }
-                    return value.toString();
-                  }}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("zh-CN", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        });
-                      }}
-                    />
+            <AreaChart data={accessData?.data || []}>
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString("zh-CN", {
+                    month: "short",
+                    day: "numeric",
+                  });
+                }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => {
+                  if (value >= 1000) {
+                    return `${(value / 1000).toFixed(1)}K`;
                   }
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke={chartConfig.access.color}
-                  fill={chartConfig.access.color}
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+                  return value.toString();
+                }}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString("zh-CN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      });
+                    }}
+                  />
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={chartConfig.access.color}
+                fill={chartConfig.access.color}
+                fillOpacity={0.2}
+                strokeWidth={2}
+              />
+            </AreaChart>
           </ChartContainer>
           <div className="mt-4 text-sm text-muted-foreground">
             过去 7 天的访问趋势
@@ -157,55 +155,53 @@ export function QuickTrends() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={uploadData?.data || []}>
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("zh-CN", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000) {
-                      return `${(value / 1000).toFixed(1)}K`;
-                    }
-                    return value.toString();
-                  }}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("zh-CN", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        });
-                      }}
-                    />
+            <AreaChart data={uploadData?.data || []}>
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString("zh-CN", {
+                    month: "short",
+                    day: "numeric",
+                  });
+                }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => {
+                  if (value >= 1000) {
+                    return `${(value / 1000).toFixed(1)}K`;
                   }
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke={chartConfig.upload.color}
-                  fill={chartConfig.upload.color}
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+                  return value.toString();
+                }}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString("zh-CN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      });
+                    }}
+                  />
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={chartConfig.upload.color}
+                fill={chartConfig.upload.color}
+                fillOpacity={0.2}
+                strokeWidth={2}
+              />
+            </AreaChart>
           </ChartContainer>
           <div className="mt-4 text-sm text-muted-foreground">
             过去 7 天的上传趋势

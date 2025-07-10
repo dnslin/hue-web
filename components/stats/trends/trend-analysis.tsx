@@ -8,7 +8,6 @@ import {
   AreaChart, 
   Line, 
   LineChart, 
-  ResponsiveContainer, 
   XAxis, 
   YAxis,
   CartesianGrid,
@@ -176,8 +175,7 @@ export function TrendAnalysis({ period }: TrendAnalysisProps) {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-64 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={accessData?.data || []} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+            <AreaChart data={accessData?.data || []} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="date"
@@ -226,8 +224,7 @@ export function TrendAnalysis({ period }: TrendAnalysisProps) {
                   fillOpacity={0.2}
                   strokeWidth={2}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+            </AreaChart>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -245,8 +242,7 @@ export function TrendAnalysis({ period }: TrendAnalysisProps) {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-64 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={uploadData?.data || []} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+            <LineChart data={uploadData?.data || []} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="date"
@@ -320,8 +316,7 @@ export function TrendAnalysis({ period }: TrendAnalysisProps) {
                   dot={false}
                   name="文件大小"
                 />
-              </LineChart>
-            </ResponsiveContainer>
+            </LineChart>
           </ChartContainer>
         </CardContent>
       </Card>

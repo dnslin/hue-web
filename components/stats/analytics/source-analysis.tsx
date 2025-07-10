@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Cell, Pie, PieChart, ResponsiveContainer, Legend } from "recharts";
+import { Cell, Pie, PieChart, Legend } from "recharts";
 import { useReferrerDistribution, useStatsLoading, useStatsError } from "@/lib/store/stats";
 import { 
   Share2, 
@@ -137,8 +137,7 @@ export function SourceAnalysis() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+            <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
@@ -167,8 +166,7 @@ export function SourceAnalysis() {
                   height={36}
                   formatter={(value) => value}
                 />
-              </PieChart>
-            </ResponsiveContainer>
+            </PieChart>
           </ChartContainer>
         </CardContent>
       </Card>

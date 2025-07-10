@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useGeoDistribution, useStatsLoading, useStatsError } from "@/lib/store/stats";
 import { Globe, Users, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -97,8 +97,7 @@ export function GeoAnalysis() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={geoData.data || []} layout="horizontal">
+            <BarChart data={geoData.data || []} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
                   type="number"
@@ -138,8 +137,7 @@ export function GeoAnalysis() {
                   fill={chartConfig.visits.color}
                   radius={[0, 4, 4, 0]}
                 />
-              </BarChart>
-            </ResponsiveContainer>
+            </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
