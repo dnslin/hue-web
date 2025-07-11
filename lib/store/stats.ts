@@ -1,7 +1,7 @@
 /**
  * @file Stats Store
  * @description 统计数据状态管理
- * 
+ *
  * 遵循项目标准的 Store 架构模式：
  * - 使用 Zustand 进行状态管理
  * - 包含数据状态、加载状态、错误处理
@@ -23,10 +23,7 @@ import type {
   TopUsersData,
   StatsApiParams,
 } from "@/lib/types/dashboard";
-import type {
-  ApiResponse,
-  ErrorApiResponse,
-} from "@/lib/types/common";
+import type { ApiResponse, ErrorApiResponse } from "@/lib/types/common";
 import {
   getAllStatsAction,
   getSystemStatsAction,
@@ -45,16 +42,16 @@ import {
 interface StatsState {
   // 数据状态
   data: StatsData | null;
-  
+
   // 加载状态
   loading: boolean;
-  
+
   // 错误状态
   error: string | null;
-  
+
   // 最后更新时间
   lastUpdated: number | null;
-  
+
   // 参数状态
   params: StatsApiParams;
 }
@@ -65,40 +62,48 @@ interface StatsState {
 interface StatsActions {
   // 获取所有统计数据
   fetchAllStats: (params?: StatsApiParams) => Promise<void>;
-  
+
   // 获取系统统计数据
   fetchSystemStats: () => Promise<SystemStatsData | null>;
-  
+
   // 获取全局统计数据
   fetchGlobalStats: () => Promise<GlobalStatsData | null>;
-  
+
   // 获取访问统计数据
-  fetchAccessStats: (params?: StatsApiParams) => Promise<AccessStatsData | null>;
-  
+  fetchAccessStats: (
+    params?: StatsApiParams
+  ) => Promise<AccessStatsData | null>;
+
   // 获取上传统计数据
-  fetchUploadStats: (params?: StatsApiParams) => Promise<UploadStatsData | null>;
-  
+  fetchUploadStats: (
+    params?: StatsApiParams
+  ) => Promise<UploadStatsData | null>;
+
   // 获取地理分布数据
-  fetchGeoDistribution: (params?: StatsApiParams) => Promise<GeoDistributionData | null>;
-  
+  fetchGeoDistribution: (
+    params?: StatsApiParams
+  ) => Promise<GeoDistributionData | null>;
+
   // 获取来源分布数据
-  fetchReferrerDistribution: (params?: StatsApiParams) => Promise<ReferrerDistributionData | null>;
-  
+  fetchReferrerDistribution: (
+    params?: StatsApiParams
+  ) => Promise<ReferrerDistributionData | null>;
+
   // 获取热门图片数据
   fetchTopImages: (params?: StatsApiParams) => Promise<TopImagesData | null>;
-  
+
   // 获取热门用户数据
   fetchTopUsers: (params?: StatsApiParams) => Promise<TopUsersData | null>;
-  
+
   // 刷新数据
   refreshStats: () => Promise<void>;
-  
+
   // 更新参数
   updateParams: (params: StatsApiParams) => void;
-  
+
   // 清除错误
   clearError: () => void;
-  
+
   // 重置状态
   reset: () => void;
 }
@@ -114,7 +119,7 @@ const initialState: StatsState = {
   error: null,
   lastUpdated: null,
   params: {
-    period: 'daily',
+    period: "daily",
     days: 30,
     limit: 10,
   },
@@ -124,12 +129,12 @@ const initialState: StatsState = {
  * 错误处理工具函数
  */
 const handleError = (error: ErrorApiResponse | any): string => {
-  if (error && typeof error === 'object') {
+  if (error && typeof error === "object") {
     if (error.msg) return error.msg;
     if (error.message) return error.message;
     if (error.error && error.error.msg) return error.error.msg;
   }
-  return '获取统计数据时发生未知错误';
+  return "获取统计数据时发生未知错误";
 };
 
 /**
@@ -144,17 +149,25 @@ export const useStatsStore = create<StatsStore>()(
       // 获取所有统计数据
       fetchAllStats: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
+        console.log("🔄 Stats Store: 开始获取统计数据", currentParams);
         set({ loading: true, error: null });
-        
+
         try {
           const response = await getAllStatsAction(currentParams);
-          
+          console.log("📊 Stats Store: API 响应", response);
+
           if (response.code === 0) {
             const apiResponse = response as ApiResponse<StatsData>;
-            set({ 
-              data: apiResponse.data!, 
-              loading: false, 
+            console.log("✅ Stats Store: 数据获取成功", {
+              accessStats: apiResponse.data?.accessStats,
+              uploadStats: apiResponse.data?.uploadStats,
+              accessDataLength: apiResponse.data?.accessStats?.data?.length,
+              uploadDataLength: apiResponse.data?.uploadStats?.data?.length,
+            });
+            set({
+              data: apiResponse.data!,
+              loading: false,
               error: null,
               lastUpdated: Date.now(),
               params: currentParams,
@@ -162,16 +175,18 @@ export const useStatsStore = create<StatsStore>()(
           } else {
             const errorResponse = response as ErrorApiResponse;
             const errorMsg = handleError(errorResponse);
-            set({ 
-              loading: false, 
-              error: errorMsg 
+            console.error("❌ Stats Store: 数据获取失败", errorResponse);
+            set({
+              loading: false,
+              error: errorMsg,
             });
           }
         } catch (error) {
           const errorMsg = handleError(error);
-          set({ 
-            loading: false, 
-            error: errorMsg 
+          console.error("❌ Stats Store: 获取数据异常", error);
+          set({
+            loading: false,
+            error: errorMsg,
           });
         }
       },
@@ -185,7 +200,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取系统统计数据失败:', error);
+          console.error("获取系统统计数据失败:", error);
           return null;
         }
       },
@@ -199,7 +214,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取全局统计数据失败:', error);
+          console.error("获取全局统计数据失败:", error);
           return null;
         }
       },
@@ -207,7 +222,7 @@ export const useStatsStore = create<StatsStore>()(
       // 获取访问统计数据
       fetchAccessStats: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
         try {
           const response = await getAccessStatsAction(currentParams);
           if (response.code === 0) {
@@ -215,7 +230,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取访问统计数据失败:', error);
+          console.error("获取访问统计数据失败:", error);
           return null;
         }
       },
@@ -223,7 +238,7 @@ export const useStatsStore = create<StatsStore>()(
       // 获取上传统计数据
       fetchUploadStats: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
         try {
           const response = await getUploadStatsAction(currentParams);
           if (response.code === 0) {
@@ -231,7 +246,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取上传统计数据失败:', error);
+          console.error("获取上传统计数据失败:", error);
           return null;
         }
       },
@@ -239,7 +254,7 @@ export const useStatsStore = create<StatsStore>()(
       // 获取地理分布数据
       fetchGeoDistribution: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
         try {
           const response = await getGeoDistributionAction(currentParams);
           if (response.code === 0) {
@@ -247,7 +262,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取地理分布数据失败:', error);
+          console.error("获取地理分布数据失败:", error);
           return null;
         }
       },
@@ -255,7 +270,7 @@ export const useStatsStore = create<StatsStore>()(
       // 获取来源分布数据
       fetchReferrerDistribution: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
         try {
           const response = await getReferrerDistributionAction(currentParams);
           if (response.code === 0) {
@@ -263,7 +278,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取来源分布数据失败:', error);
+          console.error("获取来源分布数据失败:", error);
           return null;
         }
       },
@@ -271,7 +286,7 @@ export const useStatsStore = create<StatsStore>()(
       // 获取热门图片数据
       fetchTopImages: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
         try {
           const response = await getTopImagesAction(currentParams);
           if (response.code === 0) {
@@ -279,7 +294,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取热门图片数据失败:', error);
+          console.error("获取热门图片数据失败:", error);
           return null;
         }
       },
@@ -287,7 +302,7 @@ export const useStatsStore = create<StatsStore>()(
       // 获取热门用户数据
       fetchTopUsers: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
-        
+
         try {
           const response = await getTopUsersAction(currentParams);
           if (response.code === 0) {
@@ -295,7 +310,7 @@ export const useStatsStore = create<StatsStore>()(
           }
           return null;
         } catch (error) {
-          console.error('获取热门用户数据失败:', error);
+          console.error("获取热门用户数据失败:", error);
           return null;
         }
       },
@@ -322,7 +337,7 @@ export const useStatsStore = create<StatsStore>()(
       },
     }),
     {
-      name: 'stats-store',
+      name: "stats-store",
       partialize: (state) => ({
         // 只持久化参数，不持久化数据（避免过期数据）
         params: state.params,
@@ -345,7 +360,8 @@ export const useStatsLoading = () => useStatsStore((state) => state.loading);
 export const useStatsError = () => useStatsStore((state) => state.error);
 
 // 获取最后更新时间
-export const useStatsLastUpdated = () => useStatsStore((state) => state.lastUpdated);
+export const useStatsLastUpdated = () =>
+  useStatsStore((state) => state.lastUpdated);
 
 // 获取参数
 export const useStatsParams = () => useStatsStore((state) => state.params);
@@ -357,8 +373,12 @@ export const useStatsActions = () => {
   const fetchGlobalStats = useStatsStore((state) => state.fetchGlobalStats);
   const fetchAccessStats = useStatsStore((state) => state.fetchAccessStats);
   const fetchUploadStats = useStatsStore((state) => state.fetchUploadStats);
-  const fetchGeoDistribution = useStatsStore((state) => state.fetchGeoDistribution);
-  const fetchReferrerDistribution = useStatsStore((state) => state.fetchReferrerDistribution);
+  const fetchGeoDistribution = useStatsStore(
+    (state) => state.fetchGeoDistribution
+  );
+  const fetchReferrerDistribution = useStatsStore(
+    (state) => state.fetchReferrerDistribution
+  );
   const fetchTopImages = useStatsStore((state) => state.fetchTopImages);
   const fetchTopUsers = useStatsStore((state) => state.fetchTopUsers);
   const refreshStats = useStatsStore((state) => state.refreshStats);
@@ -386,11 +406,18 @@ export const useStatsActions = () => {
 /**
  * 特定数据选择器
  */
-export const useSystemStats = () => useStatsStore((state) => state.data?.systemStats);
-export const useGlobalStats = () => useStatsStore((state) => state.data?.globalStats);
-export const useAccessStats = () => useStatsStore((state) => state.data?.accessStats);
-export const useUploadStats = () => useStatsStore((state) => state.data?.uploadStats);
-export const useGeoDistribution = () => useStatsStore((state) => state.data?.geoDistribution);
-export const useReferrerDistribution = () => useStatsStore((state) => state.data?.referrerDistribution);
-export const useTopImages = () => useStatsStore((state) => state.data?.topImages);
+export const useSystemStats = () =>
+  useStatsStore((state) => state.data?.systemStats);
+export const useGlobalStats = () =>
+  useStatsStore((state) => state.data?.globalStats);
+export const useAccessStats = () =>
+  useStatsStore((state) => state.data?.accessStats);
+export const useUploadStats = () =>
+  useStatsStore((state) => state.data?.uploadStats);
+export const useGeoDistribution = () =>
+  useStatsStore((state) => state.data?.geoDistribution);
+export const useReferrerDistribution = () =>
+  useStatsStore((state) => state.data?.referrerDistribution);
+export const useTopImages = () =>
+  useStatsStore((state) => state.data?.topImages);
 export const useTopUsers = () => useStatsStore((state) => state.data?.topUsers);
