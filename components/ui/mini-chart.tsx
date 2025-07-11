@@ -61,7 +61,6 @@ export const MiniChart: React.FC<MiniChartProps> = ({
 
     const checkDarkMode = () => {
       const isDarkMode = document.documentElement.classList.contains("dark");
-      console.log("MiniChart 暗色模式检测:", isDarkMode);
       setIsDark(isDarkMode);
     };
 
@@ -97,13 +96,6 @@ export const MiniChart: React.FC<MiniChartProps> = ({
 
   // 获取有效的图表颜色
   const effectiveColor = getChartColor(color, isDark);
-
-  console.log("MiniChart 颜色信息:", {
-    originalColor: color,
-    effectiveColor,
-    isDark,
-    isMounted,
-  });
 
   // 根据主题调整渐变透明度 - 确保在暗色模式下有足够的可见度
   const gradientStartOpacity = isDark ? 0.6 : 0.4;
