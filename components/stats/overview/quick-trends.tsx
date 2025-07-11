@@ -13,8 +13,10 @@ import {
   useUploadStats,
   useStatsLoading,
   useStatsActions,
+  useStatsError,
 } from "@/lib/store/stats";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const chartConfig = {
   access: {
@@ -53,24 +55,53 @@ export function QuickTrends() {
     });
   }, [accessData, uploadData, isLoading]);
 
-  // 数据验证和默认值处理
-  const validateAndProcessData = (data: any) => {
+  // 数据验证和格式转换处理
+  const validateAndProcessData = (data: any, dataType: "access" | "upload") => {
     if (!data || !Array.isArray(data.data)) {
       console.warn("⚠️ 数据格式无效或为空:", data);
       return [];
     }
 
-    return data.data.filter(
-      (item: any) =>
-        item &&
-        typeof item.date === "string" &&
-        typeof item.value === "number" &&
-        !isNaN(item.value)
-    );
+    // 打印数据结构用于调试
+    if (data.data.length > 0) {
+      console.log(`📋 ${dataType} 数据结构示例:`, data.data[0]);
+    }
+
+    return data.data
+      .map((item: any) => {
+        if (!item || typeof item.date !== "string") {
+          return null;
+        }
+
+        let value: number;
+
+        // 根据实际数据字段进行转换
+        if (dataType === "upload") {
+          // 上传数据使用 uploadCount 字段（基于实际数据结构）
+          value = item.uploadCount || 0;
+        } else {
+          // 访问数据 - 需要根据实际数据结构确定字段名
+          // 请提供访问数据的实际结构以便正确映射
+          value = item.value || 0;
+        }
+
+        // 确保 value 是有效数字
+        if (typeof value !== "number" || isNaN(value)) {
+          value = 0;
+        }
+
+        return {
+          date: item.date,
+          value: value,
+          // 保留原始数据用于调试
+          _original: item,
+        };
+      })
+      .filter((item: any) => item !== null);
   };
 
-  const processedAccessData = validateAndProcessData(accessData);
-  const processedUploadData = validateAndProcessData(uploadData);
+  const processedAccessData = validateAndProcessData(accessData, "access");
+  const processedUploadData = validateAndProcessData(uploadData, "upload");
 
   // 检查是否有数据
   const hasAccessData = processedAccessData.length > 0;
