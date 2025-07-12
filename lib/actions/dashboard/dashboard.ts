@@ -21,6 +21,8 @@ import {
   TopUsersData,
   StatsApiParams,
   StatsData,
+  DailyAccessStatDTO,
+  DailyUploadStatDTO,
 } from "@/lib/types/dashboard";
 import type { ApiResponse, ErrorApiResponse } from "@/lib/types/common";
 import { Upload, Users, Settings, BarChart3 } from "lucide-react";
@@ -130,7 +132,7 @@ export async function getAccessStatsAction(
   try {
     const apiService = await getAuthenticatedApiService();
     const { period = "daily", days = 30 } = params;
-    const response = await apiService.get<ApiResponse<AccessStatsData>>(
+    const response = await apiService.get<ApiResponse<DailyAccessStatDTO[]>>(
       `${DASHBOARD_API_BASE}/access-stats`,
       { params: { period, days } }
     );
@@ -138,10 +140,16 @@ export async function getAccessStatsAction(
     const apiResponse = response.data;
 
     if (apiResponse.code === 0) {
+      // 将后端返回的数组包装成 AccessStatsData 格式
+      const accessStatsData: AccessStatsData = {
+        data: apiResponse.data || [],
+        period: period as "daily" | "weekly" | "monthly",
+      };
+
       return {
         code: 0,
         msg: apiResponse.msg || "获取访问统计数据成功",
-        data: apiResponse.data,
+        data: accessStatsData,
       };
     }
 
@@ -178,7 +186,7 @@ export async function getUploadStatsAction(
   try {
     const apiService = await getAuthenticatedApiService();
     const { period = "daily", days = 30 } = params;
-    const response = await apiService.get<ApiResponse<UploadStatsData>>(
+    const response = await apiService.get<ApiResponse<DailyUploadStatDTO[]>>(
       `${DASHBOARD_API_BASE}/upload-stats`,
       { params: { period, days } }
     );
@@ -186,10 +194,16 @@ export async function getUploadStatsAction(
     const apiResponse = response.data;
 
     if (apiResponse.code === 0) {
+      // 将后端返回的数组包装成 UploadStatsData 格式
+      const uploadStatsData: UploadStatsData = {
+        data: apiResponse.data || [],
+        period: period as "daily" | "weekly" | "monthly",
+      };
+
       return {
         code: 0,
         msg: apiResponse.msg || "获取上传统计数据成功",
-        data: apiResponse.data,
+        data: uploadStatsData,
       };
     }
 
@@ -720,3 +734,4 @@ export async function getDashboardDataAction(): Promise<
     };
   }
 }
+

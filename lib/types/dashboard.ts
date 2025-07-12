@@ -130,31 +130,45 @@ export interface GlobalStatsData {
   systemUptime?: string;
 }
 
-// 时间序列数据点
+// 时间序列数据点（前端统一格式）
 export interface TimeSeriesDataPoint {
   date: string; // YYYY-MM-DD
   value: number;
   label?: string;
 }
 
-// 访问统计数据
+// 后端原始数据类型（与 swagger 定义一致）
+export interface DailyAccessStatDTO {
+  date: string; // YYYY-MM-DD
+  access_count: number;
+}
+
+export interface DailyUploadStatDTO {
+  date: string; // YYYY-MM-DD
+  upload_count: number;
+  upload_size: number; // 字节
+}
+
+// 访问统计数据（后端直接返回的格式）
 export interface AccessStatsData {
-  period: "daily" | "weekly" | "monthly";
-  data: TimeSeriesDataPoint[];
-  totalViews: number;
-  averageDaily: number;
+  data: DailyAccessStatDTO[]; // 后端直接返回 DailyAccessStatDTO 数组
+  // 以下字段可能需要前端计算或后端补充
+  period?: "daily" | "weekly" | "monthly";
+  totalViews?: number;
+  averageDaily?: number;
   peakDate?: string;
   peakValue?: number;
 }
 
-// 上传统计数据
+// 上传统计数据（后端直接返回的格式）
 export interface UploadStatsData {
-  period: "daily" | "weekly" | "monthly";
-  data: TimeSeriesDataPoint[];
-  totalUploads: number;
-  totalSize: number; // 字节
-  averageDaily: number;
-  averageSize: number; // 字节
+  data: DailyUploadStatDTO[]; // 后端直接返回 DailyUploadStatDTO 数组
+  // 以下字段可能需要前端计算或后端补充
+  period?: "daily" | "weekly" | "monthly";
+  totalUploads?: number;
+  totalSize?: number; // 字节
+  averageDaily?: number;
+  averageSize?: number; // 字节
   peakDate?: string;
   peakValue?: number;
 }
@@ -323,3 +337,4 @@ export interface RankingTableProps {
   loading?: boolean;
   className?: string;
 }
+
