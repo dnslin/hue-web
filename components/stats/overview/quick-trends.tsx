@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -15,6 +15,16 @@ import {
   useStatsActions,
 } from "@/lib/store/stats";
 import { TrendingUp, TrendingDown } from "lucide-react";
+
+// 定义图表颜色映射，确保在不同主题下都有良好的可见性
+const getChartColor = (colorKey: string, isDark: boolean) => {
+  const colorMap: Record<string, { light: string; dark: string }> = {
+    access: { light: "#3B82F6", dark: "#60A5FA" }, // 蓝色 - 访问量
+    upload: { light: "#10B981", dark: "#34D399" }, // 绿色 - 上传数
+  };
+
+  return isDark ? colorMap[colorKey].dark : colorMap[colorKey].light;
+};
 
 const chartConfig = {
   access: {
@@ -32,6 +42,30 @@ export function QuickTrends() {
   const uploadData = useUploadStats();
   const isLoading = useStatsLoading();
   const { fetchAllStats } = useStatsActions();
+
+  // 主题检测状态
+  const [isDark, setIsDark] = useState(false);
+
+  // 检测暗色模式
+  useEffect(() => {
+
+    const checkDarkMode = () => {
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkMode);
+    };
+
+    // 初始检测
+    checkDarkMode();
+
+    // 监听类变化
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // 组件级数据获取 - 确保数据加载，专门为快速趋势请求7天数据
   React.useEffect(() => {
@@ -255,10 +289,10 @@ export function QuickTrends() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={chartConfig.access.color}
-                fill={chartConfig.access.color}
-                fillOpacity={0.2}
-                strokeWidth={2}
+                stroke={getChartColor("access", isDark)}
+                fill={getChartColor("access", isDark)}
+                fillOpacity={isDark ? 0.3 : 0.2}
+                strokeWidth={isDark ? 3 : 2}
               />
             </AreaChart>
           </ChartContainer>
@@ -334,10 +368,10 @@ export function QuickTrends() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={chartConfig.upload.color}
-                fill={chartConfig.upload.color}
-                fillOpacity={0.2}
-                strokeWidth={2}
+                stroke={getChartColor("upload", isDark)}
+                fill={getChartColor("upload", isDark)}
+                fillOpacity={isDark ? 0.3 : 0.2}
+                strokeWidth={isDark ? 3 : 2}
               />
             </AreaChart>
           </ChartContainer>
