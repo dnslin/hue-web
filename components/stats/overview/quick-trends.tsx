@@ -43,36 +43,6 @@ export function QuickTrends() {
   }, [accessData, uploadData, isLoading, fetchAllStats]);
 
 
-  // Mock 数据生成函数 - 仅用于演示，后端有数据后可移除
-  const generateMockData = (dataType: "access" | "upload") => {
-    const mockData = [];
-    const today = new Date();
-
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-
-      // 生成模拟数据，创建更有趣的趋势
-      const baseValue = dataType === "access" ? 120 : 20;
-      let trendMultiplier = 1;
-
-      // 创建一个上升趋势
-      if (i <= 3) {
-        trendMultiplier = 1 + (3 - i) * 0.3; // 最近几天数据更高
-      }
-
-      const randomVariation = Math.random() * 0.4 + 0.8; // 0.8-1.2 的变化范围
-      const value = Math.floor(baseValue * trendMultiplier * randomVariation);
-
-      mockData.push({
-        date: date.toISOString().split('T')[0], // YYYY-MM-DD 格式
-        value: Math.max(1, value), // 确保至少为1，避免全0数据
-      });
-    }
-
-    return mockData;
-  };
-
   // 获取最近7天的日期列表
   const getLast7Days = () => {
     const days = [];
@@ -112,28 +82,29 @@ export function QuickTrends() {
         value: dataMap.get(date) || 0,
       }));
 
-      // 如果所有数据都是0，使用 Mock 数据进行演示
-      const hasNonZeroData = processedData.some((item: any) => item.value > 0);
-      if (!hasNonZeroData) {
-        // TODO: 后端有真实数据后，移除这部分 Mock 数据逻辑
-        return generateMockData(dataType);
-      }
-
       return processedData;
     }
 
-    // 如果没有真实数据，使用 Mock 数据进行演示
-    // TODO: 后端有数据后，移除这部分 Mock 数据逻辑
-    return generateMockData(dataType);
+    // 如果没有数据，返回空的7天数据结构
+    return last7Days.map(date => ({
+      date: date,
+      value: 0,
+    }));
   };
 
   const processedAccessData = processChartData(accessData, "access");
   const processedUploadData = processChartData(uploadData, "upload");
 
-  // 检查是否有任何数据（包括 Mock 数据）
+  // 检查是否有真实数据（非全0数据）
+  const hasRealAccessData = processedAccessData.some(item => item.value > 0);
+  const hasRealUploadData = processedUploadData.some(item => item.value > 0);
+  const hasAnyRealData = hasRealAccessData || hasRealUploadData;
+
+  // 检查是否有任何数据结构（包括全0数据）
   const hasAccessData = processedAccessData.length > 0;
   const hasUploadData = processedUploadData.length > 0;
   const hasAnyData = hasAccessData || hasUploadData;
+
 
   if (isLoading) {
     return (
