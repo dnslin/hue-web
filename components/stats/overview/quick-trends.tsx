@@ -95,11 +95,6 @@ export function QuickTrends() {
   const processedAccessData = processChartData(accessData, "access");
   const processedUploadData = processChartData(uploadData, "upload");
 
-  // 检查是否有真实数据（非全0数据）
-  const hasRealAccessData = processedAccessData.some(item => item.value > 0);
-  const hasRealUploadData = processedUploadData.some(item => item.value > 0);
-  const hasAnyRealData = hasRealAccessData || hasRealUploadData;
-
   // 检查是否有任何数据结构（包括全0数据）
   const hasAccessData = processedAccessData.length > 0;
   const hasUploadData = processedUploadData.length > 0;
