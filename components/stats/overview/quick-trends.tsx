@@ -37,21 +37,10 @@ export function QuickTrends() {
   React.useEffect(() => {
     // 如果没有数据且不在加载中，尝试获取数据
     if (!accessData && !uploadData && !isLoading) {
-      console.log("🔄 QuickTrends 组件主动获取数据");
       fetchAllStats();
     }
   }, [accessData, uploadData, isLoading, fetchAllStats]);
 
-  // 调试日志 - 监控数据状态
-  React.useEffect(() => {
-    console.log("🔍 QuickTrends 数据状态:", {
-      accessData,
-      uploadData,
-      isLoading,
-      accessDataLength: accessData?.data?.length,
-      uploadDataLength: uploadData?.data?.length,
-    });
-  }, [accessData, uploadData, isLoading]);
 
   // 数据处理：将后端数据转换为图表格式
   const processChartData = (data: any, dataType: "access" | "upload") => {
