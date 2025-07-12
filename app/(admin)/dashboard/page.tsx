@@ -20,9 +20,9 @@ function DashboardSkeleton() {
       </div>
 
       {/* 指标卡片骨架 */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 relative z-10">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="space-y-3 p-6 border rounded-lg">
+          <div key={i} className="space-y-3 p-6 border rounded-lg min-h-[60px]">
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-8 w-8 rounded-lg" />
@@ -53,9 +53,9 @@ export default function DashboardPage() {
         className="inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
       />
 
-      {/* 主要内容 - 修正滚动高度计算 */}
+      {/* 主要内容 - 修正滚动高度计算，添加安全区域适配 */}
       <div className="relative z-10 h-screen overflow-y-auto custom-scrollbar">
-        <div className="p-4 md:p-6 space-y-6 min-h-full">
+        <div className="p-4 md:p-6 space-y-8 min-h-full pb-[env(safe-area-inset-bottom)] max-w-7xl mx-auto">
           {/* 页面标题 */}
           <div className="space-y-4">
             <BoxReveal boxColor="#3b82f6" duration={0.5}>
@@ -85,21 +85,21 @@ export default function DashboardPage() {
           </Suspense>
 
           {/* 快速趋势 */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h2 className="text-lg font-semibold">快速趋势</h2>
             <Suspense
               fallback={
-                <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+                <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
                   <div className="animate-pulse min-w-0">
                     <div className="space-y-4 p-6 border rounded-lg">
                       <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-48 md:h-64 w-full" />
+                      <Skeleton className="h-56 md:h-64 w-full" />
                     </div>
                   </div>
                   <div className="animate-pulse min-w-0">
                     <div className="space-y-4 p-6 border rounded-lg">
                       <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-48 md:h-64 w-full" />
+                      <Skeleton className="h-56 md:h-64 w-full" />
                     </div>
                   </div>
                 </div>

@@ -62,17 +62,17 @@ export function KeyMetrics() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card key={i} className="animate-pulse min-h-[60px] p-4">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-medium">
                 <div className="h-4 bg-muted rounded w-20" />
               </CardTitle>
               <div className="h-5 w-5 bg-muted rounded" />
             </CardHeader>
-            <CardContent>
-              <div className="h-8 bg-muted rounded w-16 mb-1" />
+            <CardContent className="px-0">
+              <div className="h-8 bg-muted rounded w-16 mb-2" />
               <div className="h-4 bg-muted rounded w-12" />
             </CardContent>
           </Card>
@@ -83,7 +83,7 @@ export function KeyMetrics() {
 
   if (error || !systemData) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="col-span-full">
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground">
@@ -163,33 +163,33 @@ export function KeyMetrics() {
   ];
 
   return (
-    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
           <Card
             key={metric.id}
-            className="transition-all duration-200 hover:shadow-md"
+            className="transition-all duration-200 hover:shadow-md min-h-[60px] p-4"
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground truncate flex-1 pr-2">
                 {metric.label}
               </CardTitle>
               <div
-                className={`p-1.5 sm:p-2 rounded-md ${metric.bgColor} flex-shrink-0`}
+                className={`p-2 rounded-md ${metric.bgColor} flex-shrink-0`}
               >
-                <Icon className={`h-3 w-3 sm:h-4 sm:w-4 ${metric.color}`} />
+                <Icon className={`h-5 w-5 ${metric.color}`} />
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold leading-none">
+            <CardContent className="pt-0 px-0">
+              <div className="text-2xl font-bold leading-none mb-2">
                 {metric.id === "storage" || metric.id === "size" ? (
                   formatMetricValue(metric.value, metric.id)
                 ) : (
                   <NumberTicker value={metric.value} />
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+              <p className="text-sm text-muted-foreground">
                 {metric.id === "storage" || metric.id === "size"
                   ? ""
                   : metric.id === "daily"

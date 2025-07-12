@@ -137,13 +137,13 @@ export function QuickTrends() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+      <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
         <Card className="animate-pulse min-w-0">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-24" />
           </CardHeader>
           <CardContent>
-            <div className="h-48 md:h-64 bg-muted rounded" />
+            <div className="h-56 md:h-64 bg-muted rounded" />
           </CardContent>
         </Card>
         <Card className="animate-pulse min-w-0">
@@ -151,7 +151,7 @@ export function QuickTrends() {
             <div className="h-6 bg-muted rounded w-24" />
           </CardHeader>
           <CardContent>
-            <div className="h-48 md:h-64 bg-muted rounded" />
+            <div className="h-56 md:h-64 bg-muted rounded" />
           </CardContent>
         </Card>
       </div>
@@ -190,13 +190,13 @@ export function QuickTrends() {
   // 如果没有数据且不在加载中，显示无数据状态
   if (!isLoading && !hasAnyData) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+      <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
         <Card className="min-w-0">
           <CardHeader>
             <CardTitle className="text-base font-medium">访问趋势</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-48 md:h-64 flex items-center justify-center text-muted-foreground">
+            <div className="h-56 md:h-64 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <div className="text-sm">暂无访问数据</div>
                 <div className="text-xs mt-1">请稍后再试</div>
@@ -209,7 +209,7 @@ export function QuickTrends() {
             <CardTitle className="text-base font-medium">上传趋势</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-48 md:h-64 flex items-center justify-center text-muted-foreground">
+            <div className="h-56 md:h-64 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <div className="text-sm">暂无上传数据</div>
                 <div className="text-xs mt-1">请稍后再试</div>
@@ -222,16 +222,16 @@ export function QuickTrends() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
+    <div className="grid gap-5 md:grid-cols-2 lg:gap-6 overflow-hidden">
       {/* 访问趋势 */}
       <Card className="min-w-0">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
+        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0 pb-2">
           <CardTitle className="text-base font-medium">访问趋势</CardTitle>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center text-sm text-muted-foreground gap-1">
             {accessTrend.isPositive ? (
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <TrendingUp className="h-4 w-4 text-green-600" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+              <TrendingDown className="h-4 w-4 text-red-600" />
             )}
             <span
               className={
@@ -243,7 +243,7 @@ export function QuickTrends() {
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-48 md:h-64 w-full">
+          <ChartContainer config={chartConfig} className="h-56 md:h-64 w-full">
             <AreaChart
               data={processedAccessData}
               margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
@@ -251,13 +251,16 @@ export function QuickTrends() {
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11 }}
-                interval="preserveStartEnd"
-                minTickGap={30}
+                tick={{ fontSize: 10 }}
+                interval={0}
+                minTickGap={15}
+                angle={-45}
+                textAnchor="end"
+                height={60}
                 tickFormatter={(value) => {
                   const date = new Date(value);
                   return date.toLocaleDateString("zh-CN", {
-                    month: "short",
+                    month: "numeric",
                     day: "numeric",
                   });
                 }}
@@ -304,13 +307,13 @@ export function QuickTrends() {
 
       {/* 上传趋势 */}
       <Card className="min-w-0">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
+        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0 pb-2">
           <CardTitle className="text-base font-medium">上传趋势</CardTitle>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center text-sm text-muted-foreground gap-1">
             {uploadTrend.isPositive ? (
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <TrendingUp className="h-4 w-4 text-green-600" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+              <TrendingDown className="h-4 w-4 text-red-600" />
             )}
             <span
               className={
@@ -322,7 +325,7 @@ export function QuickTrends() {
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-48 md:h-64 w-full">
+          <ChartContainer config={chartConfig} className="h-56 md:h-64 w-full">
             <AreaChart
               data={processedUploadData}
               margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
@@ -330,13 +333,16 @@ export function QuickTrends() {
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11 }}
-                interval="preserveStartEnd"
-                minTickGap={30}
+                tick={{ fontSize: 10 }}
+                interval={0}
+                minTickGap={15}
+                angle={-45}
+                textAnchor="end"
+                height={60}
                 tickFormatter={(value) => {
                   const date = new Date(value);
                   return date.toLocaleDateString("zh-CN", {
-                    month: "short",
+                    month: "numeric",
                     day: "numeric",
                   });
                 }}
