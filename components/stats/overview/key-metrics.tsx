@@ -163,7 +163,7 @@ export function KeyMetrics() {
   ];
 
   return (
-    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 grid-cols-1 2xl:grid-cols-2 min-[1600px]:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
@@ -172,24 +172,24 @@ export function KeyMetrics() {
             className="transition-all duration-200 hover:shadow-md"
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+              <CardTitle className="text-sm font-medium text-muted-foreground truncate">
                 {metric.label}
               </CardTitle>
               <div
-                className={`p-1.5 sm:p-2 rounded-md ${metric.bgColor} flex-shrink-0`}
+                className={`p-2 rounded-md ${metric.bgColor} flex-shrink-0`}
               >
-                <Icon className={`h-3 w-3 sm:h-4 sm:w-4 ${metric.color}`} />
+                <Icon className={`h-4 w-4 ${metric.color}`} />
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold leading-none">
+              <div className="text-xl sm:text-2xl font-bold leading-none">
                 {metric.id === "storage" || metric.id === "size" ? (
                   formatMetricValue(metric.value, metric.id)
                 ) : (
                   <NumberTicker value={metric.value} />
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+              <p className="text-xs text-muted-foreground mt-1">
                 {metric.id === "storage" || metric.id === "size"
                   ? ""
                   : metric.id === "daily"

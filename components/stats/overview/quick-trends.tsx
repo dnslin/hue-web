@@ -45,17 +45,23 @@ export function QuickTrends() {
 
   // 主题检测状态
   const [isDark, setIsDark] = useState(false);
+  // 屏幕尺寸状态
+  const [isMobile, setIsMobile] = useState(false);
 
-  // 检测暗色模式
+  // 检测暗色模式和屏幕尺寸
   useEffect(() => {
-
     const checkDarkMode = () => {
       const isDarkMode = document.documentElement.classList.contains("dark");
       setIsDark(isDarkMode);
     };
 
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
     // 初始检测
     checkDarkMode();
+    checkScreenSize();
 
     // 监听类变化
     const observer = new MutationObserver(checkDarkMode);
@@ -64,7 +70,13 @@ export function QuickTrends() {
       attributeFilter: ["class"],
     });
 
-    return () => observer.disconnect();
+    // 监听窗口大小变化
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', checkScreenSize);
+    };
   }, []);
 
   // 组件级数据获取 - 确保数据加载，专门为快速趋势请求7天数据
@@ -224,18 +236,18 @@ export function QuickTrends() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
       {/* 访问趋势 */}
-      <Card className="min-w-0">
+      <Card className="min-w-0 hover:shadow-lg transition-all duration-300">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
           <CardTitle className="text-base font-medium">访问趋势</CardTitle>
           <div className="flex items-center text-sm text-muted-foreground">
             {accessTrend.isPositive ? (
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <TrendingUp className="h-4 w-4 text-green-600 mr-1 animate-pulse" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+              <TrendingDown className="h-4 w-4 text-red-600 mr-1 animate-pulse" />
             )}
             <span
               className={
-                accessTrend.isPositive ? "text-green-600" : "text-red-600"
+                accessTrend.isPositive ? "text-green-600 font-medium" : "text-red-600 font-medium"
               }
             >
               {accessTrend.trend.toFixed(1)}%
@@ -246,18 +258,22 @@ export function QuickTrends() {
           <ChartContainer config={chartConfig} className="h-48 md:h-64 w-full">
             <AreaChart
               data={processedAccessData}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              margin={isMobile ? { top: 5, right: 5, left: 5, bottom: 50 } : { top: 5, right: 5, left: 5, bottom: 5 }}>
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 11 }}
-                interval="preserveStartEnd"
-                minTickGap={30}
+                interval={isMobile ? 0 : "preserveStartEnd"}
+                angle={isMobile ? -45 : 0}
+                textAnchor={isMobile ? "end" : "middle"}
+                height={isMobile ? 60 : 30}
+                tickMargin={isMobile ? 10 : 5}
+                minTickGap={isMobile ? 0 : 30}
                 tickFormatter={(value) => {
                   const date = new Date(value);
                   return date.toLocaleDateString("zh-CN", {
-                    month: "short",
+                    month: isMobile ? "numeric" : "short",
                     day: "numeric",
                   });
                 }}
@@ -293,6 +309,9 @@ export function QuickTrends() {
                 fill={getChartColor("access", isDark)}
                 fillOpacity={isDark ? 0.3 : 0.2}
                 strokeWidth={isDark ? 3 : 2}
+                strokeDasharray="0"
+                dot={isMobile ? { fill: getChartColor("access", isDark), strokeWidth: 2, r: 4 } : false}
+                activeDot={{ r: 6, strokeWidth: 0 }}
               />
             </AreaChart>
           </ChartContainer>
@@ -303,18 +322,18 @@ export function QuickTrends() {
       </Card>
 
       {/* 上传趋势 */}
-      <Card className="min-w-0">
+      <Card className="min-w-0 hover:shadow-lg transition-all duration-300">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
           <CardTitle className="text-base font-medium">上传趋势</CardTitle>
           <div className="flex items-center text-sm text-muted-foreground">
             {uploadTrend.isPositive ? (
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <TrendingUp className="h-4 w-4 text-green-600 mr-1 animate-pulse" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+              <TrendingDown className="h-4 w-4 text-red-600 mr-1 animate-pulse" />
             )}
             <span
               className={
-                uploadTrend.isPositive ? "text-green-600" : "text-red-600"
+                uploadTrend.isPositive ? "text-green-600 font-medium" : "text-red-600 font-medium"
               }
             >
               {uploadTrend.trend.toFixed(1)}%
@@ -325,18 +344,22 @@ export function QuickTrends() {
           <ChartContainer config={chartConfig} className="h-48 md:h-64 w-full">
             <AreaChart
               data={processedUploadData}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              margin={isMobile ? { top: 5, right: 5, left: 5, bottom: 50 } : { top: 5, right: 5, left: 5, bottom: 5 }}>
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 11 }}
-                interval="preserveStartEnd"
-                minTickGap={30}
+                interval={isMobile ? 0 : "preserveStartEnd"}
+                angle={isMobile ? -45 : 0}
+                textAnchor={isMobile ? "end" : "middle"}
+                height={isMobile ? 60 : 30}
+                tickMargin={isMobile ? 10 : 5}
+                minTickGap={isMobile ? 0 : 30}
                 tickFormatter={(value) => {
                   const date = new Date(value);
                   return date.toLocaleDateString("zh-CN", {
-                    month: "short",
+                    month: isMobile ? "numeric" : "short",
                     day: "numeric",
                   });
                 }}
@@ -372,6 +395,9 @@ export function QuickTrends() {
                 fill={getChartColor("upload", isDark)}
                 fillOpacity={isDark ? 0.3 : 0.2}
                 strokeWidth={isDark ? 3 : 2}
+                strokeDasharray="0"
+                dot={isMobile ? { fill: getChartColor("upload", isDark), strokeWidth: 2, r: 4 } : false}
+                activeDot={{ r: 6, strokeWidth: 0 }}
               />
             </AreaChart>
           </ChartContainer>
