@@ -1569,20 +1569,14 @@ paths:
     get:
       description: 根据时间周期获取访问量的统计
       parameters:
-        - default: daily
-          description: 周期 (daily, weekly, monthly)
+        - default: 7
+          description: 时间范围 (7, 30, 365)
+          enum:
+            - 7
+            - 30
+            - 365
           in: query
-          name: period
-          type: string
-        - default: 30
-          description: 最近天数 (当 period=daily 时)
-          in: query
-          name: days
-          type: integer
-        - default: 12
-          description: 最近月数 (当 period=monthly 时)
-          in: query
-          name: months
+          name: range
           type: integer
       produces:
         - application/json
@@ -1809,20 +1803,14 @@ paths:
     get:
       description: 根据时间周期获取上传数量和大小的统计
       parameters:
-        - default: daily
-          description: 周期 (daily, weekly, monthly)
+        - default: 7
+          description: 时间范围 (7, 30, 365)
+          enum:
+            - 7
+            - 30
+            - 365
           in: query
-          name: period
-          type: string
-        - default: 30
-          description: 最近天数 (当 period=daily 时)
-          in: query
-          name: days
-          type: integer
-        - default: 12
-          description: 最近月数 (当 period=monthly 时)
-          in: query
-          name: months
+          name: range
           type: integer
       produces:
         - application/json

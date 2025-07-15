@@ -10,7 +10,7 @@ import { Activity, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function TrendsContainer() {
-  const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "1y">("7d");
+  const [selectedPeriod, setSelectedPeriod] = useState<7 | 30 | 365>(7);
   
   const isLoading = useStatsLoading();
   const error = useStatsError();
@@ -25,10 +25,10 @@ export function TrendsContainer() {
     refreshStats();
   };
 
-  const handlePeriodChange = (period: "7d" | "30d" | "90d" | "1y") => {
+  const handlePeriodChange = (period: 7 | 30 | 365) => {
     setSelectedPeriod(period);
-    // 这里可以根据选择的时间范围重新获取数据
-    // fetchStatsForPeriod(period);
+    // 根据选择的时间范围重新获取数据，使用新的range参数
+    fetchAllStats({ range: period });
   };
 
   if (error) {

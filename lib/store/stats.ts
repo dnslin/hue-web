@@ -119,8 +119,7 @@ const initialState: StatsState = {
   error: null,
   lastUpdated: null,
   params: {
-    period: "daily",
-    days: 30,
+    range: 7, // 使用新的range参数，默认7天
     limit: 10,
   },
 };

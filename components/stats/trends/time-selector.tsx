@@ -8,15 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface TimeSelectorProps {
-  selectedPeriod: "7d" | "30d" | "90d" | "1y";
-  onPeriodChange: (period: "7d" | "30d" | "90d" | "1y") => void;
+  selectedPeriod: 7 | 30 | 365;
+  onPeriodChange: (period: 7 | 30 | 365) => void;
 }
 
 const periodOptions = [
-  { value: "7d", label: "7天", description: "过去一周" },
-  { value: "30d", label: "30天", description: "过去一个月" },
-  { value: "90d", label: "90天", description: "过去三个月" },
-  { value: "1y", label: "1年", description: "过去一年" },
+  { value: 7, label: "7天", description: "过去一周" },
+  { value: 30, label: "30天", description: "过去一个月" },
+  { value: 365, label: "1年", description: "过去一年" },
 ] as const;
 
 export function TimeSelector({ selectedPeriod, onPeriodChange }: TimeSelectorProps) {

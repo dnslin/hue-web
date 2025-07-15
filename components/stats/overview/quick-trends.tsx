@@ -83,8 +83,8 @@ export function QuickTrends() {
   React.useEffect(() => {
     // 如果没有数据且不在加载中，尝试获取数据
     if (!accessData && !uploadData && !isLoading) {
-      // 为快速趋势专门请求7天的数据
-      fetchAllStats({ period: "daily", days: 7 });
+      // 为快速趋势专门请求7天的数据，使用新的range参数
+      fetchAllStats({ range: 7 });
     }
   }, [accessData, uploadData, isLoading, fetchAllStats]);
 

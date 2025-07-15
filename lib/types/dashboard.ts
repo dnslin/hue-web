@@ -270,7 +270,8 @@ export interface StatsData {
 // API请求参数类型
 export interface StatsApiParams {
   period?: "daily" | "weekly" | "monthly";
-  days?: number;
+  days?: number; // 保留以确保向后兼容
+  range?: 7 | 30 | 365; // 新的时间范围参数，对应后端的range参数
   limit?: number;
   sortBy?: string;
 }

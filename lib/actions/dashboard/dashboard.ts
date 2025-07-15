@@ -131,10 +131,11 @@ export async function getAccessStatsAction(
 ): Promise<ApiResponse<AccessStatsData> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { period = "daily", days = 30 } = params;
+    // 优先使用新的range参数，如果没有则回退到days参数保持兼容性
+    const range = params.range || params.days || 7;
     const response = await apiService.get<ApiResponse<DailyAccessStatDTO[]>>(
       `${DASHBOARD_API_BASE}/access-stats`,
-      { params: { period, days } }
+      { params: { range } }
     );
 
     const apiResponse = response.data;
@@ -143,7 +144,7 @@ export async function getAccessStatsAction(
       // 将后端返回的数组包装成 AccessStatsData 格式
       const accessStatsData: AccessStatsData = {
         data: apiResponse.data || [],
-        period: period as "daily" | "weekly" | "monthly",
+        period: "daily", // 根据range参数可以调整period
       };
 
       return {
@@ -185,10 +186,11 @@ export async function getUploadStatsAction(
 ): Promise<ApiResponse<UploadStatsData> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { period = "daily", days = 30 } = params;
+    // 优先使用新的range参数，如果没有则回退到days参数保持兼容性
+    const range = params.range || params.days || 7;
     const response = await apiService.get<ApiResponse<DailyUploadStatDTO[]>>(
       `${DASHBOARD_API_BASE}/upload-stats`,
-      { params: { period, days } }
+      { params: { range } }
     );
 
     const apiResponse = response.data;
@@ -197,7 +199,7 @@ export async function getUploadStatsAction(
       // 将后端返回的数组包装成 UploadStatsData 格式
       const uploadStatsData: UploadStatsData = {
         data: apiResponse.data || [],
-        period: period as "daily" | "weekly" | "monthly",
+        period: "daily", // 根据range参数可以调整period
       };
 
       return {
