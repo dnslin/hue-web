@@ -151,7 +151,10 @@ export function GeoAnalysis() {
                       <div className="text-sm text-muted-foreground">{percentage.toFixed(1)}%</div>
                     </div>
                   </div>
-                  <Progress value={percentage} className="h-2" />
+                  <Progress 
+                    value={percentage} 
+                    className="h-2 [&>div]:bg-[#81d8e7]" 
+                  />
                 </div>
               );
             })}
