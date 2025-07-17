@@ -1,15 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useGeoDistribution, useGeoDistributionRaw, useStatsLoading, useStatsError } from "@/lib/store/stats";
-import { Globe, Users, MapPin, Map as MapIcon, BarChart3 } from "lucide-react";
+import { Globe, Users, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Flag from "react-world-flags";
 import "leaflet/dist/leaflet.css";
 
@@ -22,13 +19,6 @@ const GeoMap = dynamic(() => import("./geo-map"), {
     </div>
   ),
 });
-
-const chartConfig = {
-  visits: {
-    label: "访问量",
-    color: "hsl(var(--chart-1))",
-  },
-};
 
 // 国家代码映射 (ISO 3166-1 alpha-2)
 const countryCodeMap: Record<string, string> = {
@@ -59,7 +49,6 @@ export function GeoAnalysis() {
   const geoRawData = useGeoDistributionRaw();
   const isLoading = useStatsLoading();
   const error = useStatsError();
-  const [activeTab, setActiveTab] = useState("chart");
 
   // 处理地图标记数据
   const mapMarkers = useMemo(() => {
@@ -137,70 +126,9 @@ export function GeoAnalysis() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="chart" className="flex items-center space-x-2">
-                <BarChart className="h-4 w-4" />
-                <span>图表视图</span>
-              </TabsTrigger>
-              <TabsTrigger value="map" className="flex items-center space-x-2">
-                <MapIcon className="h-4 w-4" />
-                <span>地图视图</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="chart" className="mt-4">
-              <ChartContainer config={chartConfig} className="h-64 md:h-80">
-                <BarChart data={geoData.data || []} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    type="number"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => {
-                      if (value >= 1000000) {
-                        return `${(value / 1000000).toFixed(1)}M`;
-                      } else if (value >= 1000) {
-                        return `${(value / 1000).toFixed(1)}K`;
-                      }
-                      return value.toString();
-                    }}
-                  />
-                  <YAxis
-                    dataKey="country"
-                    type="category"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12 }}
-                    width={80}
-                    tickFormatter={(value) => {
-                      return value.length > 8 ? `${value.substring(0, 8)}...` : value;
-                    }}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) => value}
-                        formatter={(value) => [value.toLocaleString(), "访问量"]}
-                      />
-                    }
-                  />
-                  <Bar
-                    dataKey="visits"
-                    fill={chartConfig.visits.color}
-                    radius={[0, 4, 4, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </TabsContent>
-            
-            <TabsContent value="map" className="mt-4">
-              <div className="h-64 md:h-80 rounded-lg overflow-hidden border">
-                <GeoMap markers={mapMarkers} />
-              </div>
-            </TabsContent>
-          </Tabs>
+          <div className="h-64 md:h-80 rounded-lg overflow-hidden border">
+            <GeoMap markers={mapMarkers} />
+          </div>
         </CardContent>
       </Card>
 
