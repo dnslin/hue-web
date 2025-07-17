@@ -17,6 +17,7 @@ import {
   UploadStatsData,
   GeoDistributionData,
   ReferrerDistributionData,
+  DistributionDTO,
   TopImagesData,
   TopUsersData,
   StatsApiParams,
@@ -234,17 +235,18 @@ export async function getUploadStatsAction(
 }
 
 /**
- * 获取地理分布数据
+ * 获取分布统计数据 (新的统一接口)
+ * 根据类型（geo 或 referrer）和时间范围获取访问分布数据
  */
-export async function getGeoDistributionAction(
+export async function getDistributionAction(
   params: StatsApiParams = {}
-): Promise<ApiResponse<GeoDistributionData> | ErrorApiResponse> {
+): Promise<ApiResponse<DistributionDTO> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { limit = 10 } = params;
-    const response = await apiService.get<ApiResponse<GeoDistributionData>>(
-      `${DASHBOARD_API_BASE}/distribution/geo`,
-      { params: { limit } }
+    const { type = "geo", range = 30 } = params;
+    const response = await apiService.get<ApiResponse<DistributionDTO>>(
+      `${DASHBOARD_API_BASE}/distribution`,
+      { params: { type, range } }
     );
 
     const apiResponse = response.data;
@@ -252,18 +254,18 @@ export async function getGeoDistributionAction(
     if (apiResponse.code === 0) {
       return {
         code: 0,
-        msg: apiResponse.msg || "获取地理分布数据成功",
+        msg: apiResponse.msg || "获取分布统计数据成功",
         data: apiResponse.data,
       };
     }
 
     return {
       code: apiResponse.code || 1,
-      msg: apiResponse.msg || "获取地理分布数据失败",
+      msg: apiResponse.msg || "获取分布统计数据失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getGeoDistributionAction 错误:", error.msg);
+    console.error("getDistributionAction 错误:", error.msg);
 
     if (error instanceof AuthenticationError) {
       return {
@@ -275,54 +277,7 @@ export async function getGeoDistributionAction(
 
     return {
       code: error.code || 500,
-      msg: error.msg || "获取地理分布数据失败",
-      error,
-    };
-  }
-}
-
-/**
- * 获取来源分布数据
- */
-export async function getReferrerDistributionAction(
-  params: StatsApiParams = {}
-): Promise<ApiResponse<ReferrerDistributionData> | ErrorApiResponse> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const { limit = 10 } = params;
-    const response = await apiService.get<
-      ApiResponse<ReferrerDistributionData>
-    >(`${DASHBOARD_API_BASE}/distribution/referrer`, { params: { limit } });
-
-    const apiResponse = response.data;
-
-    if (apiResponse.code === 0) {
-      return {
-        code: 0,
-        msg: apiResponse.msg || "获取来源分布数据成功",
-        data: apiResponse.data,
-      };
-    }
-
-    return {
-      code: apiResponse.code || 1,
-      msg: apiResponse.msg || "获取来源分布数据失败",
-      error: apiResponse,
-    };
-  } catch (error: any) {
-    console.error("getReferrerDistributionAction 错误:", error.msg);
-
-    if (error instanceof AuthenticationError) {
-      return {
-        code: 401,
-        msg: "认证失败，请重新登录",
-        error: error,
-      };
-    }
-
-    return {
-      code: error.code || 500,
-      msg: error.msg || "获取来源分布数据失败",
+      msg: error.msg || "获取分布统计数据失败",
       error,
     };
   }
@@ -447,8 +402,10 @@ export async function getAllStatsAction(
       getGlobalStatsAction(),
       getAccessStatsAction(params),
       getUploadStatsAction(params),
-      getGeoDistributionAction(params),
-      getReferrerDistributionAction(params),
+      // 使用新的统一接口获取地理分布数据
+      getDistributionAction({ ...params, type: "geo" }),
+      // 使用新的统一接口获取来源分布数据
+      getDistributionAction({ ...params, type: "referrer" }),
       getTopImagesAction(params),
       getTopUsersAction(params),
     ]);
@@ -470,19 +427,53 @@ export async function getAllStatsAction(
       return failedResponse as ErrorApiResponse;
     }
 
+    // 转换新API的数据格式为前端组件需要的格式
+    const geoDistributionData = (geoDistributionResponse as ApiResponse<DistributionDTO>).data!;
+    const referrerDistributionData = (referrerDistributionResponse as ApiResponse<DistributionDTO>).data!;
+
+    // 转换地理分布数据（安全访问）
+    const transformedGeoData: GeoDistributionData = {
+      data: (geoDistributionData.geo?.countryRank || []).map(country => ({
+        country: country.country,
+        countryCode: country.countryCode,
+        visits: country.count,
+        percentage: country.percentage,
+      })),
+      locations: geoDistributionData.geo?.locations || [],
+      totalCountries: geoDistributionData.geo?.countryRank?.length || 0,
+      topCountry: geoDistributionData.geo?.countryRank?.[0]?.country || "",
+      topVisits: geoDistributionData.geo?.countryRank?.[0]?.count || 0,
+    };
+
+    // 转换来源分布数据（安全访问）
+    const transformedReferrerData: ReferrerDistributionData = {
+      data: (referrerDistributionData.referrer?.sources || []).map(source => ({
+        domain: source.source,
+        visits: source.count,
+        percentage: (source.count / ((referrerDistributionData.referrer?.sources || []).reduce((total, s) => total + s.count, 0) || 1)) * 100,
+        type: "referral" as const, // 默认类型，可以根据实际情况调整
+      })),
+      sources: referrerDistributionData.referrer?.sources || [],
+      typePercentage: referrerDistributionData.referrer?.typePercentage || [],
+      totalReferrers: referrerDistributionData.referrer?.sources?.length || 0,
+      topReferrer: referrerDistributionData.referrer?.sources?.[0]?.source || "",
+      directTrafficPercentage: referrerDistributionData.referrer?.typePercentage?.find(t => t.type === "direct")?.percentage || 0,
+    };
+
     const data: StatsData = {
       systemStats: (systemStatsResponse as ApiResponse<SystemStatsData>).data!,
       globalStats: (globalStatsResponse as ApiResponse<GlobalStatsData>).data!,
       accessStats: (accessStatsResponse as ApiResponse<AccessStatsData>).data!,
       uploadStats: (uploadStatsResponse as ApiResponse<UploadStatsData>).data!,
-      geoDistribution: (
-        geoDistributionResponse as ApiResponse<GeoDistributionData>
-      ).data!,
-      referrerDistribution: (
-        referrerDistributionResponse as ApiResponse<ReferrerDistributionData>
-      ).data!,
+      geoDistribution: transformedGeoData,
+      referrerDistribution: transformedReferrerData,
       topImages: (topImagesResponse as ApiResponse<TopImagesData>).data!,
       topUsers: (topUsersResponse as ApiResponse<TopUsersData>).data!,
+      // 同时保存原始的分布数据，供新组件使用
+      distribution: {
+        geo: geoDistributionData.geo || { countryRank: [], locations: [] },
+        referrer: referrerDistributionData.referrer || { sources: [], typePercentage: [] },
+      },
     };
 
     return {

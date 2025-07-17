@@ -1,13 +1,27 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
-import { useGeoDistribution, useStatsLoading, useStatsError } from "@/lib/store/stats";
-import { Globe, Users, MapPin } from "lucide-react";
+import { useGeoDistribution, useGeoDistributionRaw, useStatsLoading, useStatsError } from "@/lib/store/stats";
+import { Globe, Users, MapPin, Map as MapIcon, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Flag from "react-world-flags";
+import "leaflet/dist/leaflet.css";
+
+// 动态加载地图组件，避免 SSR 问题
+const GeoMap = dynamic(() => import("./geo-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-64 md:h-80 bg-muted rounded flex items-center justify-center">
+      <div className="text-muted-foreground">加载地图中...</div>
+    </div>
+  ),
+});
 
 const chartConfig = {
   visits: {
@@ -16,24 +30,51 @@ const chartConfig = {
   },
 };
 
-// 国家旗帜 emoji 映射
-const countryFlags: Record<string, string> = {
-  "中国": "🇨🇳",
-  "美国": "🇺🇸", 
-  "日本": "🇯🇵",
-  "英国": "🇬🇧",
-  "德国": "🇩🇪",
-  "法国": "🇫🇷",
-  "韩国": "🇰🇷",
-  "加拿大": "🇨🇦",
-  "澳大利亚": "🇦🇺",
-  "其他": "🌍",
+// 国家代码映射 (ISO 3166-1 alpha-2)
+const countryCodeMap: Record<string, string> = {
+  "中国": "CN",
+  "美国": "US",
+  "日本": "JP",
+  "英国": "GB",
+  "德国": "DE",
+  "法国": "FR",
+  "韩国": "KR",
+  "加拿大": "CA",
+  "澳大利亚": "AU",
+  "俄罗斯": "RU",
+  "印度": "IN",
+  "巴西": "BR",
+  "意大利": "IT",
+  "西班牙": "ES",
+  "荷兰": "NL",
+  "瑞典": "SE",
+  "挪威": "NO",
+  "丹麦": "DK",
+  "芬兰": "FI",
+  "瑞士": "CH",
 };
 
 export function GeoAnalysis() {
   const geoData = useGeoDistribution();
+  const geoRawData = useGeoDistributionRaw();
   const isLoading = useStatsLoading();
   const error = useStatsError();
+  const [activeTab, setActiveTab] = useState("chart");
+
+  // 处理地图标记数据
+  const mapMarkers = useMemo(() => {
+    if (!geoRawData?.locations) return [];
+    
+    return geoRawData.locations.map((location) => ({
+      position: [location.latitude, location.longitude] as [number, number],
+      popup: {
+        country: location.country,
+        city: location.city,
+        ip: location.ip_address,
+        countryCode: location.country_code,
+      },
+    }));
+  }, [geoRawData?.locations]);
 
   if (isLoading) {
     return (
@@ -81,13 +122,13 @@ export function GeoAnalysis() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
-      {/* 地理分布图表 */}
+      {/* 地理分布可视化 */}
       <Card className="min-w-0">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
               <Globe className="h-5 w-5" />
-              <span>访问量分布</span>
+              <span>访问分布可视化</span>
             </CardTitle>
             <Badge variant="outline">
               <Users className="h-3 w-3 mr-1" />
@@ -96,49 +137,70 @@ export function GeoAnalysis() {
           </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-64 md:h-80">
-            <BarChart data={geoData.data || []} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis
-                  type="number"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000000) {
-                      return `${(value / 1000000).toFixed(1)}M`;
-                    } else if (value >= 1000) {
-                      return `${(value / 1000).toFixed(1)}K`;
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="chart" className="flex items-center space-x-2">
+                <BarChart className="h-4 w-4" />
+                <span>图表视图</span>
+              </TabsTrigger>
+              <TabsTrigger value="map" className="flex items-center space-x-2">
+                <MapIcon className="h-4 w-4" />
+                <span>地图视图</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="chart" className="mt-4">
+              <ChartContainer config={chartConfig} className="h-64 md:h-80">
+                <BarChart data={geoData.data || []} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    type="number"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => {
+                      if (value >= 1000000) {
+                        return `${(value / 1000000).toFixed(1)}M`;
+                      } else if (value >= 1000) {
+                        return `${(value / 1000).toFixed(1)}K`;
+                      }
+                      return value.toString();
+                    }}
+                  />
+                  <YAxis
+                    dataKey="country"
+                    type="category"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12 }}
+                    width={80}
+                    tickFormatter={(value) => {
+                      return value.length > 8 ? `${value.substring(0, 8)}...` : value;
+                    }}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(value) => value}
+                        formatter={(value) => [value.toLocaleString(), "访问量"]}
+                      />
                     }
-                    return value.toString();
-                  }}
-                />
-                <YAxis
-                  dataKey="country"
-                  type="category"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                  width={80}
-                  tickFormatter={(value) => {
-                    return value.length > 8 ? `${value.substring(0, 8)}...` : value;
-                  }}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      labelFormatter={(value) => `${countryFlags[value] || "🌍"} ${value}`}
-                      formatter={(value) => [value.toLocaleString(), "访问量"]}
-                    />
-                  }
-                />
-                <Bar
-                  dataKey="visits"
-                  fill={chartConfig.visits.color}
-                  radius={[0, 4, 4, 0]}
-                />
-            </BarChart>
-          </ChartContainer>
+                  />
+                  <Bar
+                    dataKey="visits"
+                    fill={chartConfig.visits.color}
+                    radius={[0, 4, 4, 0]}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </TabsContent>
+            
+            <TabsContent value="map" className="mt-4">
+              <div className="h-64 md:h-80 rounded-lg overflow-hidden border">
+                <GeoMap markers={mapMarkers} />
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -157,7 +219,7 @@ export function GeoAnalysis() {
           <div className="space-y-4">
             {topCountries.map((country, index) => {
               const percentage = (country.visits / totalVisitors) * 100;
-              const flag = countryFlags[country.country] || "🌍";
+              const countryCode = country.countryCode || countryCodeMap[country.country];
               
               return (
                 <div key={country.country} className="space-y-2">
@@ -167,7 +229,15 @@ export function GeoAnalysis() {
                         {index + 1}
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-lg">{flag}</span>
+                        {countryCode ? (
+                          <Flag
+                            code={countryCode}
+                            className="w-6 h-4 rounded shadow-sm"
+                            fallback={<span className="text-lg">🌍</span>}
+                          />
+                        ) : (
+                          <span className="text-lg">🌍</span>
+                        )}
                         <span className="font-medium">{country.country}</span>
                       </div>
                     </div>
@@ -184,7 +254,7 @@ export function GeoAnalysis() {
           
           {/* 统计汇总 */}
           <div className="mt-6 pt-4 border-t">
-            <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-blue-600">
                   {geoData.data?.length || 0}
@@ -196,6 +266,12 @@ export function GeoAnalysis() {
                   {((topCountries.reduce((sum, c) => sum + c.visits, 0) / totalVisitors) * 100).toFixed(1)}%
                 </div>
                 <div className="text-sm text-muted-foreground">前5国家占比</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {geoRawData?.locations?.length || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">地理位置</div>
               </div>
             </div>
           </div>
