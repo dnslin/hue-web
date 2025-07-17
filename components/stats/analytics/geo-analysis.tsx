@@ -20,29 +20,6 @@ const GeoMap = dynamic(() => import("./geo-map"), {
   ),
 });
 
-// 国家代码映射 (ISO 3166-1 alpha-2)
-const countryCodeMap: Record<string, string> = {
-  "中国": "CN",
-  "美国": "US",
-  "日本": "JP",
-  "英国": "GB",
-  "德国": "DE",
-  "法国": "FR",
-  "韩国": "KR",
-  "加拿大": "CA",
-  "澳大利亚": "AU",
-  "俄罗斯": "RU",
-  "印度": "IN",
-  "巴西": "BR",
-  "意大利": "IT",
-  "西班牙": "ES",
-  "荷兰": "NL",
-  "瑞典": "SE",
-  "挪威": "NO",
-  "丹麦": "DK",
-  "芬兰": "FI",
-  "瑞士": "CH",
-};
 
 export function GeoAnalysis() {
   const geoData = useGeoDistribution();
@@ -147,7 +124,7 @@ export function GeoAnalysis() {
           <div className="space-y-4">
             {topCountries.map((country, index) => {
               const percentage = (country.visits / totalVisitors) * 100;
-              const countryCode = country.countryCode || countryCodeMap[country.country];
+              const countryCode = country.countryCode;
               
               return (
                 <div key={country.country} className="space-y-2">
