@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useStatsLoading, useStatsError, useStatsLastUpdated, useStatsActions } from "@/lib/store/stats";
+import { useStatsLoading, useStatsError, useStatsLastUpdated, useStatsActions, useStatsParams } from "@/lib/store/stats";
 import { GeoAnalysis } from "./geo-analysis";
 import { SourceAnalysis } from "./source-analysis";
 import { RankingAnalysis } from "./ranking-analysis";
@@ -9,12 +9,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, RefreshCw, PieChart as PieChartIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+
+// 时间范围选项
+const timeRangeOptions = [
+  { value: 7, label: "7天" },
+  { value: 30, label: "30天" },
+] as const;
 
 export function AnalyticsContainer() {
   const isLoading = useStatsLoading();
   const error = useStatsError();
   const lastUpdated = useStatsLastUpdated();
-  const { fetchAllStats, refreshStats } = useStatsActions();
+  const params = useStatsParams();
+  const { fetchAllStats, refreshStats, updateParams } = useStatsActions();
 
   useEffect(() => {
     fetchAllStats();
@@ -23,6 +31,15 @@ export function AnalyticsContainer() {
   const handleRefresh = () => {
     refreshStats();
   };
+
+  // 处理时间范围变更
+  const handleTimeRangeChange = async (range: 7 | 30) => {
+    updateParams({ range });
+    await fetchAllStats({ ...params, range });
+  };
+
+  // 当前范围值，限制为 7 或 30
+  const currentRange = (params.range === 7 || params.range === 30) ? params.range : 7;
 
   if (error) {
     return (
@@ -51,7 +68,7 @@ export function AnalyticsContainer() {
   return (
     <div className="space-y-8">
       {/* 状态栏 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div className="flex items-center space-x-2">
           <PieChartIcon className="h-5 w-5 text-purple-600" />
           <span className="text-sm text-muted-foreground">
@@ -67,22 +84,33 @@ export function AnalyticsContainer() {
             分布分析
           </Badge>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleRefresh}
-          disabled={isLoading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-          刷新
-        </Button>
+        <div className="flex items-center space-x-2">
+          <ButtonGroup
+            options={timeRangeOptions}
+            value={currentRange}
+            onValueChange={handleTimeRangeChange}
+            className="flex-shrink-0"
+          />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="flex-shrink-0"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+            刷新
+          </Button>
+        </div>
       </div>
 
       {/* 地理分布分析 */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">地理分布</h2>
-          <Badge variant="secondary">全球访问分布</Badge>
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary">全球访问分布</Badge>
+          </div>
         </div>
         <GeoAnalysis />
       </div>

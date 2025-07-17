@@ -20,7 +20,6 @@ const GeoMap = dynamic(() => import("./geo-map"), {
   ),
 });
 
-
 export function GeoAnalysis() {
   const geoData = useGeoDistribution();
   const geoRawData = useGeoDistributionRaw();
