@@ -294,8 +294,17 @@ definitions:
     type: object
   dtos.DistributionStatDTO:
     properties:
+      country:
+        description: 国家 (用于 geo)
+        type: string
+      ip_address:
+        description: IP地址 (用于 geo)
+        type: string
       key:
-        description: 维度 (e.g., "China", "direct")
+        description: 维度 (e.g., "direct", 用于其他)
+        type: string
+      region:
+        description: 地区 (用于 geo)
         type: string
       value:
         description: 数量
