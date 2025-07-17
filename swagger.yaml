@@ -254,6 +254,17 @@ definitions:
     required:
       - user_ids
     type: object
+  dtos.CountryRanking:
+    properties:
+      count:
+        type: integer
+      country:
+        type: string
+      country_code:
+        type: string
+      percentage:
+        type: number
+    type: object
   dtos.CreateShareLinkRequest:
     properties:
       expire_days:
@@ -292,14 +303,12 @@ definitions:
         description: 上传总大小 (字节)
         type: integer
     type: object
-  dtos.DistributionStatDTO:
+  dtos.DistributionDTO:
     properties:
-      key:
-        description: 维度 (e.g., "China", "direct")
-        type: string
-      value:
-        description: 数量
-        type: integer
+      geo:
+        $ref: "#/definitions/dtos.GeoDistributionDTO"
+      referrer:
+        $ref: "#/definitions/dtos.ReferrerDistributionDTO"
     type: object
   dtos.ExifInfoDTO:
     properties:
@@ -336,6 +345,32 @@ definitions:
         type: string
     required:
       - email
+    type: object
+  dtos.GeoDistributionDTO:
+    properties:
+      country_rank:
+        items:
+          $ref: "#/definitions/dtos.CountryRanking"
+        type: array
+      locations:
+        items:
+          $ref: "#/definitions/dtos.GeoLocationDTO"
+        type: array
+    type: object
+  dtos.GeoLocationDTO:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      country_code:
+        type: string
+      ip_address:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
     type: object
   dtos.GlobalStatsDTO:
     properties:
@@ -520,6 +555,31 @@ definitions:
       user_registration_enabled:
         description: 新增：用户注册是否开启
         type: boolean
+    type: object
+  dtos.ReferrerDistributionDTO:
+    properties:
+      sources:
+        items:
+          $ref: "#/definitions/dtos.ReferrerSourceStat"
+        type: array
+      type_percentage:
+        items:
+          $ref: "#/definitions/dtos.ReferrerTypePercentage"
+        type: array
+    type: object
+  dtos.ReferrerSourceStat:
+    properties:
+      count:
+        type: integer
+      source:
+        type: string
+    type: object
+  dtos.ReferrerTypePercentage:
+    properties:
+      percentage:
+        type: number
+      type:
+        type: string
     type: object
   dtos.RegisterRequest:
     properties:
@@ -743,6 +803,8 @@ definitions:
       file_name:
         type: string
       image_id:
+        type: integer
+      size:
         type: integer
       uploaded_at:
         type: string
@@ -1605,14 +1667,25 @@ paths:
       summary: 获取访问统计
       tags:
         - Dashboard
-  /admin/dashboard/distribution/geo:
+  /admin/dashboard/distribution:
     get:
-      description: 按国家/地区统计访问量
+      description: 根据类型（geo 或 referrer）和时间范围获取访问分布数据
       parameters:
-        - default: 10
-          description: 返回数量
+        - default: geo
+          description: 统计类型 (geo, referrer)
+          enum:
+            - geo
+            - referrer
           in: query
-          name: limit
+          name: type
+          type: string
+        - default: 30
+          description: 时间范围 (7, 30)
+          enum:
+            - 7
+            - 30
+          in: query
+          name: range
           type: integer
       produces:
         - application/json
@@ -1624,49 +1697,19 @@ paths:
               - $ref: "#/definitions/utils.Response"
               - properties:
                   data:
-                    items:
-                      $ref: "#/definitions/dtos.DistributionStatDTO"
-                    type: array
+                    $ref: "#/definitions/dtos.DistributionDTO"
                 type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: "#/definitions/utils.Response"
         "500":
           description: Internal Server Error
           schema:
             $ref: "#/definitions/utils.Response"
       security:
         - ApiKeyAuth: []
-      summary: 获取地区访问分布
-      tags:
-        - Dashboard
-  /admin/dashboard/distribution/referrer:
-    get:
-      description: 按访问来源域名统计访问量
-      parameters:
-        - default: 10
-          description: 返回数量
-          in: query
-          name: limit
-          type: integer
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-              - $ref: "#/definitions/utils.Response"
-              - properties:
-                  data:
-                    items:
-                      $ref: "#/definitions/dtos.DistributionStatDTO"
-                    type: array
-                type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: "#/definitions/utils.Response"
-      security:
-        - ApiKeyAuth: []
-      summary: 获取来源(Referrer)统计
+      summary: 获取访问分布统计
       tags:
         - Dashboard
   /admin/dashboard/global-stats:

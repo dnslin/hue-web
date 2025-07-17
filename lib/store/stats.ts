@@ -19,6 +19,7 @@ import type {
   UploadStatsData,
   GeoDistributionData,
   ReferrerDistributionData,
+  DistributionDTO,
   TopImagesData,
   TopUsersData,
   StatsApiParams,
@@ -30,8 +31,7 @@ import {
   getGlobalStatsAction,
   getAccessStatsAction,
   getUploadStatsAction,
-  getGeoDistributionAction,
-  getReferrerDistributionAction,
+  getDistributionAction,
   getTopImagesAction,
   getTopUsersAction,
 } from "@/lib/actions/dashboard/dashboard";
@@ -79,15 +79,10 @@ interface StatsActions {
     params?: StatsApiParams
   ) => Promise<UploadStatsData | null>;
 
-  // 获取地理分布数据
-  fetchGeoDistribution: (
+  // 获取分布统计数据 (新的统一接口)
+  fetchDistribution: (
     params?: StatsApiParams
-  ) => Promise<GeoDistributionData | null>;
-
-  // 获取来源分布数据
-  fetchReferrerDistribution: (
-    params?: StatsApiParams
-  ) => Promise<ReferrerDistributionData | null>;
+  ) => Promise<DistributionDTO | null>;
 
   // 获取热门图片数据
   fetchTopImages: (params?: StatsApiParams) => Promise<TopImagesData | null>;
@@ -119,8 +114,7 @@ const initialState: StatsState = {
   error: null,
   lastUpdated: null,
   params: {
-    period: "daily",
-    days: 30,
+    range: 7, // 使用新的range参数，默认7天
     limit: 10,
   },
 };
@@ -251,34 +245,18 @@ export const useStatsStore = create<StatsStore>()(
         }
       },
 
-      // 获取地理分布数据
-      fetchGeoDistribution: async (params?: StatsApiParams) => {
+      // 获取分布统计数据 (新的统一接口)
+      fetchDistribution: async (params?: StatsApiParams) => {
         const currentParams = params || get().params;
 
         try {
-          const response = await getGeoDistributionAction(currentParams);
+          const response = await getDistributionAction(currentParams);
           if (response.code === 0) {
-            return (response as ApiResponse<GeoDistributionData>).data!;
+            return (response as ApiResponse<DistributionDTO>).data!;
           }
           return null;
         } catch (error) {
-          console.error("获取地理分布数据失败:", error);
-          return null;
-        }
-      },
-
-      // 获取来源分布数据
-      fetchReferrerDistribution: async (params?: StatsApiParams) => {
-        const currentParams = params || get().params;
-
-        try {
-          const response = await getReferrerDistributionAction(currentParams);
-          if (response.code === 0) {
-            return (response as ApiResponse<ReferrerDistributionData>).data!;
-          }
-          return null;
-        } catch (error) {
-          console.error("获取来源分布数据失败:", error);
+          console.error("获取分布统计数据失败:", error);
           return null;
         }
       },
@@ -373,11 +351,8 @@ export const useStatsActions = () => {
   const fetchGlobalStats = useStatsStore((state) => state.fetchGlobalStats);
   const fetchAccessStats = useStatsStore((state) => state.fetchAccessStats);
   const fetchUploadStats = useStatsStore((state) => state.fetchUploadStats);
-  const fetchGeoDistribution = useStatsStore(
-    (state) => state.fetchGeoDistribution
-  );
-  const fetchReferrerDistribution = useStatsStore(
-    (state) => state.fetchReferrerDistribution
+  const fetchDistribution = useStatsStore(
+    (state) => state.fetchDistribution
   );
   const fetchTopImages = useStatsStore((state) => state.fetchTopImages);
   const fetchTopUsers = useStatsStore((state) => state.fetchTopUsers);
@@ -392,8 +367,7 @@ export const useStatsActions = () => {
     fetchGlobalStats,
     fetchAccessStats,
     fetchUploadStats,
-    fetchGeoDistribution,
-    fetchReferrerDistribution,
+    fetchDistribution,
     fetchTopImages,
     fetchTopUsers,
     refreshStats,
@@ -421,3 +395,11 @@ export const useReferrerDistribution = () =>
 export const useTopImages = () =>
   useStatsStore((state) => state.data?.topImages);
 export const useTopUsers = () => useStatsStore((state) => state.data?.topUsers);
+
+// 新增：使用新的统一分布数据的选择器
+export const useDistribution = () =>
+  useStatsStore((state) => state.data?.distribution);
+export const useGeoDistributionRaw = () =>
+  useStatsStore((state) => state.data?.distribution?.geo);
+export const useReferrerDistributionRaw = () =>
+  useStatsStore((state) => state.data?.distribution?.referrer);

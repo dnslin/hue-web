@@ -219,7 +219,7 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
 
   if (isLoading) {
     return (
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 lg:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -244,7 +244,7 @@ export function EnhancedMetricsGrid({ className }: EnhancedMetricsGridProps) {
       animate="animate"
       className={className}
     >
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 lg:grid-cols-4">
         {metrics.map((metric, index) => {
           const Icon = metric.icon;
           const change = calculateChange();

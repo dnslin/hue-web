@@ -173,7 +173,57 @@ export interface UploadStatsData {
   peakValue?: number;
 }
 
-// 地理分布数据
+// 根据 Swagger DTO 定义的新分布统计类型
+
+// 国家排行榜项 (对应 CountryRanking DTO - camelCase 版本)
+export interface CountryRanking {
+  country: string;
+  countryCode: string; // 经过 case-converter 转换后的格式
+  count: number;
+  percentage: number;
+}
+
+// 地理位置信息 (对应 GeoLocationDTO - camelCase 版本)
+export interface GeoLocationDTO {
+  city: string;
+  country: string;
+  countryCode: string; // 经过 case-converter 转换后的格式
+  ipAddress: string; // 经过 case-converter 转换后的格式
+  latitude: number;
+  longitude: number;
+}
+
+// 地理分布数据 (对应 GeoDistributionDTO - camelCase 版本)
+export interface GeoDistributionDTO {
+  countryRank: CountryRanking[]; // 经过 case-converter 转换后的格式
+  locations: GeoLocationDTO[];
+}
+
+// 来源统计项 (对应 ReferrerSourceStat DTO)
+export interface ReferrerSourceStat {
+  source: string;
+  count: number;
+}
+
+// 来源类型占比 (对应 ReferrerTypePercentage DTO)
+export interface ReferrerTypePercentage {
+  type: string;
+  percentage: number;
+}
+
+// 来源分布数据 (对应 ReferrerDistributionDTO - camelCase 版本)
+export interface ReferrerDistributionDTO {
+  sources: ReferrerSourceStat[];
+  typePercentage: ReferrerTypePercentage[]; // 经过 case-converter 转换后的格式
+}
+
+// 统一分布统计数据 (对应 DistributionDTO)
+export interface DistributionDTO {
+  geo: GeoDistributionDTO;
+  referrer: ReferrerDistributionDTO;
+}
+
+// 为了保持组件兼容性，添加转换后的前端使用类型
 export interface GeoDistributionItem {
   country: string;
   countryCode: string;
@@ -182,16 +232,19 @@ export interface GeoDistributionItem {
   visits: number;
   percentage: number;
   flag?: string;
+  latitude?: number;
+  longitude?: number;
+  ipAddress?: string;
 }
 
 export interface GeoDistributionData {
   data: GeoDistributionItem[];
+  locations: GeoLocationDTO[];
   totalCountries: number;
   topCountry: string;
   topVisits: number;
 }
 
-// 来源分布数据
 export interface ReferrerDistributionItem {
   domain: string;
   visits: number;
@@ -202,6 +255,8 @@ export interface ReferrerDistributionItem {
 
 export interface ReferrerDistributionData {
   data: ReferrerDistributionItem[];
+  sources: ReferrerSourceStat[];
+  typePercentage: ReferrerTypePercentage[];
   totalReferrers: number;
   topReferrer: string;
   directTrafficPercentage: number;
@@ -265,14 +320,18 @@ export interface StatsData {
   referrerDistribution: ReferrerDistributionData;
   topImages: TopImagesData;
   topUsers: TopUsersData;
+  // 新增：统一的分布统计数据
+  distribution?: DistributionDTO;
 }
 
 // API请求参数类型
 export interface StatsApiParams {
   period?: "daily" | "weekly" | "monthly";
-  days?: number;
+  days?: number; // 保留以确保向后兼容
+  range?: 7 | 30 | 365; // 新的时间范围参数，对应后端的range参数
   limit?: number;
   sortBy?: string;
+  type?: "geo" | "referrer"; // 新增：分布统计类型参数
 }
 
 // 统计API响应类型
