@@ -70,8 +70,8 @@ export function GeoAnalysis() {
       popup: {
         country: location.country,
         city: location.city,
-        ip: location.ip_address,
-        countryCode: location.country_code,
+        ip: location.ipAddress,
+        countryCode: location.countryCode,
       },
     }));
   }, [geoRawData?.locations]);
