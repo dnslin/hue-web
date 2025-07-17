@@ -43,12 +43,13 @@ export default function GeoMap({ markers }: GeoMapProps) {
   const defaultZoom = 2;
 
   return (
-    <MapContainer
-      center={defaultCenter}
-      zoom={defaultZoom}
-      style={{ height: "100%", width: "100%" }}
-      scrollWheelZoom={false}
-    >
+    <div style={{ height: '100%', width: '100%' }}>
+      <MapContainer
+        center={defaultCenter}
+        zoom={defaultZoom}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={false}
+      >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -94,5 +95,6 @@ export default function GeoMap({ markers }: GeoMapProps) {
         </Marker>
       ))}
     </MapContainer>
+    </div>
   );
 }

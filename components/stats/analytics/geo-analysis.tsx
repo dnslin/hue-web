@@ -44,16 +44,16 @@ export function GeoAnalysis() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
-        <Card className="animate-pulse min-w-0">
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+        <Card className="animate-pulse min-w-0 lg:col-span-1">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-32" />
           </CardHeader>
           <CardContent>
-            <div className="h-64 md:h-80 bg-muted rounded" />
+            <div className="h-64 sm:h-80 md:h-96 bg-muted rounded" />
           </CardContent>
         </Card>
-        <Card className="animate-pulse min-w-0">
+        <Card className="animate-pulse min-w-0 lg:col-span-1">
           <CardHeader>
             <div className="h-6 bg-muted rounded w-32" />
           </CardHeader>
@@ -71,8 +71,8 @@ export function GeoAnalysis() {
 
   if (error || !geoData) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
-        <Card className="min-w-0">
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+        <Card className="min-w-0 lg:col-span-2">
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground">
               无法加载地理分布数据
@@ -87,9 +87,9 @@ export function GeoAnalysis() {
   const topCountries = geoData.data?.slice(0, 5) || [];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
+    <div className="grid gap-4 lg:grid-cols-2 lg:gap-6 overflow-hidden">
       {/* 地理分布可视化 */}
-      <Card className="min-w-0">
+      <Card className="min-w-0 lg:col-span-1">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
@@ -102,15 +102,15 @@ export function GeoAnalysis() {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="h-64 md:h-80 rounded-lg overflow-hidden border">
+        <CardContent className="pb-4">
+          <div className="rounded-lg overflow-hidden border h-64 sm:h-80 md:h-[450]">
             <GeoMap markers={mapMarkers} />
           </div>
         </CardContent>
       </Card>
 
       {/* 详细排行榜 */}
-      <Card className="min-w-0">
+      <Card className="min-w-0 lg:col-span-1">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
@@ -159,7 +159,7 @@ export function GeoAnalysis() {
           
           {/* 统计汇总 */}
           <div className="mt-6 pt-4 border-t">
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-blue-600">
                   {geoData.data?.length || 0}
