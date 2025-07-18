@@ -18,31 +18,44 @@ export function AuthenticatedImage({
 }: AuthenticatedImageProps) {
   const [imageSrc, setImageSrc] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 2;
+
+  const loadImage = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const imageData = await getImageData(imageId, thumb);
+      
+      if (imageData) {
+        setImageSrc(imageData);
+      } else {
+        setError('服务器返回空数据');
+      }
+    } catch (err: any) {
+      const errorMsg = err?.msg || err?.message || '未知错误';
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadImage = async () => {
-      try {
-        setLoading(true);
-        setError(false);
-        
-        const imageData = await getImageData(imageId, thumb);
-        
-        if (imageData) {
-          setImageSrc(imageData);
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        console.error('加载图片失败:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (imageId) {
+      loadImage();
+    } else {
+      setError('图片ID为空');
+      setLoading(false);
+    }
+  }, [imageId, thumb, retryCount]);
 
-    loadImage();
-  }, [imageId, thumb]);
+  const handleRetry = () => {
+    if (retryCount < maxRetries) {
+      setRetryCount(prev => prev + 1);
+    }
+  };
 
   if (loading) {
     return (
@@ -54,8 +67,13 @@ export function AuthenticatedImage({
 
   if (error || !imageSrc) {
     return (
-      <div className={`bg-muted flex items-center justify-center ${className}`}>
-        <span className="text-xs text-muted-foreground">无法加载</span>
+      <div className={`bg-muted flex flex-col items-center justify-center ${className} cursor-pointer`} onClick={handleRetry}>
+        <span className="text-xs text-muted-foreground text-center px-1">
+          {retryCount < maxRetries ? '点击重试' : '加载失败'}
+        </span>
+        {retryCount < maxRetries && (
+          <span className="text-xs text-muted-foreground/60">({retryCount + 1}/{maxRetries + 1})</span>
+        )}
       </div>
     );
   }
@@ -65,6 +83,9 @@ export function AuthenticatedImage({
       src={imageSrc}
       alt={fileName}
       className={className}
+      onError={() => {
+        setError('图片渲染失败');
+      }}
     />
   );
 }

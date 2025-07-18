@@ -12,14 +12,20 @@ import { redirect } from "next/navigation";
 export async function getImageData(imageId: string, thumb: boolean = false): Promise<string | null> {
   try {
     const apiService = await getAuthenticatedApiService();
+    const url = `/images/${imageId}/view`;
     
-    const response = await apiService.get(`/images/${imageId}/view`, {
+    const response = await apiService.get(url, {
       params: { thumb },
       responseType: 'arraybuffer'
     });
 
     // 获取响应头中的Content-Type
     const contentType = response.headers['content-type'] || 'image/jpeg';
+    
+    // 检查响应数据
+    if (!response.data || response.data.byteLength === 0) {
+      return null;
+    }
     
     // 将ArrayBuffer转换为Base64
     const buffer = Buffer.from(response.data);
@@ -28,8 +34,6 @@ export async function getImageData(imageId: string, thumb: boolean = false): Pro
     // 返回Data URL格式
     return `data:${contentType};base64,${base64}`;
   } catch (error: any) {
-    console.error('获取图片失败:', error);
-    
     // 如果是认证错误，重定向到登录页
     if (error?.code === 401) {
       redirect('/login');

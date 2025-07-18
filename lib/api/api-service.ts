@@ -99,6 +99,14 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
 
   instance.interceptors.response.use(
     (response: AxiosResponse<ApiResponse<any>>) => {
+      // 跳过二进制数据的转换（如图片、文件等）
+      if (response.config.responseType === 'arraybuffer' || 
+          response.config.responseType === 'blob' ||
+          response.headers['content-type']?.startsWith('image/') ||
+          response.headers['content-type']?.startsWith('application/octet-stream')) {
+        return response;
+      }
+      
       // 将响应数据转换为 camelCase (msg -> message, request_id -> requestId)
       response.data = deepConvertToCamelCase(response.data);
       return response;

@@ -16,9 +16,23 @@ export function RankingAnalysis() {
 
   // 从thumbnailUrl中提取imageId
   const extractImageId = (thumbnailUrl: string) => {
-    // 从 /api/v1/images/19/view?thumb=true 中提取 19
-    const match = thumbnailUrl.match(/\/images\/(\d+)\/view/);
-    return match ? match[1] : null;
+    // 支持多种URL格式
+    const patterns = [
+      /\/images\/(\d+)\/view/,           // /api/v1/images/19/view?thumb=true
+      /\/api\/v1\/images\/(\d+)\/view/, // 完整API路径
+      /images\/(\d+)/,                  // 简化格式 images/19
+      /imageId[=:](\d+)/,              // imageId=19 或 imageId:19
+      /id[=:](\d+)/                    // id=19 或 id:19
+    ];
+    
+    for (const pattern of patterns) {
+      const match = thumbnailUrl.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+    
+    return null;
   };
 
   if (isLoading) {
