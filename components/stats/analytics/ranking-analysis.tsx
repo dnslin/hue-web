@@ -6,12 +6,20 @@ import { useTopImages, useTopUsers, useStatsLoading, useStatsError } from "@/lib
 import { Trophy, Image as ImageIcon, Users, Eye, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { AuthenticatedImage } from "@/components/shared/authenticated-image";
 
 export function RankingAnalysis() {
   const topImages = useTopImages();
   const topUsers = useTopUsers();
   const isLoading = useStatsLoading();
   const error = useStatsError();
+
+  // 从thumbnailUrl中提取imageId
+  const extractImageId = (thumbnailUrl: string) => {
+    // 从 /api/v1/images/19/view?thumb=true 中提取 19
+    const match = thumbnailUrl.match(/\/images\/(\d+)\/view/);
+    return match ? match[1] : null;
+  };
 
   if (isLoading) {
     return (
@@ -99,15 +107,21 @@ export function RankingAnalysis() {
                   {/* 图片缩略图 */}
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md overflow-hidden bg-muted">
-                      <img
-                        src={image.thumbnailUrl}
-                        alt={image.fileName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = "/placeholder-image.svg";
-                        }}
-                      />
+                      {(() => {
+                        const imageId = extractImageId(image.thumbnailUrl);
+                        return imageId ? (
+                          <AuthenticatedImage
+                            imageId={imageId}
+                            fileName={image.fileName}
+                            thumb={true}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">无法解析</span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                   
@@ -195,8 +209,7 @@ export function RankingAnalysis() {
                       email: user.email,
                       role: { name: 'user' } // 默认角色，因为排行榜中没有详细角色信息
                     } as any}
-                    size="sm"
-                    className="h-8 w-8 sm:h-10 sm:w-10"
+                    size="lg"
                   />
                   
                   {/* 用户信息 */}
