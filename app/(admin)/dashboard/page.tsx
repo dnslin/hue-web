@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
       {/* 主要内容 - 修正滚动高度计算，添加安全区域适配 */}
       <div className="relative z-10 h-screen overflow-y-auto custom-scrollbar">
-        <div className="p-4 md:p-6 space-y-8 min-h-full pb-[env(safe-area-inset-bottom)] max-w-7xl mx-auto">
+        <div className="p-4 md:p-6 space-y-8 min-h-full pb-[env(safe-area-inset-bottom)]">
           {/* 页面标题 */}
           <div className="space-y-4">
             <BoxReveal boxColor="#3b82f6" duration={0.5}>
