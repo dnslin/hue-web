@@ -264,50 +264,30 @@ export interface ReferrerDistributionData {
 
 // 热门图片数据
 export interface TopImageItem {
-  id: number;
-  filename: string;
-  originalName: string;
-  url: string;
-  thumbnailUrl?: string;
-  views: number;
-  size: number; // 字节
-  uploadDate: string;
-  uploader: {
-    id: number;
-    username: string;
-    avatar?: string;
-  };
-  mimeType: string;
-  isPublic: boolean;
+  imageId: number;
+  fileName: string;
+  size: number;
+  uploadedAt: string;
+  uploader: string;
+  thumbnailUrl: string;
+  viewCount: number;
 }
 
 export interface TopImagesData {
   data: TopImageItem[];
-  totalImages: number;
-  mostViewed: TopImageItem | null;
-  sortBy: "views_total" | "views_month" | "views_day";
 }
 
-// 热门用户数据
+// 热门用户数据（匹配后端API结构）
 export interface TopUserItem {
-  id: number;
+  userId: number;
   username: string;
-  nickname?: string;
-  avatar?: string;
-  totalUploads: number;
-  totalViews: number;
-  totalStorage: number; // 字节
-  joinDate: string;
-  lastActiveDate: string;
-  rank: number;
-  badge?: string;
+  uploadCount: number;
+  totalImageViews: number;
+  totalImageSize: number;
 }
 
 export interface TopUsersData {
   data: TopUserItem[];
-  totalUsers: number;
-  topUser: TopUserItem | null;
-  sortBy: "uploads_total" | "views_total";
 }
 
 // 统计页面完整数据类型

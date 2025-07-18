@@ -20,6 +20,8 @@ import {
   DistributionDTO,
   TopImagesData,
   TopUsersData,
+  TopImageItem,
+  TopUserItem,
   StatsApiParams,
   StatsData,
   DailyAccessStatDTO,
@@ -291,7 +293,7 @@ export async function getTopImagesAction(
 ): Promise<ApiResponse<TopImagesData> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { limit = 10, range } = params;
+    const { limit = 5, range } = params;
     const requestParams: any = { limit };
     
     // 添加range参数（如果提供）
@@ -299,7 +301,7 @@ export async function getTopImagesAction(
       requestParams.range = range;
     }
     
-    const response = await apiService.get<ApiResponse<TopImagesData>>(
+    const response = await apiService.get<ApiResponse<TopImageItem[]>>(
       `${DASHBOARD_API_BASE}/top-images`,
       { params: requestParams }
     );
@@ -307,10 +309,15 @@ export async function getTopImagesAction(
     const apiResponse = response.data;
 
     if (apiResponse.code === 0) {
+      // 直接返回API数据，case转换由api-service处理
+      const topImagesData: TopImagesData = {
+        data: apiResponse.data || []
+      };
+
       return {
         code: 0,
         msg: apiResponse.msg || "获取热门图片数据成功",
-        data: apiResponse.data,
+        data: topImagesData,
       };
     }
 
@@ -346,7 +353,7 @@ export async function getTopUsersAction(
 ): Promise<ApiResponse<TopUsersData> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { limit = 10, range } = params;
+    const { limit = 5, range } = params;
     const requestParams: any = { limit };
     
     // 添加range参数（如果提供）
@@ -354,7 +361,7 @@ export async function getTopUsersAction(
       requestParams.range = range;
     }
     
-    const response = await apiService.get<ApiResponse<TopUsersData>>(
+    const response = await apiService.get<ApiResponse<TopUserItem[]>>(
       `${DASHBOARD_API_BASE}/top-users`,
       { params: requestParams }
     );
@@ -362,10 +369,15 @@ export async function getTopUsersAction(
     const apiResponse = response.data;
 
     if (apiResponse.code === 0) {
+      // 直接返回API数据，case转换由api-service处理
+      const topUsersData: TopUsersData = {
+        data: apiResponse.data || []
+      };
+
       return {
         code: 0,
         msg: apiResponse.msg || "获取热门用户数据成功",
-        data: apiResponse.data,
+        data: topUsersData,
       };
     }
 
