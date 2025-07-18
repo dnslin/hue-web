@@ -281,6 +281,7 @@ export interface TopImagesData {
 export interface TopUserItem {
   userId: number;
   username: string;
+  email: string;
   uploadCount: number;
   totalImageViews: number;
   totalImageSize: number;
