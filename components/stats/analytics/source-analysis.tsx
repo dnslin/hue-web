@@ -39,26 +39,25 @@ const sourceChartConfig = {
 const typeChartConfig = {
   direct: {
     label: "直接访问",
-    color: "hsl(220 70% 50%)",
+    color: "hsl(220 45% 60%)", // 柔和的蓝色
   },
   search: {
     label: "搜索引擎",
-    color: "hsl(142 70% 50%)",
+    color: "hsl(142 70% 60%)", 
   },
   social: {
     label: "社交媒体",
-    color: "hsl(262 70% 50%)",
+    color: "hsl(262 70% 60%)",
   },
   referral: {
     label: "外部链接",
-    color: "hsl(32 70% 50%)",
+    color: "hsl(32 70% 60%)",
   },
   other: {
     label: "其他",
-    color: "hsl(342 70% 50%)",
+    color: "hsl(342 70% 60%)",
   },
 };
-
 // 详细来源图标映射
 const detailSourceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Google": Search,
