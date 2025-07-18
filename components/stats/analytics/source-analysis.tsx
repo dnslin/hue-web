@@ -7,7 +7,6 @@ import {
   Cell, 
   Pie, 
   PieChart, 
-  Legend, 
   Bar, 
   BarChart, 
   XAxis, 
@@ -32,7 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const sourceChartConfig = {
   count: {
     label: "访问次数",
-    color: "hsl(172, 71%, 81%)",
+    color: "hsl(172, 60%, 70%)",
   },
 };
 
@@ -121,7 +120,7 @@ export function SourceAnalysis() {
   }
 
   const totalVisitors = referrerData.sources?.reduce((sum, source) => sum + source.count, 0) || 0;
-  const topSources = referrerData.sources?.slice(0, 8) || [];
+  const topSources = referrerData.sources?.slice(0, 6) || [];
 
   // 准备来源柱状图数据
   const sourceBarData = topSources.map((source) => ({
@@ -171,7 +170,7 @@ export function SourceAnalysis() {
             
             <TabsContent value="sources" className="mt-4">
               <div className="w-full overflow-hidden">
-                <ChartContainer config={sourceChartConfig} className="h-64 md:h-80 w-full">
+                <ChartContainer config={sourceChartConfig} className="h-80 md:h-96 w-full">
                   <BarChart 
                     data={sourceBarData} 
                     layout="vertical" 
@@ -223,7 +222,7 @@ export function SourceAnalysis() {
             </TabsContent>
             
             <TabsContent value="types-pie" className="mt-4">
-              <div className="w-full h-64 md:h-80 flex flex-col items-center justify-center space-y-4">
+              <div className="w-full h-80 md:h-96 flex flex-col items-center justify-center space-y-4">
                 <ChartContainer config={typeChartConfig} className="w-full max-w-sm md:max-w-md lg:max-w-lg">
                   <PieChart>
                     <Pie
@@ -253,7 +252,7 @@ export function SourceAnalysis() {
                 </ChartContainer>
                 {/* 自定义图例 */}
                 <div className="flex flex-wrap justify-center gap-4 text-sm">
-                  {typePieData.map((entry, index) => (
+                  {typePieData.map((entry) => (
                     <div key={entry.type} className="flex items-center space-x-2">
                       <div 
                         className="w-3 h-3 rounded-full" 
