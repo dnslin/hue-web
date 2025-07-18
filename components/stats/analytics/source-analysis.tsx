@@ -223,15 +223,15 @@ export function SourceAnalysis() {
             </TabsContent>
             
             <TabsContent value="types-pie" className="mt-4">
-              <div className="w-full h-64 md:h-80 flex items-center justify-center">
-                <ChartContainer config={typeChartConfig} className="w-full h-full">
-                  <PieChart width={280} height={280} className="mx-auto">
+              <div className="w-full h-64 md:h-80 flex flex-col items-center justify-center space-y-4">
+                <ChartContainer config={typeChartConfig} className="w-full max-w-sm md:max-w-md lg:max-w-lg">
+                  <PieChart>
                     <Pie
                       data={typePieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
+                      innerRadius={50}
+                      outerRadius={100}
                       paddingAngle={2}
                       dataKey="value"
                     >
@@ -249,14 +249,20 @@ export function SourceAnalysis() {
                         />
                       }
                     />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      formatter={(value) => <span className="text-foreground text-xs">{value}</span>}
-                      wrapperStyle={{ color: "hsl(var(--foreground))", fontSize: "12px" }}
-                    />
                   </PieChart>
                 </ChartContainer>
+                {/* 自定义图例 */}
+                <div className="flex flex-wrap justify-center gap-4 text-sm">
+                  {typePieData.map((entry, index) => (
+                    <div key={entry.type} className="flex items-center space-x-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <span className="text-foreground">{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </TabsContent>
             
