@@ -12,12 +12,7 @@ import {
   BarChart, 
   XAxis, 
   YAxis, 
-  CartesianGrid,
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis
+  CartesianGrid
 } from "recharts";
 import { useReferrerDistributionRaw, useStatsLoading, useStatsError } from "@/lib/store/stats";
 import { 
@@ -28,8 +23,7 @@ import {
   Globe,
   MessageSquare,
   BarChart3,
-  PieChart as PieChartIcon,
-  Target
+  PieChart as PieChartIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -38,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const sourceChartConfig = {
   count: {
     label: "访问次数",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(172, 71%, 81%)",
   },
 };
 
@@ -138,23 +132,17 @@ export function SourceAnalysis() {
     percentage: totalVisitors > 0 ? (source.count / totalVisitors) * 100 : 0,
   }));
 
-  // 准备类型饼图数据
+  // 准备类型饼图数据 - 后端返回的是小数，需要转换为百分比
   const typePieData = (referrerData.typePercentage || []).map((type, index) => ({
     name: typeChartConfig[type.type as keyof typeof typeChartConfig]?.label || type.type,
-    value: type.percentage,
+    value: type.percentage * 100, // 转换为百分比
     type: type.type,
     color: typeChartConfig[type.type as keyof typeof typeChartConfig]?.color || `hsl(var(--chart-${index + 1}))`,
   }));
 
-  // 准备类型雷达图数据
-  const typeRadarData = (referrerData.typePercentage || []).map((type) => ({
-    type: typeChartConfig[type.type as keyof typeof typeChartConfig]?.label || type.type,
-    percentage: type.percentage,
-    fill: typeChartConfig[type.type as keyof typeof typeChartConfig]?.color || "hsl(var(--chart-1))",
-  }));
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 overflow-hidden">
+    <div className="grid gap-4 md:grid-cols-2 lg:gap-6 items-start overflow-hidden">
       {/* 来源分析可视化 */}
       <Card className="min-w-0">
         <CardHeader>
@@ -171,7 +159,7 @@ export function SourceAnalysis() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="sources" className="flex items-center space-x-2">
                 <BarChart3 className="h-4 w-4" />
                 <span>来源排行</span>
@@ -180,67 +168,70 @@ export function SourceAnalysis() {
                 <PieChartIcon className="h-4 w-4" />
                 <span>类型分布</span>
               </TabsTrigger>
-              <TabsTrigger value="types-radar" className="flex items-center space-x-2">
-                <Target className="h-4 w-4" />
-                <span>类型雷达</span>
-              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="sources" className="mt-4">
-              <ChartContainer config={sourceChartConfig} className="h-64 md:h-80">
-                <BarChart data={sourceBarData} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    type="number" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => {
-                      if (value >= 1000000) {
-                        return `${(value / 1000000).toFixed(1)}M`;
-                      } else if (value >= 1000) {
-                        return `${(value / 1000).toFixed(1)}K`;
+              <div className="w-full overflow-hidden">
+                <ChartContainer config={sourceChartConfig} className="h-64 md:h-80 w-full">
+                  <BarChart 
+                    data={sourceBarData} 
+                    layout="vertical" 
+                    margin={{ top: 5, right: 8, left: 5, bottom: 5 }}
+                    barCategoryGap={3}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={true} />
+                    <XAxis 
+                      type="number" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                      tickFormatter={(value) => {
+                        if (value >= 1000000) {
+                          return `${(value / 1000000).toFixed(1)}M`;
+                        } else if (value >= 1000) {
+                          return `${(value / 1000).toFixed(1)}K`;
+                        }
+                        return value.toString();
+                      }}
+                    />
+                    <YAxis 
+                      dataKey="source" 
+                      type="category" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      width={70}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(value, payload) => {
+                            const item = payload?.[0]?.payload;
+                            return item?.fullSource || value;
+                          }}
+                          formatter={(value) => [value.toLocaleString(), "访问次数"]}
+                        />
                       }
-                      return value.toString();
-                    }}
-                  />
-                  <YAxis 
-                    dataKey="source" 
-                    type="category" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12 }}
-                    width={100}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value, payload) => {
-                          const item = payload?.[0]?.payload;
-                          return item?.fullSource || value;
-                        }}
-                        formatter={(value) => [value.toLocaleString(), "访问次数"]}
-                      />
-                    }
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill={sourceChartConfig.count.color}
-                    radius={[0, 4, 4, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill={sourceChartConfig.count.color}
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </div>
             </TabsContent>
             
             <TabsContent value="types-pie" className="mt-4">
-              <ChartContainer config={typeChartConfig} className="h-64 md:h-80">
-                <PieChart>
+              <ChartContainer config={typeChartConfig} className="h-64 md:h-80 flex items-center justify-center">
+                <PieChart width={300} height={300}>
                   <Pie
                     data={typePieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
+                    innerRadius={50}
+                    outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
                   >
@@ -261,42 +252,13 @@ export function SourceAnalysis() {
                   <Legend 
                     verticalAlign="bottom" 
                     height={36}
-                    formatter={(value) => value}
+                    formatter={(value) => <span className="text-foreground">{value}</span>}
+                    wrapperStyle={{ color: "hsl(var(--foreground))" }}
                   />
                 </PieChart>
               </ChartContainer>
             </TabsContent>
             
-            <TabsContent value="types-radar" className="mt-4">
-              <ChartContainer config={typeChartConfig} className="h-64 md:h-80">
-                <RadarChart data={typeRadarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="type" />
-                  <PolarRadiusAxis 
-                    domain={[0, 100]} 
-                    tick={false}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        formatter={(value) => [
-                          `${Number(value).toFixed(1)}%`,
-                          "占比",
-                        ]}
-                      />
-                    }
-                  />
-                  <Radar
-                    dataKey="percentage"
-                    stroke="hsl(var(--chart-1))"
-                    fill="hsl(var(--chart-1))"
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                  />
-                </RadarChart>
-              </ChartContainer>
-            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -335,31 +297,10 @@ export function SourceAnalysis() {
                       <div className="text-sm text-muted-foreground">{percentage.toFixed(1)}%</div>
                     </div>
                   </div>
-                  <Progress value={percentage} className="h-2" />
+                  <Progress value={percentage} className="h-2 bg-secondary" />
                 </div>
               );
             })}
-          </div>
-          
-          {/* 类型统计 */}
-          <div className="mt-6 pt-4 border-t">
-            <h4 className="font-medium mb-3">来源类型统计</h4>
-            <div className="grid grid-cols-2 gap-4">
-              {(referrerData.typePercentage || []).map((type) => {
-                const config = typeChartConfig[type.type as keyof typeof typeChartConfig];
-                
-                return (
-                  <div key={type.type} className="text-center">
-                    <div className="text-lg font-bold" style={{ color: config?.color || "hsl(var(--chart-1))" }}>
-                      {type.percentage.toFixed(1)}%
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {config?.label || type.type}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </CardContent>
       </Card>
