@@ -39,23 +39,23 @@ const sourceChartConfig = {
 const typeChartConfig = {
   direct: {
     label: "直接访问",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(220 70% 50%)",
   },
   search: {
     label: "搜索引擎",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(142 70% 50%)",
   },
   social: {
     label: "社交媒体",
-    color: "hsl(var(--chart-3))",
+    color: "hsl(262 70% 50%)",
   },
   referral: {
     label: "外部链接",
-    color: "hsl(var(--chart-4))",
+    color: "hsl(32 70% 50%)",
   },
   other: {
     label: "其他",
-    color: "hsl(var(--chart-5))",
+    color: "hsl(342 70% 50%)",
   },
 };
 
@@ -224,39 +224,41 @@ export function SourceAnalysis() {
             </TabsContent>
             
             <TabsContent value="types-pie" className="mt-4">
-              <ChartContainer config={typeChartConfig} className="h-64 md:h-80 flex items-center justify-center">
-                <PieChart width={300} height={300}>
-                  <Pie
-                    data={typePieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {typePieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        formatter={(value) => [
-                          `${Number(value).toFixed(1)}%`,
-                          "占比",
-                        ]}
-                      />
-                    }
-                  />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    height={36}
-                    formatter={(value) => <span className="text-foreground">{value}</span>}
-                    wrapperStyle={{ color: "hsl(var(--foreground))" }}
-                  />
-                </PieChart>
-              </ChartContainer>
+              <div className="w-full h-64 md:h-80 flex items-center justify-center">
+                <ChartContainer config={typeChartConfig} className="w-full h-full">
+                  <PieChart width={280} height={280} className="mx-auto">
+                    <Pie
+                      data={typePieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {typePieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value) => [
+                            `${Number(value).toFixed(1)}%`,
+                            "占比",
+                          ]}
+                        />
+                      }
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      formatter={(value) => <span className="text-foreground text-xs">{value}</span>}
+                      wrapperStyle={{ color: "hsl(var(--foreground))", fontSize: "12px" }}
+                    />
+                  </PieChart>
+                </ChartContainer>
+              </div>
             </TabsContent>
             
           </Tabs>
