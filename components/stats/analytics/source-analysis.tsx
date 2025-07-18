@@ -25,7 +25,6 @@ import {
   PieChart as PieChartIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const sourceChartConfig = {
@@ -280,30 +279,85 @@ export function SourceAnalysis() {
             <Badge variant="secondary">前 {topSources.length} 名</Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-3 sm:space-y-4">
             {topSources.map((source, index) => {
               const percentage = totalVisitors > 0 ? (source.count / totalVisitors) * 100 : 0;
               const SourceIcon = detailSourceIcons[source.source] || Users;
               
               return (
-                <div key={source.source} className="space-y-2">
+                <div 
+                  key={source.source} 
+                  className="group space-y-3 p-3 rounded-lg border border-transparent hover:border-border/50 hover:bg-muted/30 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      {/* 优化的排名徽章 */}
+                      <div className={`
+                        flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold shrink-0
+                        ${index === 0 ? 'bg-blue-500 text-white' : 
+                          index === 1 ? 'bg-green-500 text-white' : 
+                          index === 2 ? 'bg-orange-500 text-white' : 
+                          'bg-muted text-muted-foreground border border-border'}
+                        transition-all duration-200 group-hover:scale-105
+                      `}>
                         {index + 1}
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <SourceIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{source.source}</span>
+                      
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        <SourceIcon className={`
+                          h-5 w-5 shrink-0 transition-colors duration-200
+                          ${index === 0 ? 'text-blue-500' : 
+                            index === 1 ? 'text-green-500' : 
+                            index === 2 ? 'text-orange-500' : 
+                            'text-muted-foreground group-hover:text-foreground'}
+                        `} />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-foreground truncate">
+                            {source.source}
+                          </div>
+                          <div className="text-xs text-muted-foreground sm:hidden">
+                            {source.count.toLocaleString()} 次访问
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-medium">{source.count.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">{percentage.toFixed(1)}%</div>
+                    
+                    {/* 桌面端数据显示 */}
+                    <div className="hidden sm:block text-right shrink-0">
+                      <div className="font-semibold text-foreground">
+                        {source.count >= 1000000 ? 
+                          `${(source.count / 1000000).toFixed(1)}M` :
+                          source.count >= 1000 ? 
+                          `${(source.count / 1000).toFixed(1)}K` :
+                          source.count.toLocaleString()
+                        }
+                      </div>
+                      <div className="text-sm font-medium text-muted-foreground">
+                        {percentage.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
-                  <Progress value={percentage} className="h-2 bg-secondary" />
+                  
+                  {/* 优化的进度条 */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center sm:hidden">
+                      <span className="text-xs text-muted-foreground">占比</span>
+                      <span className="text-sm font-medium">{percentage.toFixed(1)}%</span>
+                    </div>
+                    <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
+                      <div 
+                        className={`
+                          h-full rounded-full transition-all duration-500 ease-out
+                          ${index === 0 ? 'bg-blue-500' : 
+                            index === 1 ? 'bg-green-500' : 
+                            index === 2 ? 'bg-orange-500' : 
+                            'bg-primary'}
+                        `}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               );
             })}
