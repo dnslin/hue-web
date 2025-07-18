@@ -31,7 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const sourceChartConfig = {
   count: {
     label: "访问次数",
-    color: "hsl(172, 60%, 70%)",
+    color: "#91caff",
   },
 };
 
