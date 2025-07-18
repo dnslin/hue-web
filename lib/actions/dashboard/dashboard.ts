@@ -291,10 +291,17 @@ export async function getTopImagesAction(
 ): Promise<ApiResponse<TopImagesData> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { limit = 10, sortBy = "views_total" } = params;
+    const { limit = 10, range } = params;
+    const requestParams: any = { limit };
+    
+    // 添加range参数（如果提供）
+    if (range !== undefined) {
+      requestParams.range = range;
+    }
+    
     const response = await apiService.get<ApiResponse<TopImagesData>>(
       `${DASHBOARD_API_BASE}/top-images`,
-      { params: { limit, sort_by: sortBy } }
+      { params: requestParams }
     );
 
     const apiResponse = response.data;
@@ -339,10 +346,17 @@ export async function getTopUsersAction(
 ): Promise<ApiResponse<TopUsersData> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const { limit = 10, sortBy = "uploads_total" } = params;
+    const { limit = 10, range } = params;
+    const requestParams: any = { limit };
+    
+    // 添加range参数（如果提供）
+    if (range !== undefined) {
+      requestParams.range = range;
+    }
+    
     const response = await apiService.get<ApiResponse<TopUsersData>>(
       `${DASHBOARD_API_BASE}/top-users`,
-      { params: { limit, sort_by: sortBy } }
+      { params: requestParams }
     );
 
     const apiResponse = response.data;

@@ -1769,11 +1769,13 @@ paths:
           in: query
           name: limit
           type: integer
-        - default: views_total
-          description: 排序依据 (views_total, views_month, views_day)
+        - description: 时间范围 (7, 30)
+          enum:
+            - 7
+            - 30
           in: query
-          name: sort_by
-          type: string
+          name: range
+          type: integer
       produces:
         - application/json
       responses:
@@ -1810,11 +1812,13 @@ paths:
           in: query
           name: limit
           type: integer
-        - default: uploads_total
-          description: 排序依据 (uploads_total, views_total)
+        - description: 时间范围 (7, 30)
+          enum:
+            - 7
+            - 30
           in: query
-          name: sort_by
-          type: string
+          name: range
+          type: integer
       produces:
         - application/json
       responses:
