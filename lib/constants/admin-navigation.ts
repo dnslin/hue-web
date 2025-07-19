@@ -3,14 +3,11 @@ import {
   Images,
   Users,
   Settings,
-  FileText,
   BarChart3,
   Shield,
   Database,
-  Palette,
   Globe,
   Mail,
-  Bell,
   Server,
   TrendingUp,
   PieChart,
@@ -101,26 +98,6 @@ export const adminNavigation: NavigationGroup[] = [
     ],
   },
   {
-    id: "content",
-    label: "内容管理",
-    items: [
-      {
-        id: "pages",
-        label: "页面管理",
-        href: "/pages",
-        icon: FileText,
-        description: "静态页面和内容管理",
-      },
-      {
-        id: "announcements",
-        label: "公告管理",
-        href: "/announcements",
-        icon: Bell,
-        description: "系统公告和通知",
-      },
-    ],
-  },
-  {
     id: "system",
     label: "系统管理",
     items: [
@@ -152,13 +129,6 @@ export const adminNavigation: NavigationGroup[] = [
         href: "/storage",
         icon: Database,
         description: "存储配置和策略管理",
-      },
-      {
-        id: "appearance",
-        label: "外观设置",
-        href: "/appearance",
-        icon: Palette,
-        description: "主题和界面定制",
       },
       {
         id: "settings",
