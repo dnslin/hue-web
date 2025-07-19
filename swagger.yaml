@@ -806,17 +806,19 @@ definitions:
         type: integer
       size:
         type: integer
+      thumbnail_url:
+        type: string
       uploaded_at:
         type: string
       uploader:
-        type: string
-      url:
         type: string
       view_count:
         type: integer
     type: object
   dtos.TopUploaderDTO:
     properties:
+      email:
+        type: string
       total_image_size:
         description: 总图片大小
         type: integer
@@ -882,6 +884,64 @@ definitions:
         type: string
       smtp_username:
         type: string
+    type: object
+  dtos.UpdateImageProcessingSettingDTO:
+    properties:
+      allowed_image_formats:
+        type: string
+      auto_compress_enabled:
+        type: boolean
+      auto_convert_to_webp:
+        type: boolean
+      batch_upload_limit:
+        minimum: 1
+        type: integer
+      compression_quality:
+        maximum: 100
+        minimum: 1
+        type: integer
+      thumbnail_enabled:
+        type: boolean
+      thumbnail_height:
+        minimum: 0
+        type: integer
+      thumbnail_width:
+        minimum: 0
+        type: integer
+      upload_max_size_mb:
+        minimum: 1
+        type: integer
+      watermark_enabled:
+        type: boolean
+      watermark_margin_x:
+        minimum: 0
+        type: integer
+      watermark_margin_y:
+        minimum: 0
+        type: integer
+      watermark_opacity:
+        maximum: 1
+        minimum: 0
+        type: number
+      watermark_position:
+        enum:
+          - top-left
+          - top-right
+          - bottom-left
+          - bottom-right
+          - center
+        type: string
+      watermark_scale_ratio:
+        maximum: 1
+        minimum: 0.0001
+        type: number
+      watermark_source_file:
+        maxLength: 1024
+        type: string
+      webp_quality:
+        maximum: 100
+        minimum: 1
+        type: integer
     type: object
   dtos.UpdateMeDTO:
     properties:
@@ -4508,7 +4568,7 @@ paths:
           name: settings
           required: true
           schema:
-            $ref: "#/definitions/models.ImageProcessingSetting"
+            $ref: "#/definitions/dtos.UpdateImageProcessingSettingDTO"
       produces:
         - application/json
       responses:
