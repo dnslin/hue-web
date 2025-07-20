@@ -79,7 +79,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-0 shadow-sm">
+                <Card className="bg-blue-50/80 dark:bg-blue-950/20 shadow-[0_2px_10px_-3px_rgb(59,130,246,0.15),0_10px_40px_-15px_rgb(59,130,246,0.1)] border border-blue-100/30 dark:border-blue-800/30 relative overflow-hidden before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.15)_1px,transparent_1px)] before:bg-[length:20px_20px] before:opacity-30">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-3 sm:gap-4">
                       <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-blue-100 dark:ring-blue-900">

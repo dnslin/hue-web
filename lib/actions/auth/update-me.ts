@@ -34,12 +34,6 @@ export async function updateCurrentUserAction(
   }
 }
 
-/**
- * 更新用户昵称
- */
-export async function updateUserNicknameAction(nickname: string): Promise<User | null> {
-  return updateCurrentUserAction({ nickname });
-}
 
 /**
  * 更新用户邮箱
