@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { HardDrive, TrendingUp, Database, Zap } from "lucide-react";
+import { HardDrive, TrendingUp, Database, Zap, CheckCircle, AlertCircle, Activity, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +82,10 @@ export const StorageStatsCard: React.FC<StorageStatsCardProps> = ({ user }) => {
           {/* 存储详情网格 */}
           <div className="grid grid-cols-2 gap-3 pt-3 border-t">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">已使用</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Database className="h-3 w-3" />
+                已使用
+              </p>
               <div className="text-sm font-medium flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
                 <span>{formatStorageSize(usedStorageMb)}</span>
@@ -90,7 +93,10 @@ export const StorageStatsCard: React.FC<StorageStatsCardProps> = ({ user }) => {
             </div>
             
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">剩余空间</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                剩余空间
+              </p>
               <div className="text-sm font-medium flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-muted" />
                 <span>{formatStorageSize(totalStorageMb - usedStorageMb)}</span>
@@ -113,7 +119,8 @@ export const StorageStatsCard: React.FC<StorageStatsCardProps> = ({ user }) => {
           {/* 使用提示 */}
           {usagePercentage >= 90 && (
             <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30">
-              <p className="text-sm text-red-700 dark:text-red-300">
+              <p className="text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 存储空间即将用完，建议清理不需要的文件或联系管理员扩容。
               </p>
             </div>
@@ -142,13 +149,19 @@ export const StorageStatsCard: React.FC<StorageStatsCardProps> = ({ user }) => {
             {/* 快速统计 */}
             <div className="grid grid-cols-1 gap-3 pt-3 border-t">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">存储效率</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Activity className="h-3 w-3" />
+                  存储效率
+                </span>
                 <span className="text-xs font-medium">
                   {usagePercentage > 0 ? "正常" : "未使用"}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">剩余天数</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  剩余天数
+                </span>
                 <span className="text-xs font-medium">
                   {usagePercentage < 90 ? "充足" : "需要关注"}
                 </span>

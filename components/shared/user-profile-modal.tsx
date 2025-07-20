@@ -12,6 +12,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Mail, Calendar, Shield, Settings } from "lucide-react";
 import { useAuthStore } from "@/lib/store/auth";
 import { getGravatarUrl } from "@/lib/utils/gravatar";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             className="p-3 sm:p-4 lg:p-6 border-b bg-background/80 backdrop-blur-sm"
           >
             <DialogHeader className="space-y-3">
-              <DialogTitle className="text-lg sm:text-xl font-semibold">个人设置</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                个人设置
+              </DialogTitle>
               <DialogDescription className="sr-only">
                 管理您的个人信息、密码和存储设置
               </DialogDescription>
@@ -95,12 +99,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         <h3 className="font-semibold text-base sm:text-lg truncate">
                           {user.username}
                         </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {user.email}
+                        </p>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                            <Shield className="h-3 w-3" />
                             {user.role?.name || "用户"}
                           </Badge>
-                          <span className="text-xs text-muted-foreground hidden sm:inline">
+                          <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
                             注册于 {new Date(user.createdAt).toLocaleDateString()}
                           </span>
                         </div>

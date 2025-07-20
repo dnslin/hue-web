@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit2, Save, X, User } from "lucide-react";
+import { Edit2, Save, X, User, Mail, Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,7 +109,10 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* 用户名（只读） */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">用户名</Label>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  用户名
+                </Label>
                 <Input
                   value={user.username}
                   disabled
@@ -123,7 +126,10 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>邮箱</FormLabel>
+                    <FormLabel className="flex items-center gap-1">
+                      <Mail className="h-3 w-3" />
+                      邮箱
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -172,19 +178,28 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
           <div className="space-y-3">
             {/* 用户名 */}
             <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">用户名</Label>
+              <Label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                <User className="h-3 w-3" />
+                用户名
+              </Label>
               <p className="text-sm">{user.username}</p>
             </div>
 
             {/* 邮箱 */}
             <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">邮箱</Label>
+              <Label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                <Mail className="h-3 w-3" />
+                邮箱
+              </Label>
               <p className="text-sm">{user.email}</p>
             </div>
 
             {/* 角色 */}
             <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">角色</Label>
+              <Label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                角色
+              </Label>
               <p className="text-sm">{user.role?.name || "用户"}</p>
             </div>
           </div>
