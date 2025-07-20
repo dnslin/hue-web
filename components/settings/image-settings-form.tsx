@@ -5,8 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ImageProcessingSetting } from "@/lib/types/settings";
 import {
   imageSettingsSchema,
-  watermarkPositionOptions,
   WATERMARK_POSITIONS,
+  imageFormatOptions,
   type ImageSettingsFormData,
 } from "@/lib/schema";
 import {
@@ -18,13 +18,13 @@ import {
   LabeledSwitch,
   LabeledNumberInput,
   LabeledSlider,
+  LabeledImageFormatsCheckbox,
 } from "./form-components";
 import { WatermarkPositionSelector } from "./watermark-position-selector";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Image, Upload, Scissors, Droplets } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ImageSettingsFormProps {
   data: ImageProcessingSetting | null;
@@ -45,7 +45,7 @@ export const ImageSettingsForm = ({
     resolver: zodResolver(imageSettingsSchema) as any,
     defaultValues: {
       uploadMaxSizeMB: 10,
-      allowedImageFormats: "jpg,jpeg,png,gif,webp",
+      allowedImageFormats: "image/jpeg,image/png,image/gif,image/webp",
       batchUploadLimit: 10,
       autoCompressEnabled: true,
       compressionQuality: 85,
@@ -68,7 +68,7 @@ export const ImageSettingsForm = ({
       form.reset({
         uploadMaxSizeMB: data.uploadMaxSizeMB || 10,
         allowedImageFormats:
-          data.allowedImageFormats || "jpg,jpeg,png,gif,webp",
+          data.allowedImageFormats || "image/jpeg,image/png,image/gif,image/webp",
         batchUploadLimit: data.batchUploadLimit || 10,
         autoCompressEnabled: data.autoCompressEnabled ?? true,
         compressionQuality: data.compressionQuality || 85,
@@ -159,14 +159,16 @@ export const ImageSettingsForm = ({
           />
         </div>
 
-        <LabeledInput
+        <LabeledImageFormatsCheckbox
           label="允许的图片格式"
-          name="allowedImageFormats"
-          register={form.register}
+          value={watchedValues.allowedImageFormats}
+          onChange={(value) =>
+            form.setValue("allowedImageFormats", value, { shouldDirty: true })
+          }
           error={form.formState.errors.allowedImageFormats}
-          placeholder="jpg,jpeg,png,gif,webp"
-          tooltip="允许上传的图片格式，用逗号分隔"
-          description="常用格式：jpg, jpeg, png, gif, webp, svg"
+          options={imageFormatOptions}
+          tooltip="选择允许上传的图片格式"
+          description="至少选择一种图片格式"
         />
 
         <Alert>

@@ -9,6 +9,7 @@ export {
   imageSettingsSchema,
   WATERMARK_POSITIONS,
   watermarkPositionOptions,
+  imageFormatOptions,
   type ImageSettingsFormData,
 } from "./image";
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { forwardRef } from "react";
 import {
   UseFormRegister,
   FieldValues,
@@ -11,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -554,6 +554,85 @@ export function LabeledFileInput<T extends FieldValues>({
           error && "border-red-500"
         )}
       />
+      {description && <FormDescription>{description}</FormDescription>}
+      <FormError error={error} />
+    </FormItem>
+  );
+}
+
+// 图片格式多选组件
+interface LabeledImageFormatsCheckboxProps {
+  label: string;
+  value: string; // 逗号分隔的格式字符串
+  onChange: (value: string) => void;
+  error?: FieldError;
+  description?: string;
+  tooltip?: string;
+  required?: boolean;
+  disabled?: boolean;
+  className?: string;
+  options: Array<{ value: string; label: string }>;
+}
+
+export function LabeledImageFormatsCheckbox({
+  label,
+  value,
+  onChange,
+  error,
+  description,
+  tooltip,
+  required = false,
+  disabled = false,
+  className,
+  options,
+}: LabeledImageFormatsCheckboxProps) {
+  // 将逗号分隔的字符串转换为数组
+  const selectedFormats = value ? value.split(",").map(f => f.trim()) : [];
+
+  const handleFormatChange = (formatValue: string, checked: boolean) => {
+    let newFormats: string[];
+    
+    if (checked) {
+      // 添加格式
+      newFormats = [...selectedFormats, formatValue];
+    } else {
+      // 移除格式
+      newFormats = selectedFormats.filter(f => f !== formatValue);
+    }
+    
+    // 转换回逗号分隔的字符串
+    onChange(newFormats.join(","));
+  };
+
+  return (
+    <FormItem className={className}>
+      <FormLabel required={required} tooltip={tooltip}>
+        {label}
+      </FormLabel>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {options.map((option) => (
+          <div
+            key={option.value}
+            className="flex items-center space-x-2 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+          >
+            <Checkbox
+              id={`format-${option.value}`}
+              checked={selectedFormats.includes(option.value)}
+              onCheckedChange={(checked) =>
+                handleFormatChange(option.value, checked as boolean)
+              }
+              disabled={disabled}
+              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <Label
+              htmlFor={`format-${option.value}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+            >
+              {option.label}
+            </Label>
+          </div>
+        ))}
+      </div>
       {description && <FormDescription>{description}</FormDescription>}
       <FormError error={error} />
     </FormItem>

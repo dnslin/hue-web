@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+// 支持的图片格式定义
+export const SUPPORTED_IMAGE_FORMATS = {
+  "image/jpeg": "JPEG",
+  "image/png": "PNG", 
+  "image/gif": "GIF",
+  "image/webp": "WebP",
+  "image/x-canon-cr2": "Canon CR2",
+  "image/tiff": "TIFF",
+  "image/bmp": "BMP",
+  "image/heif": "HEIF",
+  "image/vnd.ms-photo": "Microsoft Photo",
+  "image/vnd.adobe.photoshop": "Photoshop (PSD)",
+  "image/vnd.microsoft.icon": "Icon (ICO)",
+  "image/vnd.dwg": "AutoCAD Drawing",
+  "image/avif": "AVIF",
+} as const;
+
+// 图片格式选项数组（用于表单显示）
+export const imageFormatOptions = Object.entries(SUPPORTED_IMAGE_FORMATS).map(
+  ([value, label]) => ({ value, label })
+);
+
 // 水印位置选项（九宫格）
 export const WATERMARK_POSITIONS = {
   TOP_LEFT: "top-left",
@@ -37,7 +59,16 @@ export const imageSettingsSchema = z.object({
   allowedImageFormats: z
     .string()
     .min(1, "允许的图片格式不能为空")
-    .default("jpg,jpeg,png,gif,webp"),
+    .refine(
+      (value) => {
+        const formats = value.split(",").map(f => f.trim());
+        return formats.every(format => 
+          Object.keys(SUPPORTED_IMAGE_FORMATS).includes(format)
+        );
+      },
+      "包含不支持的图片格式"
+    )
+    .default("image/jpeg,image/png,image/gif,image/webp"),
   batchUploadLimit: z
     .number()
     .min(1, "批量上传限制不能少于1")
