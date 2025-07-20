@@ -87,7 +87,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           src={getGravatarUrl(user.email)}
                           alt={user.username}
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm sm:text-lg">
+                        <AvatarFallback className="bg-blue-500 dark:bg-blue-600 text-white text-sm sm:text-lg font-semibold relative shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-2 ring-blue-300/50 dark:ring-blue-400/50">
                           {user.username?.charAt(0).toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
