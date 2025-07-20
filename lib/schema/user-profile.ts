@@ -4,11 +4,6 @@ import { z } from "zod";
  * 基本信息更新表单验证
  */
 export const basicInfoSchema = z.object({
-  nickname: z
-    .string()
-    .max(50, "昵称不能超过50个字符")
-    .optional()
-    .or(z.literal("")),
   email: z
     .string()
     .email("请输入有效的邮箱地址")

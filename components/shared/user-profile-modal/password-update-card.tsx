@@ -245,7 +245,7 @@ export const PasswordUpdateCard: React.FC<PasswordUpdateCardProps> = ({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="min-w-[80px]"
+                className="w-full sm:w-auto min-w-[80px]"
               >
                 {isLoading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />

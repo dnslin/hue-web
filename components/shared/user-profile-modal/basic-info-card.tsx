@@ -39,7 +39,6 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
   const form = useForm<BasicInfoFormData>({
     resolver: zodResolver(basicInfoSchema),
     defaultValues: {
-      nickname: user.nickname || "",
       email: user.email,
     },
   });
@@ -52,9 +51,6 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
 
       // 只提交有变化的字段
       const updateData: Partial<BasicInfoFormData> = {};
-      if (data.nickname !== (user.nickname || "")) {
-        updateData.nickname = data.nickname;
-      }
       if (data.email !== user.email) {
         updateData.email = data.email;
       }
@@ -82,7 +78,6 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
 
   const handleCancel = () => {
     form.reset({
-      nickname: user.nickname || "",
       email: user.email,
     });
     setIsEditing(false);
@@ -122,25 +117,6 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
                 />
               </div>
 
-              {/* 昵称 */}
-              <FormField
-                control={form.control}
-                name="nickname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>昵称</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="请输入昵称（可选）"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* 邮箱 */}
               <FormField
                 control={form.control}
@@ -162,13 +138,14 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
               />
 
               {/* 操作按钮 */}
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleCancel}
                   disabled={isLoading}
+                  className="w-full sm:w-auto"
                 >
                   <X className="h-3 w-3 mr-1" />
                   取消
@@ -177,7 +154,7 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
                   type="submit"
                   size="sm"
                   disabled={isLoading}
-                  className="min-w-[60px]"
+                  className="w-full sm:w-auto min-w-[60px]"
                 >
                   {isLoading ? (
                     <div className="h-3 w-3 animate-spin rounded-full border-2 border-background border-t-foreground" />
@@ -197,12 +174,6 @@ export const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
             <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">用户名</Label>
               <p className="text-sm">{user.username}</p>
-            </div>
-
-            {/* 昵称 */}
-            <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">昵称</Label>
-              <p className="text-sm">{user.nickname || "未设置"}</p>
             </div>
 
             {/* 邮箱 */}

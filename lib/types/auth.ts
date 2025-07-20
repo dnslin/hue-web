@@ -75,7 +75,6 @@ export interface ResendActivationEmailRequest {
  */
 export interface UpdateMeRequest {
   email?: string;
-  nickname?: string;
   password?: string;
   currentPassword?: string;
   newPassword?: string;
