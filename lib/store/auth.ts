@@ -165,8 +165,10 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (userData: Partial<User>) => {
         const currentUser = get().user;
         if (currentUser) {
+          const updatedUser = { ...currentUser, ...userData };
+          console.log("🔄 更新用户信息:", updatedUser);
           set({
-            user: { ...currentUser, ...userData },
+            user: updatedUser,
           });
         }
       },

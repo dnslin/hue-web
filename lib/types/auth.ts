@@ -1,7 +1,6 @@
 // lib/types/auth.ts
 import type { User } from "./user";
 import type {
-  ApiResponse,
   SuccessApiResponse,
   ErrorApiResponse,
 } from "./common";
@@ -78,6 +77,9 @@ export interface UpdateMeRequest {
   email?: string;
   nickname?: string;
   password?: string;
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
 }
 
 /**

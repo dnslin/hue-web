@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { User as UserType } from "@/lib/types/user";
+import { UserProfileModal } from "./user-profile-modal";
 
 interface UserDropdownMenuProps {
   user: UserType;
@@ -26,15 +27,10 @@ export const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({
   children,
 }) => {
   const router = useRouter();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleProfileClick = () => {
-    // TODO: 导航到个人资料页面
-    console.log("导航到个人资料页面");
-  };
-
-  const handleSettingsClick = () => {
-    // TODO: 导航到账户设置页面
-    console.log("导航到账户设置页面");
+    setIsProfileModalOpen(true);
   };
 
   const handleLogoutClick = async () => {
@@ -54,63 +50,63 @@ export const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="outline-none">
-        {children}
-      </DropdownMenuTrigger>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="outline-none">
+          {children}
+        </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        className="w-56"
-        align="end"
-        sideOffset={8}
-        alignOffset={0}
-      >
-        {/* 用户信息头部 */}
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.username}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-
-        <DropdownMenuSeparator />
-
-        {/* 个人信息 */}
-        <DropdownMenuItem
-          onClick={handleProfileClick}
-          className="cursor-pointer"
+        <DropdownMenuContent
+          className="w-56"
+          align="end"
+          sideOffset={8}
+          alignOffset={0}
         >
-          <User className="mr-2 h-4 w-4" />
-          <span>查看个人信息</span>
-        </DropdownMenuItem>
+          {/* 用户信息头部 */}
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.username}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
 
-        {/* 账户设置 */}
-        <DropdownMenuItem
-          onClick={handleSettingsClick}
-          className="cursor-pointer"
-        >
-          <Settings className="mr-2 h-4 w-4" />
-          <span>账户设置</span>
-        </DropdownMenuItem>
+          <DropdownMenuSeparator />
 
-        <DropdownMenuSeparator />
+          {/* 个人设置 */}
+          <DropdownMenuItem
+            onClick={handleProfileClick}
+            className="cursor-pointer"
+          >
+            <User className="mr-2 h-4 w-4" />
+            <span>个人设置</span>
+          </DropdownMenuItem>
 
-        {/* 注销账户 */}
-        <DropdownMenuItem
-          onClick={handleLogoutClick}
-          className={cn(
-            "cursor-pointer",
-            "text-red-600 dark:text-red-400",
-            "focus:text-red-600 dark:focus:text-red-400",
-            "focus:bg-red-50 dark:focus:bg-red-950/50"
-          )}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>退出登录</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuSeparator />
+
+          {/* 注销账户 */}
+          <DropdownMenuItem
+            onClick={handleLogoutClick}
+            className={cn(
+              "cursor-pointer",
+              "text-red-600 dark:text-red-400",
+              "focus:text-red-600 dark:focus:text-red-400",
+              "focus:bg-red-50 dark:focus:bg-red-950/50"
+            )}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>退出登录</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* 个人设置模态框 */}
+      <UserProfileModal 
+        isOpen={isProfileModalOpen} 
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+      />
+    </>
   );
 };

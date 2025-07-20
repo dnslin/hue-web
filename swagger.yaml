@@ -1039,9 +1039,26 @@ definitions:
         description: 替换 RoleID
       status:
         type: integer
+      storage_capacity_mb:
+        type: integer
+      storage_strategies:
+        items:
+          $ref: "#/definitions/dtos.UserStorageStrategyDTO"
+        type: array
       updated_at:
         type: string
+      used_storage_mb:
+        type: number
       username:
+        type: string
+    type: object
+  dtos.UserStorageStrategyDTO:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      type:
         type: string
     type: object
   gorm.DeletedAt:
@@ -4789,7 +4806,7 @@ paths:
               - properties:
                   data:
                     items:
-                      $ref: "#/definitions/dtos.StorageStrategyDTO"
+                      $ref: "#/definitions/dtos.UserStorageStrategyDTO"
                     type: array
                 type: object
         "401":
