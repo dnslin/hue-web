@@ -79,7 +79,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <Card className="bg-blue-50/80 dark:bg-blue-950/20 shadow-[0_2px_10px_-3px_rgb(59,130,246,0.15),0_10px_40px_-15px_rgb(59,130,246,0.1)] border border-blue-100/30 dark:border-blue-800/30 relative overflow-hidden before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.15)_1px,transparent_1px)] before:bg-[length:20px_20px] before:opacity-30">
+                <Card className="bg-blue-50 dark:bg-blue-950/30 shadow-[0_1px_3px_rgba(59,130,246,0.2),0_2px_8px_rgba(59,130,246,0.08)] border border-blue-200/50 dark:border-blue-700/50 relative">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-3 sm:gap-4">
                       <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-blue-100 dark:ring-blue-900">
@@ -87,7 +87,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           src={getGravatarUrl(user.email)}
                           alt={user.username}
                         />
-                        <AvatarFallback className="bg-blue-500 dark:bg-blue-600 text-white text-sm sm:text-lg font-semibold relative shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-2 ring-blue-300/50 dark:ring-blue-400/50">
+                        <AvatarFallback className="bg-blue-500 dark:bg-blue-600 text-white text-sm sm:text-lg font-semibold ring-2 ring-blue-200/80 dark:ring-blue-400/60">
                           {user.username?.charAt(0).toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
