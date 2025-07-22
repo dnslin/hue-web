@@ -1,4 +1,4 @@
-# hue Pro Web
+# hue Web
 
 <div align="center">
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=nextdotjs" alt="Next.js 15" />
@@ -8,13 +8,13 @@
 </div>
 
 <div align="center">
-  <h3>现代化的 hue Pro 图床前端应用</h3>
+  <h3>现代化的 hue 图床前端应用</h3>
   <p>基于 Next.js 15 构建的高性能图像托管解决方案</p>
 </div>
 
 ## 🚀 项目简介
 
-hue Pro Web 是一个现代化的图床服务前端应用，采用 **Next.js 15** 和 **React 19** 构建。该项目提供完整的图像托管解决方案，包括用户管理、图片上传、存储管理和权限控制等功能。
+hue Web 是一个现代化的图床服务前端应用，采用 **Next.js 15** 和 **React 19** 构建。该项目提供完整的图像托管解决方案，包括用户管理、图片上传、存储管理和权限控制等功能。
 
 ### ✨ 核心特性
 
