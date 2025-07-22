@@ -14,7 +14,7 @@ You must communicate with me in Chinese.
 
 ## Project Architecture
 
-This is a **Next.js 15** frontend application for **Lsky Pro**, an image hosting service. The architecture follows modern React patterns with comprehensive state management and API integration.
+This is a **Next.js 15** frontend application for **hue Pro**, an image hosting service. The architecture follows modern React patterns with comprehensive state management and API integration.
 
 ### Technology Stack
 
@@ -137,7 +137,7 @@ lib/
 
 ### Design Philosophy
 
-Lsky Pro's UI design follows these core principles:
+hue Pro's UI design follows these core principles:
 
 1. **Modern Minimal Design**
    - Clear visual hierarchy with minimal decorative elements
