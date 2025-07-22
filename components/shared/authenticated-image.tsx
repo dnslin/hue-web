@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { getImageData } from "@/lib/actions/images/image";
 
 interface AuthenticatedImageProps {
@@ -79,9 +80,10 @@ export function AuthenticatedImage({
   }
 
   return (
-    <img
+    <Image
       src={imageSrc}
       alt={fileName}
+      fill
       className={className}
       onError={() => {
         setError('图片渲染失败');
