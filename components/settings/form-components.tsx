@@ -91,7 +91,7 @@ export const FormError = ({ error }: FormErrorProps) => {
   return (
     <div className="flex items-center gap-1 text-sm text-red-500">
       <AlertCircle className="h-4 w-4" />
-      <span>{error.msg}</span>
+      <span>{error.message}</span>
     </div>
   );
 };

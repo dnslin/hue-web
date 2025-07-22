@@ -21,7 +21,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Shield, Lock, Globe, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 
 interface SecuritySettingsFormProps {
   data: SecuritySetting | null;
@@ -112,7 +111,7 @@ export const SecuritySettingsForm = ({
   };
 
   return (
-    <SettingsFormWrapper
+    <SettingsFormWrapper<SecuritySettingsFormData>
       form={form as any}
       onSubmit={handleSubmit}
       title="安全设置"

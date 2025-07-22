@@ -20,6 +20,18 @@ export interface S3Config {
   forcePresignedUrl?: boolean;
 }
 
+// S3存储配置（用于更新操作，secretAccessKey可选）
+export interface S3ConfigUpdate {
+  accessKeyId: string;
+  secretAccessKey?: string; // 更新时可选，为空表示不更新密码
+  bucket: string;
+  region: string;
+  endpoint: string;
+  baseUrl?: string;
+  forcePathStyle?: boolean;
+  forcePresignedUrl?: boolean;
+}
+
 // 存储策略基础接口 (匹配 swagger.yaml dtos.StorageStrategyDTO)
 export interface StorageStrategy {
   id: number;
@@ -60,7 +72,7 @@ export interface StorageStrategyUpdateRequest {
   name?: string;
   type?: StorageType;
   isEnabled?: boolean;
-  s3Config?: S3Config;
+  s3Config?: S3ConfigUpdate; // 使用支持可选secretAccessKey的接口
   localConfig?: LocalConfig;
 }
 

@@ -109,11 +109,10 @@ export const securitySettingsSchema = z.object({
   ipWhitelist: z
     .string()
     .default("")
-    .optional()
-    .transform((val) => val ? parseIpListInput(val) : [])
     .refine(
-      (ips) => {
-        if (!ips || ips.length === 0) return true; // 空数组是有效的
+      (val) => {
+        if (!val || val.trim() === "") return true; // 空字符串是有效的
+        const ips = parseIpListInput(val);
         const result = validateIpListWithDetails(ips);
         return result.isValid;
       },
@@ -124,11 +123,10 @@ export const securitySettingsSchema = z.object({
   ipBlacklist: z
     .string()
     .default("")
-    .optional()
-    .transform((val) => val ? parseIpListInput(val) : [])
     .refine(
-      (ips) => {
-        if (!ips || ips.length === 0) return true; // 空数组是有效的
+      (val) => {
+        if (!val || val.trim() === "") return true; // 空字符串是有效的
+        const ips = parseIpListInput(val);
         const result = validateIpListWithDetails(ips);
         return result.isValid;
       },

@@ -220,6 +220,15 @@ export function StorageStrategyEditDialog({
     const s3Config = form.getValues("s3Config");
     if (!s3Config) return;
 
+    // 测试连接需要密码，如果没有密码则提示用户
+    if (!s3Config.secretAccessKey) {
+      setTestResult({
+        success: false,
+        msg: "测试连接需要提供 Secret Access Key",
+      });
+      return;
+    }
+
     try {
       const result = await testS3Connection({
         accessKeyId: s3Config.accessKeyId,

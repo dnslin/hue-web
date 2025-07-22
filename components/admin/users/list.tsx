@@ -56,8 +56,7 @@ export function UserList({ isMobile = false }: UserListProps) {
       const usersOrError = await getAllUsersForExportAction(filters);
 
       if (!Array.isArray(usersOrError)) {
-        console.error("导出用户数据失败 (获取数据时):", usersOrError.message);
-        showToast.error("导出用户数据失败", usersOrError.message);
+        showToast.error("导出用户数据失败", usersOrError.msg);
         return;
       }
 
