@@ -68,8 +68,8 @@ Lsky Pro Web 是一个现代化的图床服务前端应用，采用 **Next.js 15
 
 #### 1. 克隆项目
 ```bash
-git clone https://github.com/dnslin/lskypro-web.git
-cd lskypro-web
+git clone https://github.com/dnslin/hue-web.git
+cd hue-web
 ```
 
 #### 2. 安装依赖
@@ -156,7 +156,7 @@ pnpm analyze
 
 ### 🏗️ 目录结构
 ```
-lskypro-web/
+hue-web/
 ├── 📁 app/                    # Next.js 15 App Router
 │   ├── 📁 (admin)/           # 管理后台路由组
 │   │   ├── 📁 dashboard/     # 仪表板页面
@@ -354,17 +354,17 @@ const { data, error, isLoading } = useSWR(
 ### 🐳 Docker 部署 (推荐)
 ```bash
 # 1. 构建镜像
-docker build -t lskypro-web .
+docker build -t hue-web .
 
 # 2. 运行容器
 docker run -d \
-  --name lskypro-web \
+  --name hue-web \
   -p 3000:3000 \
   -e NEXT_PUBLIC_API_BASE_URL=http://your-api-url \
-  lskypro-web
+  hue-web
 
 # 3. 查看日志
-docker logs lskypro-web
+docker logs hue-web
 ```
 
 ### 📦 传统部署
@@ -514,7 +514,7 @@ git commit -m "refactor: 重构用户管理组件"
 5. **文档完善**: 改善代码文档和用户指南
 
 ### 🐛 问题报告
-发现问题？请在 [Issues](https://github.com/dnslin/lskypro-web/issues) 中报告，包含以下信息：
+发现问题？请在 [Issues](https://github.com/dnslin/hue-web/issues) 中报告，包含以下信息：
 - **问题描述**: 清晰描述遇到的问题
 - **复现步骤**: 详细的操作步骤
 - **预期行为**: 期望的正确行为
@@ -558,18 +558,18 @@ git commit -m "refactor: 重构用户管理组件"
 <div align="center">
   <h3>🌟 如果这个项目对你有帮助，请给它一个 Star！</h3>
   <p>
-    <a href="https://github.com/dnslin/lskypro-web/stargazers">
-      <img alt="GitHub stars" src="https://img.shields.io/github/stars/dnslin/lskypro-web?style=social">
+    <a href="https://github.com/dnslin/hue-web/stargazers">
+      <img alt="GitHub stars" src="https://img.shields.io/github/stars/dnslin/hue-web?style=social">
     </a>
-    <a href="https://github.com/dnslin/lskypro-web/network/members">
-      <img alt="GitHub forks" src="https://img.shields.io/github/forks/dnslin/lskypro-web?style=social">
+    <a href="https://github.com/dnslin/hue-web/network/members">
+      <img alt="GitHub forks" src="https://img.shields.io/github/forks/dnslin/hue-web?style=social">
     </a>
   </p>
   <p>
-    <a href="https://github.com/dnslin/lskypro-web/issues">报告问题</a>
+    <a href="https://github.com/dnslin/hue-web/issues">报告问题</a>
     ·
-    <a href="https://github.com/dnslin/lskypro-web/pulls">提交 PR</a>
+    <a href="https://github.com/dnslin/hue-web/pulls">提交 PR</a>
     ·
-    <a href="https://github.com/dnslin/lskypro-web/discussions">讨论</a>
+    <a href="https://github.com/dnslin/hue-web/discussions">讨论</a>
   </p>
 </div>
