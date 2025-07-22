@@ -37,6 +37,7 @@ import { useRoleStore } from "@/lib/store/role";
 import { useStorageStrategyStore } from "@/lib/store/storage";
 import { createRoleFormSchema, type CreateRoleFormData } from "@/lib/schema/admin/role";
 import type { StorageStrategy } from "@/lib/types/storage";
+import type { CreateRoleRequest } from "@/lib/types/roles";
 
 interface RoleCreateDialogProps {
   children?: React.ReactNode;
@@ -67,7 +68,7 @@ export function RoleCreateDialog({ children }: RoleCreateDialogProps) {
   const onSubmit = useCallback(async (data: CreateRoleFormData) => {
     try {
       // 转换数据格式，去除空的 alias
-      const createData: { name: string; alias?: string; storageStrategyIds?: number[] } = {
+      const createData: CreateRoleRequest = {
         name: data.name,
         storageStrategyIds: data.storageStrategyIds,
       };
