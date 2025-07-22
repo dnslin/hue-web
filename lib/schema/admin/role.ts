@@ -1,18 +1,9 @@
 import { z } from "zod";
 
 /**
- * 角色创建表单数据类型 - 显式定义以避免类型推断问题
- */
-export interface CreateRoleFormData {
-  name: string;
-  alias?: string;
-  storageStrategyIds: number[];
-}
-
-/**
  * 角色创建表单验证模式
  */
-export const createRoleFormSchema: z.ZodType<CreateRoleFormData> = z.object({
+export const createRoleFormSchema = z.object({
   name: z
     .string()
     .min(1, "角色名称不能为空")
@@ -24,9 +15,13 @@ export const createRoleFormSchema: z.ZodType<CreateRoleFormData> = z.object({
     .optional()
     .or(z.literal("")),
   storageStrategyIds: z
-    .array(z.number().int().positive())
-    .default([]),
+    .array(z.number().int().positive()),
 });
+
+/**
+ * 角色创建表单数据类型
+ */
+export type CreateRoleFormData = z.infer<typeof createRoleFormSchema>;
 
 /**
  * 角色更新表单验证模式

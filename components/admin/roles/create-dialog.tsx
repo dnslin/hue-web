@@ -56,6 +56,7 @@ export function RoleCreateDialog({ children }: RoleCreateDialogProps) {
       alias: "",
       storageStrategyIds: [],
     },
+    mode: "onChange", // 添加实时验证
   });
 
   // 加载存储策略列表
