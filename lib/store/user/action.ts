@@ -152,7 +152,7 @@ export const useUserActionStore = create<UserActionState>((set) => ({
       }
 
       if (actionResponse && !isSuccessApiResponse(actionResponse)) {
-        console.error("❌ 更改用户状态失败:", actionResponse.message);
+        console.error("❌ 更改用户状态失败:", actionResponse.msg);
         const result = await handleStoreError(actionResponse, "更改用户状态");
         set((state) => ({
           error: {
@@ -211,7 +211,7 @@ export const useUserActionStore = create<UserActionState>((set) => ({
     try {
       const actionResponse = await deleteAdminUserAction(userId);
       if (actionResponse && !isSuccessApiResponse(actionResponse)) {
-        console.error("❌ 删除用户失败:", actionResponse.message);
+        console.error("❌ 删除用户失败:", actionResponse.msg);
         const result = await handleStoreError(actionResponse, "删除用户");
         set((state) => ({
           error: {
@@ -327,7 +327,7 @@ export const useUserActionStore = create<UserActionState>((set) => ({
       const actionResponse = await updateAdminUserAction(userId, updateData);
 
       if (actionResponse && !isSuccessApiResponse(actionResponse)) {
-        console.error("❌ 更新用户信息失败:", actionResponse.message);
+        console.error("❌ 更新用户信息失败:", actionResponse.msg);
         const result = await handleStoreError(actionResponse, "更新用户信息");
         set((state) => ({
           error: {
@@ -378,7 +378,7 @@ export const useUserActionStore = create<UserActionState>((set) => ({
       const actionResponse = await createAdminUserAction(userData);
 
       if (actionResponse && !isSuccessApiResponse(actionResponse)) {
-        console.error("❌ 创建用户失败:", actionResponse.message);
+        console.error("❌ 创建用户失败:", actionResponse.msg);
         const result = await handleStoreError(actionResponse, "创建用户");
         set((state) => ({
           error: {

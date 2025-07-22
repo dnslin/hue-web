@@ -13,13 +13,13 @@ export const basicSettingSchema = z.object({
   logoURL: z
     .string()
     .refine((val) => val === "" || z.string().url().safeParse(val).success, {
-      msg: "请输入有效的Logo URL",
+      message: "请输入有效的Logo URL",
     })
     .default(""),
   faviconURL: z
     .string()
     .refine((val) => val === "" || z.string().url().safeParse(val).success, {
-      msg: "请输入有效的Favicon URL",
+      message: "请输入有效的Favicon URL",
     })
     .default(""),
   siteAnnouncement: z
@@ -42,4 +42,3 @@ export const basicSettingSchema = z.object({
  * 基础设置表单数据类型
  */
 export type BasicSettingFormData = z.infer<typeof basicSettingSchema>;
-
