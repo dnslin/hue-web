@@ -5,7 +5,7 @@ import { PageContainer } from "@/components/layouts/page-container";
 import { UserList } from "@/components/admin/users/list";
 
 // export const metadata: Metadata = {
-//   title: "用户管理 - Lsky Pro",
+//   title: "用户管理",
 //   description: "管理系统用户，包括用户信息、权限设置等功能",
 // };
 

@@ -65,6 +65,14 @@ export interface PublicSiteDetailsDTO {
   faviconUrl: string;
   siteDescription: string;
   siteAnnouncement: string;
+  userRegistrationEnabled: boolean;
+  guestUploadEnabled: boolean;
+  passwordMinLength: number;
+  passwordRequiresUppercase: boolean;
+  passwordRequiresLowercase: boolean;
+  passwordRequiresNumber: boolean;
+  passwordRequiresSpecialChar: boolean;
+  defaultStorageStrategyId: number;
 }
 
 // ========== 邮件设置 ==========

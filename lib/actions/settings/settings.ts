@@ -3,6 +3,7 @@
 import {
   getAuthenticatedApiService,
   AuthenticationError,
+  publicApiService,
 } from "@/lib/api/api-service";
 import {
   AllSettingsData,
@@ -15,6 +16,7 @@ import {
   SettingsActionResponse,
   transformEmailSettingsData,
   UpdateEmailSettingsDTO,
+  PublicSiteDetailsDTO,
 } from "@/lib/types/settings";
 import {
   BasicSettingFormData,
@@ -529,6 +531,49 @@ export async function testEmailSettingsAction(
     return {
       code: error.code || 500,
       msg: error.msg || "邮件配置测试失败",
+      error,
+    };
+  }
+}
+
+/**
+ * 获取公开站点详情（无需认证）
+ */
+export async function getPublicSiteDetailsAction(): Promise<
+  PublicSiteDetailsDTO | ErrorApiResponse
+> {
+  try {
+    console.log("🌐 正在获取公开站点详情...");
+
+    const response = await cacheManager.getOrSet(
+      CACHE_KEYS.PUBLIC_SITE_DETAILS,
+      async () => {
+        const apiResponse = await publicApiService.get<
+          ApiResponse<PublicSiteDetailsDTO>
+        >("/public/settings/site-details");
+        return apiResponse.data;
+      },
+      { ttl: 5 * 60 * 1000, storage: "memory" }
+    );
+
+    const apiResponse = response as ApiResponse<PublicSiteDetailsDTO>;
+
+    if (apiResponse.code === 0 && apiResponse.data) {
+      console.log("✅ 公开站点详情获取成功");
+      return apiResponse.data;
+    }
+
+    console.warn("⚠️ 获取站点详情失败:", apiResponse.msg);
+    return {
+      code: apiResponse.code || 1,
+      msg: apiResponse.msg || "获取站点信息失败",
+      error: apiResponse,
+    };
+  } catch (error: any) {
+    console.error("getPublicSiteDetailsAction 错误:", error.message);
+    return {
+      code: error.status || 500,
+      msg: error.message || "获取站点信息失败",
       error,
     };
   }

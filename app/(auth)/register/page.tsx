@@ -16,6 +16,7 @@ import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { Mail, CheckCircle2, RefreshCw } from "lucide-react";
 import { registerSchema, type RegisterFormValues } from "@/lib/schema";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function RegisterPage() {
     error,
     clearError,
   } = useAuthStore();
+
+  const { canRegister, appName, siteAnnouncement, isLoading: siteLoading } = useSiteInfo();
 
   // 状态管理
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
@@ -112,6 +115,56 @@ export default function RegisterPage() {
       console.error("账户激活失败:", err);
     }
   };
+
+  // 如果正在加载站点信息，显示加载状态
+  if (siteLoading) {
+    return (
+      <ProtectedRoute requireAuth={false}>
+        <AuthLayout title="注册">
+          <div className="space-y-4">
+            <div className="h-10 bg-muted animate-pulse rounded" />
+            <div className="h-10 bg-muted animate-pulse rounded" />
+            <div className="h-10 bg-muted animate-pulse rounded" />
+          </div>
+        </AuthLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  // 如果注册功能被禁用
+  if (!canRegister) {
+    return (
+      <ProtectedRoute requireAuth={false}>
+        <AuthLayout 
+          title="注册功能暂时关闭" 
+          subtitle={`${appName}暂时关闭了用户注册功能`}
+        >
+          <div className="space-y-6 text-center">
+            <div className="p-6 border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10 dark:border-yellow-900/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                管理员暂时关闭了注册功能。如需注册账号，请联系网站管理员。
+              </p>
+              {siteAnnouncement && (
+                <div className="mt-4 p-3 bg-muted rounded border-l-4 border-primary">
+                  <p className="text-xs text-muted-foreground font-medium">管理员公告：</p>
+                  <p className="text-sm mt-1">{siteAnnouncement}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-4">
+              <Button asChild variant="outline" className="flex-1">
+                <Link href="/">返回首页</Link>
+              </Button>
+              <Button asChild className="flex-1">
+                <Link href="/login">去登录</Link>
+              </Button>
+            </div>
+          </div>
+        </AuthLayout>
+      </ProtectedRoute>
+    );
+  }
 
   // 如果注册成功，显示激活提示页面
   if (isRegistrationSuccess) {

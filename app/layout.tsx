@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lsky Pro - 简单、高效的图床服务",
+  title: "现代化的图床服务",
   description:
-    "Lsky Pro是一个简单、功能强大且高性能的图片托管程序，您可以用它来搭建自己的图床。",
+    "现代化的图床服务，为您提供简单、功能强大且高性能的图片托管解决方案。",
 };
 
 export default function RootLayout({

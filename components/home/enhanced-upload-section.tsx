@@ -7,6 +7,8 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import Image from "next/image";
+import Link from "next/link";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 export function EnhancedUploadSection() {
   const [isDragging, setIsDragging] = useState(false);
@@ -14,6 +16,8 @@ export function EnhancedUploadSection() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  const { canGuestUpload, canRegister, appName, isLoading } = useSiteInfo();
 
   // 处理拖放事件
   const handleDragOver = (e: React.DragEvent) => {
@@ -91,7 +95,35 @@ export function EnhancedUploadSection() {
           />
 
           <CardContent className="p-6 relative z-10">
-            {!uploadedImage ? (
+            {!canGuestUpload ? (
+              // 游客上传被禁用时的提示
+              <div className="text-center p-12 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mx-auto">
+                  <Upload className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-medium">需要登录才能上传</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {isLoading ? (
+                      <span className="inline-block w-32 h-4 bg-muted animate-pulse rounded" />
+                    ) : (
+                      `${appName}要求用户登录后才能使用上传功能`
+                    )}
+                  </p>
+                </div>
+                
+                <div className="flex gap-4 pt-4">
+                  <Button asChild className="flex-1">
+                    <Link href="/login">立即登录</Link>
+                  </Button>
+                  {canRegister && (
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href="/register">注册账号</Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : !uploadedImage ? (
               <div
                 className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
                   isDragging
@@ -196,7 +228,11 @@ export function EnhancedUploadSection() {
         </Card>
 
         <div className="text-center mt-6 text-sm text-muted-foreground">
-          <p>注册账号可获得图片管理、分享设置等更多功能</p>
+          {canRegister ? (
+            <p>注册账号可获得图片管理、分享设置等更多功能</p>
+          ) : (
+            <p>如需注册账号，请联系网站管理员</p>
+          )}
         </div>
       </div>
     </section>

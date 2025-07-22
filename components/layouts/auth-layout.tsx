@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 import { Meteors } from "@/components/magicui/meteors";
 
@@ -14,8 +15,12 @@ interface AuthLayoutProps {
 const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
   title,
-  subtitle = "欢迎使用兰空图床",
+  subtitle,
 }) => {
+  const { appName, isLoading } = useSiteInfo();
+  
+  const defaultSubtitle = isLoading ? "加载中..." : `欢迎使用${appName}`;
+  
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center bg-background p-4 sm:p-6 md:p-8">
       {/* 背景渐变 - 使用响应式颜色 */}
@@ -35,7 +40,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
 
         <div className="relative flex flex-col space-y-2 p-6 text-center">
           <h1 className="text-2xl font-bold text-card-foreground">{title}</h1>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <p className="text-sm text-muted-foreground">{subtitle || defaultSubtitle}</p>
         </div>
         <div className="relative p-6 pt-0">{children}</div>
       </motion.div>

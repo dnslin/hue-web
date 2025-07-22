@@ -7,6 +7,7 @@ import {
   useInView,
 } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 interface StatItemProps {
   value: number;
@@ -45,6 +46,8 @@ function StatItem({ value, label, suffix = "", duration = 2 }: StatItemProps) {
 }
 
 export function StatisticsSection() {
+  const { appName, isLoading } = useSiteInfo();
+
   return (
     <section className="py-20 bg-primary/5">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,7 +56,11 @@ export function StatisticsSection() {
             值得信赖的图床服务
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            成千上万的用户选择使用Lsky Pro托管他们的图片
+            {isLoading ? (
+              <span className="inline-block w-64 h-6 bg-muted animate-pulse rounded" />
+            ) : (
+              `成千上万的用户选择使用${appName}托管他们的图片`
+            )}
           </p>
         </div>
 

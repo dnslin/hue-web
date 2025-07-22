@@ -5,8 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Copy, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 export function QuickUploadSection() {
+  const { appName, isLoading } = useSiteInfo();
+  
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -67,7 +70,11 @@ export function QuickUploadSection() {
         <div className="text-center max-w-3xl mx-auto mb-10">
           <h2 className="text-3xl font-bold tracking-tight">快速体验</h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            无需注册，立即体验Lsky Pro的便捷上传
+            {isLoading ? (
+              <span className="inline-block w-48 h-6 bg-muted animate-pulse rounded" />
+            ) : (
+              `无需注册，立即体验${appName}的便捷上传`
+            )}
           </p>
         </div>
 

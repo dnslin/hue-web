@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import Image from "next/image";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 interface SidebarProps {
   className?: string;
@@ -19,6 +20,8 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
     useAdminStore();
+
+  const { appName, logoUrl, isLoading } = useSiteInfo();
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -96,8 +99,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 <div className="relative">
                   <div className="w-8 h-8 flex items-center justify-center">
                     <Image
-                      src="/logo.svg"
-                      alt="Lsky Pro Logo"
+                      src={logoUrl}
+                      alt={`${appName} Logo`}
                       width={32}
                       height={32}
                       priority={true}
@@ -106,7 +109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                   </div>
                 </div>
                 <div>
-                  <h1 className="font-semibold text-lg">Lsky Pro</h1>
+                  <h1 className="font-semibold text-lg">{isLoading ? "加载中..." : appName}</h1>
                 </div>
               </motion.div>
             ) : (
@@ -119,8 +122,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 className="w-8 h-8 flex items-center justify-center mx-auto relative"
               >
                 <Image
-                  src="/logo.svg"
-                  alt="Lsky Pro Logo"
+                  src={logoUrl}
+                  alt={`${appName} Logo`}
                   width={32}
                   height={32}
                   priority={true}
@@ -178,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 transition={{ duration: 0.2 }}
                 className="text-center"
               >
-                <p className="text-xs text-muted-foreground">© 2024 Lsky Pro</p>
+                <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} {appName}</p>
                 <p className="text-xs text-muted-foreground">版本 2.0.0</p>
               </motion.div>
             ) : (

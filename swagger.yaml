@@ -529,8 +529,14 @@ definitions:
     properties:
       app_name:
         type: string
+      default_storage_strategy_id:
+        description: 新增：默认存储策略ID
+        type: integer
       favicon_url:
         type: string
+      guest_upload_enabled:
+        description: 新增：游客上传是否开启
+        type: boolean
       logo_url:
         type: string
       password_min_length:

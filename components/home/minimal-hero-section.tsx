@@ -7,6 +7,7 @@ import { ReactNode } from "react";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { useAuthStore } from "@/lib/store/auth";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 // 定义动画变体
 const containerVariants = {
@@ -71,6 +72,9 @@ const FloatingElement = ({
 export function MinimalHeroSection() {
   // 获取认证状态
   const { isAuthenticated, isHydrated, user } = useAuthStore();
+  
+  // 获取站点信息
+  const { appName, siteDescription, isLoading: siteLoading } = useSiteInfo();
 
   // 渲染智能CTA按钮
   const renderCTAButton = () => {
@@ -102,15 +106,15 @@ export function MinimalHeroSection() {
 
   // 渲染动态描述文本
   const getDescriptionText = () => {
-    if (!isHydrated) {
-      return "专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全";
+    if (!isHydrated || siteLoading) {
+      return siteDescription || "专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全";
     }
 
     if (isAuthenticated && user) {
       return `欢迎回来，${user.username}！您可以继续管理您的图片资源，或访问后台查看统计数据`;
     }
 
-    return "专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全";
+    return siteDescription || "专为个人用户设计的图片托管工具，让您的图片分享变得更加简单、高效且安全";
   };
   return (
     <section className="relative overflow-hidden py-10 md:py-14">
@@ -170,7 +174,11 @@ export function MinimalHeroSection() {
             variants={itemVariants}
             className="inline-block px-4 py-1 mb-4 rounded-full bg-primary/10 text-primary text-sm font-medium"
           >
-            简单、轻量的开源图床解决方案
+            {siteLoading ? (
+              <span className="inline-block w-32 h-4 bg-muted animate-pulse rounded" />
+            ) : (
+              "简单、轻量的开源图床解决方案"
+            )}
           </motion.div>
 
           <motion.h1
@@ -178,7 +186,11 @@ export function MinimalHeroSection() {
             className="text-4xl md:text-5xl font-bold tracking-tight mb-4"
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500">
-              Lsky Pro 图床
+              {siteLoading ? (
+                <span className="inline-block w-48 h-12 bg-muted animate-pulse rounded" />
+              ) : (
+                `${appName} 图床`
+              )}
             </span>
           </motion.h1>
 

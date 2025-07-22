@@ -8,6 +8,7 @@ import { EnhancedMetricsGrid } from "@/components/dashboard/enhanced-metrics-gri
 import { QuickTrends } from "@/components/stats/overview/quick-trends";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStatsActions } from "@/lib/store/stats";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 // 加载状态组件
 function DashboardSkeleton() {
@@ -38,6 +39,7 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   const { fetchAllStats } = useStatsActions();
+  const { appName, isLoading } = useSiteInfo();
 
   useEffect(() => {
     fetchAllStats();
@@ -74,7 +76,7 @@ export default function DashboardPage() {
                 delay={0.3}
                 className="text-muted-foreground text-base md:text-lg"
               >
-                欢迎回来！这里是您的 Lsky Pro 管理中心。
+                {isLoading ? "加载中..." : `欢迎回来！这里是您的 ${appName} 管理中心。`}
               </TextAnimate>
             </BoxReveal>
           </div>

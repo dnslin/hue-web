@@ -8,8 +8,9 @@ import {
   updateSecuritySettingsAction,
   updateMultipleSettingsAction,
   testEmailSettingsAction,
+  getPublicSiteDetailsAction,
 } from "@/lib/actions/settings/settings";
-import { AllSettingsData, SettingType } from "@/lib/types/settings";
+import { AllSettingsData, SettingType, PublicSiteDetailsDTO } from "@/lib/types/settings";
 import {
   BasicSettingFormData,
   EmailSettingsFormData,
@@ -29,6 +30,12 @@ interface SettingsState {
   isSubmitting: boolean;
   lastUpdated: number | null;
   error: string | null;
+
+  // 公开站点信息状态
+  publicSiteDetails: PublicSiteDetailsDTO | null;
+  isLoadingPublicDetails: boolean;
+  publicDetailsLastUpdated: number | null;
+  publicDetailsError: string | null;
 
   // UI状态
   activeTab: SettingType;
@@ -57,6 +64,10 @@ interface SettingsState {
     testRecipient: string
   ) => Promise<boolean>;
 
+  // 公开站点详情操作
+  loadPublicSiteDetails: () => Promise<boolean>;
+  clearPublicDetailsError: () => void;
+
   // 重置方法
   reset: () => void;
 }
@@ -83,6 +94,13 @@ export const useSettingsStore = create<SettingsState>()(
       isSubmitting: false,
       lastUpdated: null,
       error: null,
+      
+      // 公开站点信息初始状态
+      publicSiteDetails: null,
+      isLoadingPublicDetails: false,
+      publicDetailsLastUpdated: null,
+      publicDetailsError: null,
+      
       activeTab: SettingType.BASIC,
       hasUnsavedChanges: false,
       isTestingEmail: false,
@@ -352,6 +370,46 @@ export const useSettingsStore = create<SettingsState>()(
         }
       },
 
+      // 加载公开站点详情
+      loadPublicSiteDetails: async (): Promise<boolean> => {
+        set({ isLoadingPublicDetails: true, publicDetailsError: null });
+
+        try {
+          const result = await getPublicSiteDetailsAction();
+
+          if ('code' in result) {
+            // 错误响应
+            const errorResult = await handleStoreError(result, '获取站点信息');
+            set({
+              isLoadingPublicDetails: false,
+              publicDetailsError: errorResult.error,
+            });
+            return false;
+          } else {
+            // 成功响应
+            set({
+              isLoadingPublicDetails: false,
+              publicSiteDetails: result,
+              publicDetailsLastUpdated: Date.now(),
+              publicDetailsError: null,
+            });
+            console.log("✅ 公开站点详情加载成功");
+            return true;
+          }
+        } catch (error: any) {
+          const errorResult = await handleStoreError(error, '获取站点信息');
+          set({
+            isLoadingPublicDetails: false,
+            publicDetailsError: errorResult.error,
+          });
+          return false;
+        }
+      },
+
+      clearPublicDetailsError: () => {
+        set({ publicDetailsError: null });
+      },
+
       // 重置状态
       reset: () => {
         set({
@@ -360,6 +418,10 @@ export const useSettingsStore = create<SettingsState>()(
           isSubmitting: false,
           lastUpdated: null,
           error: null,
+          publicSiteDetails: null,
+          isLoadingPublicDetails: false,
+          publicDetailsLastUpdated: null,
+          publicDetailsError: null,
           activeTab: SettingType.BASIC,
           hasUnsavedChanges: false,
           isTestingEmail: false,
@@ -373,6 +435,8 @@ export const useSettingsStore = create<SettingsState>()(
         activeTab: state.activeTab,
         settings: state.settings,
         lastUpdated: state.lastUpdated,
+        publicSiteDetails: state.publicSiteDetails,
+        publicDetailsLastUpdated: state.publicDetailsLastUpdated,
       }),
     }
   )
@@ -389,6 +453,8 @@ export const useSettingsActions = () => {
     updateSecuritySettings: store.updateSecuritySettings,
     updateMultipleSettings: store.updateMultipleSettings,
     testEmailConfiguration: store.testEmailConfiguration,
+    loadPublicSiteDetails: store.loadPublicSiteDetails,
+    clearPublicDetailsError: store.clearPublicDetailsError,
     setActiveTab: store.setActiveTab,
     setUnsavedChanges: store.setUnsavedChanges,
     clearError: store.clearError,
@@ -407,6 +473,10 @@ export const useSettingsData = () => {
     error: store.error,
     activeTab: store.activeTab,
     hasUnsavedChanges: store.hasUnsavedChanges,
+    publicSiteDetails: store.publicSiteDetails,
+    isLoadingPublicDetails: store.isLoadingPublicDetails,
+    publicDetailsLastUpdated: store.publicDetailsLastUpdated,
+    publicDetailsError: store.publicDetailsError,
   };
 };
 

@@ -76,7 +76,7 @@ export function NavBar() {
     { name: "相册", href: "/gallery", icon: <ImageIcon className="h-4 w-4" /> },
     {
       name: "GitHub",
-      href: "https://github.com/lsky-org/lsky-pro",
+      href: "https://github.com/dnslin/hue-web",
       icon: <Github className="h-4 w-4" />,
     },
   ];

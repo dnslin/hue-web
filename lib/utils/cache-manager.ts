@@ -407,6 +407,7 @@ export const CACHE_KEYS = {
   SETTINGS_EMAIL: "settings:email",
   SETTINGS_IMAGE: "settings:image",
   SETTINGS_SECURITY: "settings:security",
+  PUBLIC_SITE_DETAILS: "settings:public:site-details",
 
   // 存储策略相关
   STORAGE_STRATEGIES_LIST: "storage:list",

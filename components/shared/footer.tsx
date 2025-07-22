@@ -4,9 +4,11 @@ import { Logo } from "./logo";
 import Link from "next/link";
 import { Github, Heart, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSiteInfo } from "@/lib/hooks/use-site-info";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { appName, siteDescription, isLoading } = useSiteInfo();
 
   return (
     <footer className="border-t py-8 bg-muted/10">
@@ -19,7 +21,11 @@ export function Footer() {
         >
           <Logo className="mb-4" />
           <p className="text-sm text-muted-foreground max-w-md mb-6">
-            Lsky Pro 是一个简单、轻量的开源图片托管工具，专为个人用户设计
+            {isLoading ? (
+              <span className="inline-block w-64 h-4 bg-muted animate-pulse rounded" />
+            ) : (
+              siteDescription || `${appName} 是一个简单、轻量的开源图片托管工具，专为个人用户设计`
+            )}
           </p>
 
           <motion.div
@@ -43,7 +49,7 @@ export function Footer() {
               }}
             >
               <Link
-                href="https://github.com/lsky-org/lsky-pro"
+                href="https://github.com/dnslin/hue-web"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -75,12 +81,12 @@ export function Footer() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
-              <span>© {currentYear} Lsky Pro.</span>
+              <span>© {currentYear} {isLoading ? "加载中..." : appName}.</span>
               <span className="flex items-center">
                 由
                 <Heart className="h-3 w-3 mx-1 text-red-500" />和
                 <Link
-                  href="https://github.com/lsky-org"
+                  href="https://github.com/dnslin/hue-web"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mx-1 hover:text-primary transition-colors"
