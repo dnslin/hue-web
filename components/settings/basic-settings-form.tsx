@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BasicSiteSetting } from "@/lib/types/settings";
+import { AdminBasicSiteSettingsDTO } from "@/lib/types/settings";
 import { basicSettingSchema, type BasicSettingFormData } from "@/lib/schema";
 import {
   SettingsFormWrapper,
@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface BasicSettingsFormProps {
-  data: BasicSiteSetting | null;
+  data: AdminBasicSiteSettingsDTO | null;
   onSubmit: (data: BasicSettingFormData) => Promise<boolean>;
   isSubmitting?: boolean;
   error?: string | null;
@@ -57,14 +57,14 @@ export const BasicSettingsForm = ({
         appName: data.appName || "",
         siteDescription: data.siteDescription || "",
         seoKeywords: data.seoKeywords || "",
-        logoURL: data.logoURL || "",
-        faviconURL: data.faviconURL || "",
+        logoURL: data.logoUrl || "",
+        faviconURL: data.faviconUrl || "",
         siteAnnouncement: data.siteAnnouncement || "",
         userRegistrationEnabled: data.userRegistrationEnabled ?? true,
         adminApprovalRequired: data.adminApprovalRequired ?? false,
         emailVerificationRequired: data.emailVerificationRequired ?? true,
         guestUploadEnabled: data.guestUploadEnabled ?? false,
-        userInitialStorageCapacityMB: data.userInitialStorageCapacityMB || 1024,
+        userInitialStorageCapacityMB: data.userInitialStorageCapacityMb || 1024,
         notifyAdminOnPendingApproval:
           data.notifyAdminOnPendingApproval ?? false,
       });

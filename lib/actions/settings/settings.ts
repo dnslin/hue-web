@@ -7,7 +7,7 @@ import {
 } from "@/lib/api/api-service";
 import {
   AllSettingsData,
-  BasicSiteSetting,
+  AdminBasicSiteSettingsDTO,
   BasicSitePublicSettingsDTO,
   EmailSettings,
   ImageProcessingSetting,
@@ -48,7 +48,7 @@ export async function getSettingsAction(): Promise<
     // 并行获取所有设置类型
     const [basicResponse, emailResponse, imageResponse, securityResponse] =
       await Promise.allSettled([
-        apiService.get<ApiResponse<BasicSiteSetting>>(
+        apiService.get<ApiResponse<AdminBasicSiteSettingsDTO>>(
           `${SETTINGS_API_BASE}/basic`
         ),
         apiService.get<ApiResponse<BasicSitePublicSettingsDTO>>(
@@ -183,10 +183,9 @@ export async function updateBasicSettingsAction(
 ): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const response = await apiService.put<ApiResponse<BasicSiteSetting>>(
-      `${SETTINGS_API_BASE}/basic`,
-      settingsData
-    );
+    const response = await apiService.put<
+      ApiResponse<AdminBasicSiteSettingsDTO>
+    >(`${SETTINGS_API_BASE}/basic`, settingsData);
 
     const apiResponse = response.data;
 

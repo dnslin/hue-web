@@ -200,7 +200,7 @@ export interface SecuritySetting {
 
 // ========== 统一设置类型 ==========
 export interface AllSettingsData {
-  basic: BasicSiteSetting | null;
+  basic: AdminBasicSiteSettingsDTO | null;
   email: EmailSettings | null;
   image: ImageProcessingSetting | null;
   security: SecuritySetting | null;
@@ -232,3 +232,4 @@ export type BasicSettingsResponse =
   SuccessApiResponse<AdminBasicSiteSettingsDTO>;
 export type PublicSettingsResponse = SuccessApiResponse<PublicSiteDetailsDTO>;
 export type EmailSettingsResponse = SuccessApiResponse<UpdateEmailSettingsDTO>;
+
