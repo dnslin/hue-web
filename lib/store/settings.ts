@@ -10,7 +10,11 @@ import {
   testEmailSettingsAction,
   getPublicSiteDetailsAction,
 } from "@/lib/actions/settings/settings";
-import { AllSettingsData, SettingType, PublicSiteDetailsDTO } from "@/lib/types/settings";
+import {
+  AllSettingsData,
+  SettingType,
+  PublicSiteDetailsDTO,
+} from "@/lib/types/settings";
 import {
   BasicSettingFormData,
   EmailSettingsFormData,
@@ -94,13 +98,13 @@ export const useSettingsStore = create<SettingsState>()(
       isSubmitting: false,
       lastUpdated: null,
       error: null,
-      
+
       // 公开站点信息初始状态
       publicSiteDetails: null,
       isLoadingPublicDetails: false,
       publicDetailsLastUpdated: null,
       publicDetailsError: null,
-      
+
       activeTab: SettingType.BASIC,
       hasUnsavedChanges: false,
       isTestingEmail: false,
@@ -377,9 +381,9 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           const result = await getPublicSiteDetailsAction();
 
-          if ('code' in result) {
+          if ("code" in result) {
             // 错误响应
-            const errorResult = await handleStoreError(result, '获取站点信息');
+            const errorResult = await handleStoreError(result, "获取站点信息");
             set({
               isLoadingPublicDetails: false,
               publicDetailsError: errorResult.error,
@@ -397,7 +401,7 @@ export const useSettingsStore = create<SettingsState>()(
             return true;
           }
         } catch (error: any) {
-          const errorResult = await handleStoreError(error, '获取站点信息');
+          const errorResult = await handleStoreError(error, "获取站点信息");
           set({
             isLoadingPublicDetails: false,
             publicDetailsError: errorResult.error,

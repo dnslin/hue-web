@@ -559,18 +559,15 @@ export async function getPublicSiteDetailsAction(): Promise<
     const apiResponse = response as ApiResponse<PublicSiteDetailsDTO>;
 
     if (apiResponse.code === 0 && apiResponse.data) {
-      console.log("✅ 公开站点详情获取成功");
       return apiResponse.data;
     }
 
-    console.warn("⚠️ 获取站点详情失败:", apiResponse.msg);
     return {
       code: apiResponse.code || 1,
       msg: apiResponse.msg || "获取站点信息失败",
       error: apiResponse,
     };
   } catch (error: any) {
-    console.error("getPublicSiteDetailsAction 错误:", error.message);
     return {
       code: error.status || 500,
       msg: error.message || "获取站点信息失败",
