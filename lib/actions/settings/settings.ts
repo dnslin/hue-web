@@ -9,7 +9,6 @@ import {
   AllSettingsData,
   AdminBasicSiteSettingsDTO,
   BasicSitePublicSettingsDTO,
-  EmailSettings,
   ImageProcessingSetting,
   SecuritySetting,
   SettingType,
@@ -342,6 +341,20 @@ export async function updateImageSettingsAction(
 }
 
 /**
+ * 辅助函数：将IP字符串转换为数组，空字符串返回空数组
+ */
+function parseIpListString(ipString: string): string[] {
+  if (!ipString || ipString.trim() === "") {
+    return []; // 空字符串返回空数组而不是不传
+  }
+
+  return ipString
+    .split(",")
+    .map((ip) => ip.trim())
+    .filter((ip) => ip.length > 0);
+}
+
+/**
  * 更新安全设置
  */
 export async function updateSecuritySettingsAction(
@@ -349,9 +362,18 @@ export async function updateSecuritySettingsAction(
 ): Promise<SettingsActionResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
+
+    // 转换前端表单数据为后端期望的格式
+    const updateData = {
+      ...settingsData,
+      // 将字符串转换为数组格式，空字符串转为空数组
+      ipWhitelist: parseIpListString(settingsData.ipWhitelist),
+      ipBlacklist: parseIpListString(settingsData.ipBlacklist),
+    };
+
     const response = await apiService.put<ApiResponse<SecuritySetting>>(
       `${SETTINGS_API_BASE}/security`,
-      settingsData
+      updateData
     );
 
     const apiResponse = response.data;
