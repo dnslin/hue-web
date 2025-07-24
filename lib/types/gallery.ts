@@ -325,7 +325,8 @@ export type GalleryEventType =
   | 'previewOpen'
   | 'previewClose'
   | 'editorOpen'
-  | 'editorClose';
+  | 'editorClose'
+  | 'imageSave';
 
 /**
  * 瀑布流事件数据

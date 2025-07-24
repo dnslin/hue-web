@@ -2,39 +2,42 @@
 // 基于 shadcn/ui + Magic UI 的现代化瀑布流画廊实现
 
 // 主要组件
-export { WaterfallGallery } from './waterfall-gallery';
-export { default as WaterfallGalleryDefault } from './waterfall-gallery';
+export { WaterfallGallery } from "./waterfall-gallery";
+export { default as WaterfallGalleryDefault } from "./waterfall-gallery";
 
 // 布局组件
-export { WaterfallLayout } from './waterfall/waterfall-layout';
-export { default as WaterfallLayoutDefault } from './waterfall/waterfall-layout';
+export { WaterfallLayout } from "./waterfall/waterfall-layout";
+export { default as WaterfallLayoutDefault } from "./waterfall/waterfall-layout";
+export { WaterfallMasonry } from "./waterfall-masonry";
 
 // 图片组件
-export { GalleryImageItem } from './image/gallery-image-item';
-export { default as GalleryImageItemDefault } from './image/gallery-image-item';
+export { GalleryImageItem } from "./image/gallery-image-item";
+export { default as GalleryImageItemDefault } from "./image/gallery-image-item";
 
 // 控制组件
-export { GalleryToolbar } from './controls/gallery-toolbar';
-export { default as GalleryToolbarDefault } from './controls/gallery-toolbar';
+export { GalleryToolbar } from "./controls/gallery-toolbar";
+export { default as GalleryToolbarDefault } from "./controls/gallery-toolbar";
+export { GalleryToolbar as GalleryToolbarNew } from "./gallery-toolbar";
+export { GalleryFilterBar } from "./gallery-filter-bar";
 
 // 预览和编辑组件
-export { ImagePreview } from './preview/image-preview';
-export { default as ImagePreviewDefault } from './preview/image-preview';
-export { ImageEditor } from './editor/image-editor';
-export { default as ImageEditorDefault } from './editor/image-editor';
+export { ImagePreview } from "./preview/image-preview";
+export { default as ImagePreviewDefault } from "./preview/image-preview";
+export { ImageEditor } from "./editor/image-editor";
+export { default as ImageEditorDefault } from "./editor/image-editor";
 
 // UI 状态组件
-export { GalleryLoadingState } from './ui/gallery-loading-state';
-export { default as GalleryLoadingStateDefault } from './ui/gallery-loading-state';
-export { GalleryEmptyState } from './ui/gallery-empty-state';
-export { default as GalleryEmptyStateDefault } from './ui/gallery-empty-state';
-export { LoadMoreTrigger } from './ui/load-more-trigger';
-export { default as LoadMoreTriggerDefault } from './ui/load-more-trigger';
+export { GalleryLoadingState } from "./ui/gallery-loading-state";
+export { default as GalleryLoadingStateDefault } from "./ui/gallery-loading-state";
+export { GalleryEmptyState } from "./ui/gallery-empty-state";
+export { default as GalleryEmptyStateDefault } from "./ui/gallery-empty-state";
+export { LoadMoreTrigger } from "./ui/load-more-trigger";
+export { default as LoadMoreTriggerDefault } from "./ui/load-more-trigger";
 
 // 类型定义重新导出
 export type {
   WaterfallGalleryConfig,
-  GalleryImageItem,
+  GalleryImageItem as GalleryImageItemType,
   GalleryQueryParams,
   GalleryEvent,
   GalleryEventType,
@@ -48,7 +51,7 @@ export type {
   GestureType,
   ImageLoadStrategy,
   GalleryOperationResult,
-} from '@/lib/types/gallery';
+} from "@/lib/types/gallery";
 
 // 常量重新导出
 export {
@@ -66,4 +69,4 @@ export {
   LONG_PRESS_DURATION,
   DOUBLE_CLICK_INTERVAL,
   MIN_SWIPE_DISTANCE,
-} from '@/lib/constants/gallery';
+} from "@/lib/constants/gallery";
