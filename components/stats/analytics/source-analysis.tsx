@@ -119,7 +119,8 @@ export function SourceAnalysis() {
   }
 
   const totalVisitors = referrerData.sources?.reduce((sum, source) => sum + source.count, 0) || 0;
-  const topSources = referrerData.sources?.slice(0, 6) || [];
+  const topSources = referrerData.sources?.slice(0, 7) || [];
+  const topSourcesSub = referrerData.sources?.slice(0, 5) || [];
 
   // 准备来源柱状图数据
   const sourceBarData = topSources.map((source) => ({
@@ -276,12 +277,12 @@ export function SourceAnalysis() {
               <Link className="h-5 w-5" />
               <span>来源详情</span>
             </CardTitle>
-            <Badge variant="secondary">前 {topSources.length} 名</Badge>
+            <Badge variant="secondary">前 {topSourcesSub.length} 名</Badge>
           </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-3 sm:space-y-4">
-            {topSources.map((source, index) => {
+            {topSourcesSub.map((source, index) => {
               const percentage = totalVisitors > 0 ? (source.count / totalVisitors) * 100 : 0;
               const SourceIcon = detailSourceIcons[source.source] || Users;
               
