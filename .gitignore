@@ -43,3 +43,5 @@ next-env.d.ts
 core
 *.temp
 .mcp.json
+
+docs/

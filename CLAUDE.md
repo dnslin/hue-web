@@ -33,8 +33,16 @@ This is a **Next.js 15** frontend application for **hue**, an image hosting serv
 - **Radix UI:** Underlying primitive components for accessibility
 - **Icons:** Lucide React (primary) + React Icons (supplementary)
 
+#### Data Visualization & Maps
+- **Recharts:** Charts and data visualization for statistics
+- **Leaflet:** Interactive maps for geographical data analysis
+- **React-Leaflet:** React wrapper for Leaflet maps
+- **React-World-Flags:** Country and region flag indicators
+
 #### Animation Framework
-- **Motion:** Lightweight animation library (not Framer Motion)
+- **Motion:** Lightweight animation library for performance-critical animations
+- **Framer Motion:** Full-featured animation library for complex interactions
+- **Dual Engine Strategy:** Motion for micro-interactions, Framer Motion for complex sequences
 - **Features:** GPU-accelerated animations, mouse tracking effects, micro-interactions
 - **Performance:** Optimized for both desktop and mobile experiences
 
@@ -44,9 +52,14 @@ This is a **Next.js 15** frontend application for **hue**, an image hosting serv
 ```
 app/
 ├── (admin)/               # Admin route group
-│   ├── dashboard/        # Dashboard pages
+│   ├── dashboard/        # Dashboard overview pages
+│   ├── stats/           # Statistics and analytics
+│   │   ├── analytics/   # Detailed data analysis
+│   │   └── trends/      # Trend analysis and visualization
 │   ├── users/           # User management
-│   └── settings/        # Settings pages
+│   │   └── roles/       # Role and permission management
+│   ├── storage/         # Storage strategy management
+│   └── settings/        # System settings pages
 └── (auth)/               # Authentication route group
     ├── login/           # Login page
     └── register/        # Registration page
@@ -59,6 +72,7 @@ components/
 │   ├── button.tsx       # Base button component
 │   ├── card.tsx         # Base card component
 │   ├── input.tsx        # Base input component
+│   ├── chart.tsx        # Chart wrapper component
 │   └── ...              # Other shadcn/ui components
 ├── magicui/             # Magic UI animation components
 │   ├── magic-card.tsx   # Mouse-tracking card effects
@@ -68,27 +82,87 @@ components/
 │   ├── typing-animation.tsx # Typewriter effects
 │   └── ...              # Other advanced animation components
 ├── admin/               # Admin-specific business components
+│   ├── roles/          # Role management components
+│   ├── storage/        # Storage management components
+│   └── users/          # User management components
 ├── auth/                # Authentication business components
 ├── dashboard/           # Dashboard visualization components
+├── stats/               # Statistics and analytics components
+│   ├── analytics/      # Data analysis components
+│   ├── overview/       # Overview metrics components
+│   └── trends/         # Trend visualization components
 ├── settings/            # Settings form components
 ├── shared/              # Cross-cutting shared components
-└── layouts/             # Layout and navigation components
+├── layouts/             # Layout and navigation components
+└── home/                # Homepage components
 ```
 
 #### State and Data Layer
 ```
 lib/
-├── store/               # Zustand stores
-│   ├── auth-store.ts   # Authentication state with persistence
+├── store/               # Zustand stores with domain separation
+│   ├── auth.ts         # Authentication state with persistence
+│   ├── admin.ts        # Admin interface state
+│   ├── stats.ts        # Statistics data state
+│   ├── storage.ts      # Storage management state
+│   ├── role.ts         # Role management state
+│   ├── settings.ts     # System settings state
+│   ├── images/         # Modular image management stores
+│   │   ├── cache.ts    # Image caching layer
+│   │   ├── data.ts     # Image data management
+│   │   ├── filter.ts   # Image filtering logic
+│   │   └── upload.ts   # Image upload state
 │   └── user/           # Modular user management stores
-│       ├── data.ts     # Data management
-│       ├── filter.ts   # Filtering logic
-│       ├── cache..ts    # Caching layer
-│       └── batch.ts    # Batch operations
+│       ├── data.ts     # User data management
+│       ├── filter.ts   # User filtering logic
+│       ├── cache.ts    # User caching layer
+│       ├── batch.ts    # Batch operations
+│       ├── action.ts   # User actions
+│       └── selection.ts # User selection state
 ├── actions/             # Server actions organized by domain
+│   ├── auth/           # Authentication actions
+│   ├── dashboard/      # Dashboard data actions
+│   ├── images/         # Image management actions
+│   ├── albums/         # Album management actions
+│   ├── users/          # User management actions
+│   ├── roles/          # Role management actions
+│   ├── storage/        # Storage management actions
+│   ├── settings/       # Settings actions
+│   ├── recycle/        # Recycle bin actions
+│   └── shares/         # Share management actions
 ├── api/                 # API service layer with case conversion
-├── schema/              # Zod schemas for validation
-└── types/               # TypeScript type definitions
+├── schema/              # Zod schemas organized by domain
+│   ├── auth/           # Authentication schemas
+│   ├── admin/          # Admin interface schemas
+│   ├── images/         # Image management schemas
+│   ├── albums/         # Album schemas
+│   └── settings/       # Settings schemas
+├── types/               # TypeScript type definitions
+│   ├── auth.ts         # Authentication types
+│   ├── dashboard.ts    # Dashboard data types
+│   ├── image.ts        # Image types
+│   ├── user.ts         # User types
+│   ├── roles.ts        # Role and permission types
+│   ├── storage.ts      # Storage types
+│   ├── album.ts        # Album types
+│   └── share.ts        # Share types
+├── constants/           # Application constants
+│   ├── admin-navigation.ts # Admin navigation definitions
+│   └── image-formats.ts    # Image format constants
+├── utils/               # Utility functions
+│   ├── cache-manager.ts    # Cache management utilities
+│   ├── case-converter.ts   # Case conversion utilities
+│   ├── date-formatter.ts   # Date formatting utilities
+│   ├── error-handler.ts    # Error handling utilities
+│   ├── role-helpers.ts     # Role management helpers
+│   └── toast.ts           # Toast notification utilities
+├── hooks/               # Custom React hooks
+│   ├── use-auth-guard.ts   # Authentication guard hook
+│   └── use-site-info.ts    # Site information hook
+└── dashboard/           # Dashboard-specific utilities
+    ├── animations.ts       # Dashboard animations
+    ├── formatters.ts       # Data formatters
+    └── use-dashboard-data.ts # Dashboard data hook
 ```
 
 ### System Architecture
@@ -100,9 +174,12 @@ lib/
 4. **Layout Layer:** Responsive layout and navigation systems
 
 #### State Management Pattern
-- **Persistent stores** with hydration handling
-- **Domain-specific stores** (auth, users, settings, roles)
+- **Persistent stores** with hydration handling and selective persistence
+- **Domain-specific stores** (auth, users, images, stats, storage, roles, settings)
 - **Modular architecture** with separate concerns for data, filtering, caching, and operations
+- **Granular state selection** with custom hooks for optimal re-rendering
+- **Cache management** with TTL and invalidation strategies
+- **Batch operations** for bulk data manipulation
 
 #### API Integration
 - **Automatic case conversion** (camelCase ↔ snake_case)
@@ -131,7 +208,10 @@ lib/
 - Turbopack for fast development builds
 - SVG support via @svgr/webpack
 
-**API Documentation:** `swagger.yaml` contains comprehensive API documentation for backend integration.
+**API Documentation:** 
+- `swagger.yaml` contains comprehensive API documentation for backend integration
+- `docs/` directory contains development plans and integration guides
+- Specialized CSS files in `styles/` for admin interface and responsive design
 
 ## UI Design Style Guide
 
@@ -386,8 +466,8 @@ No specific test framework is configured. Check with the team for testing approa
 - **fetch MCP**: For URL requests
 - **Context7 MCP**: For dependency documentation
 - **Github MCP**: For repository access
-- **aceternity**: For aceternity UI
-- **@magicuidesign/mcp** For magicui UI
+- **aceternity**: For aceternity UI components
+- **@magicuidesign/mcp**: For magicui animation components
 
 ### Development Context
 - Platform: Ubuntu 22.04, bash terminal environment
