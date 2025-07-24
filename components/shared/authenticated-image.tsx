@@ -79,6 +79,24 @@ export function AuthenticatedImage({
     );
   }
 
+  // 检查是否为 base64 数据 URL
+  const isBase64DataUrl = imageSrc.startsWith('data:');
+
+  // 对于 base64 数据，使用普通的 img 标签避免 Next.js Image 警告
+  if (isBase64DataUrl) {
+    return (
+      <img
+        src={imageSrc}
+        alt={fileName}
+        className={`object-cover w-full h-full ${className}`}
+        onError={() => {
+          setError('图片渲染失败');
+        }}
+      />
+    );
+  }
+
+  // 对于其他 URL，使用 Next.js Image 组件进行优化
   return (
     <Image
       src={imageSrc}

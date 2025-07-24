@@ -543,8 +543,6 @@ export async function getPublicSiteDetailsAction(): Promise<
   PublicSiteDetailsDTO | ErrorApiResponse
 > {
   try {
-    console.log("🌐 正在获取公开站点详情...");
-
     const response = await cacheManager.getOrSet(
       CACHE_KEYS.PUBLIC_SITE_DETAILS,
       async () => {
