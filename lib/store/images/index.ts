@@ -9,6 +9,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 export * from "./data";
 export * from "./filter";
 export * from "./cache";
+export * from "./selection";
 
 // 导出组合状态管理
 import { 
@@ -41,30 +42,39 @@ export const useImageStore = create<ImageDataState & ImageDataActions>()(
  * 获取图片列表数据和加载状态
  */
 export const useImageListData = () => {
-  return useImageStore((state) => ({
-    images: state.images,
-    total: state.total,
-    loading: state.loading,
-    error: state.error,
-    loadingMore: state.loadingMore,
-    hasMore: state.hasMore,
-  }));
+  const images = useImageStore((state) => state.images);
+  const total = useImageStore((state) => state.total);
+  const loading = useImageStore((state) => state.loading);
+  const error = useImageStore((state) => state.error);
+  const loadingMore = useImageStore((state) => state.loadingMore);
+  const hasMore = useImageStore((state) => state.hasMore);
+  
+  return { images, total, loading, error, loadingMore, hasMore };
 };
 
 /**
  * 获取图片列表操作方法
  */
 export const useImageListActions = () => {
-  return useImageStore((state) => ({
-    fetchImages: state.fetchImages,
-    loadMoreImages: state.loadMoreImages,
-    refreshImages: state.refreshImages,
-    addImage: state.addImage,
-    updateImage: state.updateImage,
-    removeImage: state.removeImage,
-    removeImages: state.removeImages,
-    getImageById: state.getImageById,
-  }));
+  const fetchImages = useImageStore((state) => state.fetchImages);
+  const loadMoreImages = useImageStore((state) => state.loadMoreImages);
+  const refreshImages = useImageStore((state) => state.refreshImages);
+  const addImage = useImageStore((state) => state.addImage);
+  const updateImage = useImageStore((state) => state.updateImage);
+  const removeImage = useImageStore((state) => state.removeImage);
+  const removeImages = useImageStore((state) => state.removeImages);
+  const getImageById = useImageStore((state) => state.getImageById);
+  
+  return { 
+    fetchImages, 
+    loadMoreImages, 
+    refreshImages, 
+    addImage, 
+    updateImage, 
+    removeImage, 
+    removeImages, 
+    getImageById 
+  };
 };
 
 /**

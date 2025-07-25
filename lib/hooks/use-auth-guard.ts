@@ -123,6 +123,7 @@ export const isProtectedRoute = (pathname: string): boolean => {
     "/profile",
     "/storage",
     "/stats",
+    "/images",
   ];
 
   return protectedPatterns.some((pattern) => pathname.startsWith(pattern));
