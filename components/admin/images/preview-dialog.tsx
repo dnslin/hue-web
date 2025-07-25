@@ -25,6 +25,7 @@ import {
   RotateCw
 } from "lucide-react";
 import { ImageItem } from "@/lib/types/image";
+import { AuthenticatedImage } from "@/components/shared/authenticated-image";
 import { formatFileSize, formatDate } from "@/lib/dashboard/formatters";
 
 interface ImagePreviewDialogProps {
@@ -166,15 +167,20 @@ export function ImagePreviewDialog({ image, open, onOpenChange }: ImagePreviewDi
           {/* 图片展示区域 */}
           <div className="flex-1 flex items-center justify-center bg-muted/20 p-4 overflow-hidden">
             <div className="relative max-w-full max-h-full overflow-auto">
-              <img
-                src={image.url}
-                alt={image.originalFilename}
+              <div 
                 className="max-w-none transition-transform duration-200"
                 style={{
                   transform: `scale(${zoom}) rotate(${rotation}deg)`,
                   transformOrigin: 'center',
                 }}
-              />
+              >
+                <AuthenticatedImage
+                  imageId={image.id.toString()}
+                  fileName={image.originalFilename}
+                  className="w-full h-full object-contain"
+                  thumb={false}
+                />
+              </div>
             </div>
           </div>
 
