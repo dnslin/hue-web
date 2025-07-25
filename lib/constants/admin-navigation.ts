@@ -67,7 +67,7 @@ export const adminNavigation: NavigationGroup[] = [
           },
           {
             id: "images-categories",
-            label: "分类管理",
+            label: "相册管理",
             href: "/images/categories",
             icon: Images,
           },
@@ -220,3 +220,4 @@ export const generateBreadcrumbs = (path: string) => {
 
   return breadcrumbs;
 };
+
