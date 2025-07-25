@@ -64,6 +64,52 @@ export const useImageListActions = () => {
   const removeImage = useImageStore((state) => state.removeImage);
   const removeImages = useImageStore((state) => state.removeImages);
   const getImageById = useImageStore((state) => state.getImageById);
+
+  // 删除单个图片（包含API调用）
+  const deleteImage = useCallback(async (imageId: number) => {
+    const { deleteImageAction } = await import("@/lib/actions/images/list");
+    const { showToast } = await import("@/lib/utils/toast");
+    
+    try {
+      const response = await deleteImageAction(imageId);
+      
+      if (response.code === 0) {
+        removeImage(imageId);
+        showToast.success("图片删除成功");
+        return { success: true };
+      } else {
+        showToast.error("删除失败", response.msg || "删除图片时发生错误");
+        return { success: false, error: response.msg };
+      }
+    } catch (error: any) {
+      const errorMsg = error.message || "删除图片时发生未知错误";
+      showToast.error("删除失败", errorMsg);
+      return { success: false, error: errorMsg };
+    }
+  }, [removeImage]);
+
+  // 批量删除图片（包含API调用）
+  const deleteImages = useCallback(async (imageIds: number[]) => {
+    const { batchDeleteImagesAction } = await import("@/lib/actions/images/list");
+    const { showToast } = await import("@/lib/utils/toast");
+    
+    try {
+      const response = await batchDeleteImagesAction(imageIds);
+      
+      if (response.code === 0) {
+        removeImages(imageIds);
+        showToast.success(`成功删除 ${imageIds.length} 张图片`);
+        return { success: true };
+      } else {
+        showToast.error("批量删除失败", response.msg || "批量删除图片时发生错误");
+        return { success: false, error: response.msg };
+      }
+    } catch (error: any) {
+      const errorMsg = error.message || "批量删除图片时发生未知错误";
+      showToast.error("批量删除失败", errorMsg);
+      return { success: false, error: errorMsg };
+    }
+  }, [removeImages]);
   
   return { 
     fetchImages, 
@@ -73,7 +119,9 @@ export const useImageListActions = () => {
     updateImage, 
     removeImage, 
     removeImages, 
-    getImageById 
+    getImageById,
+    deleteImage,
+    deleteImages
   };
 };
 

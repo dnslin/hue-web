@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ImageItem } from "@/lib/types/image";
 import { ImagePreviewDialog } from "./preview-dialog";
+import { DeleteConfirmDialog } from "./delete-confirm-dialog";
 import { AuthenticatedImage } from "@/components/shared/authenticated-image";
+import { useImageListActions } from "@/lib/store/images";
 import { formatFileSize, formatDate } from "@/lib/dashboard/formatters";
 
 interface ImageGalleryProps {
@@ -34,6 +36,14 @@ interface ImageGalleryProps {
 
 export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
   const [previewImage, setPreviewImage] = useState<ImageItem | null>(null);
+  const [deleteImageItem, setDeleteImageItem] = useState<ImageItem | null>(null);
+  const { deleteImage } = useImageListActions();
+
+  const handleDeleteImage = async () => {
+    if (!deleteImageItem) return;
+    
+    await deleteImage(deleteImageItem.id);
+  };
 
   if (viewMode === 'grid') {
     return (
@@ -44,6 +54,7 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
               key={image.id} 
               image={image} 
               onPreview={setPreviewImage}
+              onDelete={setDeleteImageItem}
             />
           ))}
         </div>
@@ -52,6 +63,13 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
           image={previewImage}
           open={!!previewImage}
           onOpenChange={(open) => !open && setPreviewImage(null)}
+        />
+        
+        <DeleteConfirmDialog
+          open={!!deleteImageItem}
+          onOpenChange={(open) => !open && setDeleteImageItem(null)}
+          images={deleteImageItem ? [deleteImageItem] : []}
+          onConfirm={handleDeleteImage}
         />
       </>
     );
@@ -62,9 +80,10 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
       <div className="space-y-3">
         {images.map((image) => (
           <ImageListItem 
-            key={image.id} 
+            key={image.id}  
             image={image} 
             onPreview={setPreviewImage}
+            onDelete={setDeleteImageItem}
           />
         ))}
       </div>
@@ -74,6 +93,13 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
         open={!!previewImage}
         onOpenChange={(open) => !open && setPreviewImage(null)}
       />
+      
+      <DeleteConfirmDialog
+        open={!!deleteImageItem}
+        onOpenChange={(open) => !open && setDeleteImageItem(null)}
+        images={deleteImageItem ? [deleteImageItem] : []}
+        onConfirm={handleDeleteImage}
+      />
     </>
   );
 }
@@ -81,9 +107,10 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
 interface ImageItemProps {
   image: ImageItem;
   onPreview: (image: ImageItem) => void;
+  onDelete: (image: ImageItem) => void;
 }
 
-function ImageGridItem({ image, onPreview }: ImageItemProps) {
+function ImageGridItem({ image, onPreview, onDelete }: ImageItemProps) {
   const handleAction = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -100,8 +127,7 @@ function ImageGridItem({ image, onPreview }: ImageItemProps) {
         console.log('Edit image:', image.id);
         break;
       case 'delete':
-        // TODO: 实现删除功能
-        console.log('Delete image:', image.id);
+        onDelete(image);
         break;
     }
   };
@@ -196,7 +222,7 @@ function ImageGridItem({ image, onPreview }: ImageItemProps) {
   );
 }
 
-function ImageListItem({ image, onPreview }: ImageItemProps) {
+function ImageListItem({ image, onPreview, onDelete }: ImageItemProps) {
   const handleAction = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -211,7 +237,7 @@ function ImageListItem({ image, onPreview }: ImageItemProps) {
         console.log('Edit image:', image.id);
         break;
       case 'delete':
-        console.log('Delete image:', image.id);
+        onDelete(image);
         break;
     }
   };
