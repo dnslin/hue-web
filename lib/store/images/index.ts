@@ -203,8 +203,9 @@ export const useImageStats = () => {
 /**
  * 图片懒加载 hook
  */
-export const useImageLazyLoading = (threshold = 1000) => {
-  const { loadMoreImages, hasMore, loadingMore } = useImageListActions();
+export const useImageLazyLoading = () => {
+  const { loadMoreImages } = useImageListActions();
+  const { hasMore, loadingMore } = useImageListData();
   
   const loadMore = useCallback(() => {
     if (hasMore && !loadingMore) {
