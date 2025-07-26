@@ -90,11 +90,14 @@ export const useImageListActions = () => {
 
   // 批量删除图片（包含API调用）
   const deleteImages = useCallback(async (imageIds: number[]) => {
+    console.log('Store deleteImages - 接收到的imageIds:', imageIds);
     const { batchDeleteImagesAction } = await import("@/lib/actions/images/list");
     const { showToast } = await import("@/lib/utils/toast");
     
     try {
+      console.log('Store deleteImages - 调用API...');
       const response = await batchDeleteImagesAction(imageIds);
+      console.log('Store deleteImages - API响应:', response);
       
       if (response.code === 0) {
         removeImages(imageIds);
@@ -105,6 +108,7 @@ export const useImageListActions = () => {
         return { success: false, error: response.msg };
       }
     } catch (error: any) {
+      console.error('Store deleteImages - 错误:', error);
       const errorMsg = error.message || "批量删除图片时发生未知错误";
       showToast.error("批量删除失败", errorMsg);
       return { success: false, error: errorMsg };

@@ -1,20 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Upload, Grid3X3, List, Search, Filter } from "lucide-react";
+import { Plus, Upload, Grid3X3, List, Search, Filter, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ImageGallery } from "./gallery";
 import { ImageUploadDialog } from "./upload-dialog";
 import { ImageFilters } from "./filters";
+import { BatchActions } from "./batch-actions";
 import { 
   useImageListData, 
   useImageListActions, 
-  useImageFilterStore, 
-  useImageSelectionStore,
-  useHasActiveFilters,
-  useActiveFiltersCount 
+  useImageSelectionStore
 } from "@/lib/store/images";
 import { showToast } from "@/lib/utils/toast";
 
@@ -22,17 +20,22 @@ interface ImageListProps {
   isMobile?: boolean;
 }
 
-export function ImageList({ isMobile = false }: ImageListProps) {
+export function ImageList({ }: ImageListProps) {
   const { images, total, loading, error } = useImageListData();
   const { fetchImages } = useImageListActions();
-  const { filters } = useImageFilterStore();
-  const { selectedImageIds } = useImageSelectionStore();
-  const hasActiveFilters = useHasActiveFilters();
-  const activeFiltersCount = useActiveFiltersCount();
+  const { clearSelection } = useImageSelectionStore();
   const [showUpload, setShowUpload] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectionMode, setSelectionMode] = useState(false);
+
+  // 当选择模式关闭时，清空选择
+  useEffect(() => {
+    if (!selectionMode) {
+      clearSelection();
+    }
+  }, [selectionMode, clearSelection]);
 
   useEffect(() => {
     // 初始化加载图片数据
@@ -93,6 +96,16 @@ export function ImageList({ isMobile = false }: ImageListProps) {
                 筛选
               </Button>
               
+              <Button
+                variant={selectionMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectionMode(!selectionMode)}
+                className="gap-2"
+              >
+                {selectionMode ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                选择
+              </Button>
+              
               <div className="flex border rounded-md">
                 <Button
                   variant={viewMode === 'grid' ? "default" : "ghost"}
@@ -122,6 +135,9 @@ export function ImageList({ isMobile = false }: ImageListProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* 批量操作栏 */}
+      {selectionMode && <BatchActions />}
 
       {/* 图片网格/列表 */}
       <div className="min-h-[400px]">
@@ -160,7 +176,7 @@ export function ImageList({ isMobile = false }: ImageListProps) {
           <ImageGallery 
             images={images} 
             viewMode={viewMode}
-            loading={loading}
+            selectionMode={selectionMode}
           />
         )}
       </div>

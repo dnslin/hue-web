@@ -133,15 +133,22 @@ export async function getImageStatsAction(): Promise<ImageStatsResponse> {
  * @returns 批量操作响应
  */
 export async function batchDeleteImagesAction(imageIds: number[]): Promise<BatchImageOperationResponse> {
+  console.log('API batchDeleteImagesAction - 接收到的imageIds:', imageIds);
+  
   try {
     const apiService = await getAuthenticatedApiService();
     
-    const response = await apiService.delete('/images/batch', {
-      data: { imageIds },
+    const requestData = { image_ids: imageIds };
+    console.log('API batchDeleteImagesAction - 请求数据:', requestData);
+    
+    const response = await apiService.delete('/images', {
+      data: requestData,
     });
     
+    console.log('API batchDeleteImagesAction - API响应:', response);
     return response.data;
   } catch (error: any) {
+    console.error('API batchDeleteImagesAction - 错误:', error);
     if (error?.response?.status === 401 || error?.code === 401) {
       redirect('/login');
     }
@@ -287,7 +294,7 @@ export async function updateImageAction(
 }
 
 /**
- * 删除单个图片
+ * 删除单个图片（使用批量删除接口）
  * @param imageId 图片ID
  * @returns API响应
  */
@@ -295,7 +302,9 @@ export async function deleteImageAction(imageId: number) {
   try {
     const apiService = await getAuthenticatedApiService();
     
-    const response = await apiService.delete(`/images/${imageId}`);
+    const response = await apiService.delete('/images', {
+      data: { image_ids: [imageId] },
+    });
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401 || error?.code === 401) {

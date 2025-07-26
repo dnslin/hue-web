@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   MoreVertical, 
   Download, 
@@ -26,15 +27,17 @@ import { ImagePreviewDialog } from "./preview-dialog";
 import { DeleteConfirmDialog } from "./delete-confirm-dialog";
 import { AuthenticatedImage } from "@/components/shared/authenticated-image";
 import { useImageListActions } from "@/lib/store/images";
+import { useImageSelectionStore } from "@/lib/store/images";
 import { formatFileSize, formatDate } from "@/lib/dashboard/formatters";
 
 interface ImageGalleryProps {
   images: ImageItem[];
   viewMode: 'grid' | 'list';
   loading?: boolean;
+  selectionMode?: boolean;
 }
 
-export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
+export function ImageGallery({ images, viewMode, selectionMode = false }: ImageGalleryProps) {
   const [previewImage, setPreviewImage] = useState<ImageItem | null>(null);
   const [deleteImageItem, setDeleteImageItem] = useState<ImageItem | null>(null);
   const { deleteImage } = useImageListActions();
@@ -55,6 +58,7 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
               image={image} 
               onPreview={setPreviewImage}
               onDelete={setDeleteImageItem}
+              selectionMode={selectionMode}
             />
           ))}
         </div>
@@ -84,6 +88,7 @@ export function ImageGallery({ images, viewMode, loading }: ImageGalleryProps) {
             image={image} 
             onPreview={setPreviewImage}
             onDelete={setDeleteImageItem}
+            selectionMode={selectionMode}
           />
         ))}
       </div>
@@ -108,9 +113,13 @@ interface ImageItemProps {
   image: ImageItem;
   onPreview: (image: ImageItem) => void;
   onDelete: (image: ImageItem) => void;
+  selectionMode?: boolean;
 }
 
-function ImageGridItem({ image, onPreview, onDelete }: ImageItemProps) {
+function ImageGridItem({ image, onPreview, onDelete, selectionMode = false }: ImageItemProps) {
+  const { isImageSelected, toggleImage } = useImageSelectionStore();
+  const isSelected = isImageSelected(image.id);
+
   const handleAction = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -129,16 +138,27 @@ function ImageGridItem({ image, onPreview, onDelete }: ImageItemProps) {
       case 'delete':
         onDelete(image);
         break;
+      case 'select':
+        toggleImage(image.id);
+        break;
+    }
+  };
+
+  const handleImageClick = () => {
+    if (selectionMode) {
+      toggleImage(image.id);
+    } else {
+      onPreview(image);
     }
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer">
+    <Card className={`group overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer ${isSelected ? 'ring-2 ring-primary' : ''}`}>
       <CardContent className="p-0">
         {/* 图片区域 */}
         <div 
           className="aspect-square relative overflow-hidden"
-          onClick={() => onPreview(image)}
+          onClick={handleImageClick}
         >
           <AuthenticatedImage
             imageId={image.id.toString()}
@@ -146,6 +166,17 @@ function ImageGridItem({ image, onPreview, onDelete }: ImageItemProps) {
             className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
             thumb={true}
           />
+          
+          {/* 选择模式的复选框 */}
+          {selectionMode && (
+            <div className="absolute top-2 left-2">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => handleAction('select', {} as React.MouseEvent)}
+                className="bg-white/90 border-2"
+              />
+            </div>
+          )}
           
           {/* 悬停时显示的操作按钮 */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
@@ -170,42 +201,44 @@ function ImageGridItem({ image, onPreview, onDelete }: ImageItemProps) {
           </div>
           
           {/* 右上角的操作菜单 */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 w-8 p-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={(e) => handleAction('preview', e)}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  预览
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => handleAction('download', e)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  下载
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => handleAction('edit', e)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  编辑
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={(e) => handleAction('delete', e)}
-                  className="text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  删除
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {!selectionMode && (
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => handleAction('preview', e)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    预览
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => handleAction('download', e)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    下载
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => handleAction('edit', e)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    编辑
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={(e) => handleAction('delete', e)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    删除
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
         
         {/* 图片信息 */}
@@ -222,7 +255,10 @@ function ImageGridItem({ image, onPreview, onDelete }: ImageItemProps) {
   );
 }
 
-function ImageListItem({ image, onPreview, onDelete }: ImageItemProps) {
+function ImageListItem({ image, onPreview, onDelete, selectionMode = false }: ImageItemProps) {
+  const { isImageSelected, toggleImage } = useImageSelectionStore();
+  const isSelected = isImageSelected(image.id);
+
   const handleAction = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -239,17 +275,42 @@ function ImageListItem({ image, onPreview, onDelete }: ImageItemProps) {
       case 'delete':
         onDelete(image);
         break;
+      case 'select':
+        toggleImage(image.id);
+        break;
+    }
+  };
+
+  const handleCardClick = () => {
+    if (selectionMode) {
+      toggleImage(image.id);
+    } else {
+      onPreview(image);
     }
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card className={`hover:shadow-md transition-shadow cursor-pointer ${isSelected ? 'ring-2 ring-primary' : ''}`} onClick={handleCardClick}>
       <CardContent className="p-4">
         <div className="flex gap-4">
+          {/* 选择模式的复选框 */}
+          {selectionMode && (
+            <div className="flex items-center">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => handleAction('select', {} as React.MouseEvent)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+          
           {/* 缩略图 */}
           <div 
             className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0"
-            onClick={() => onPreview(image)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview(image);
+            }}
           >
             <AuthenticatedImage
               imageId={image.id.toString()}
@@ -317,31 +378,33 @@ function ImageListItem({ image, onPreview, onDelete }: ImageItemProps) {
                 >
                   <Download className="h-4 w-4" />
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={(e) => handleAction('edit', e)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      编辑
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={(e) => handleAction('delete', e)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      删除
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {!selectionMode && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleAction('edit', e)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        编辑
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={(e) => handleAction('delete', e)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        删除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </div>
