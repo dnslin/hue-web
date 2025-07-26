@@ -15,11 +15,9 @@ import {
   Edit, 
   Trash2, 
   Calendar,
-  FileImage,
   User,
   Eye,
   Share,
-  X,
   ZoomIn,
   ZoomOut,
   RotateCw

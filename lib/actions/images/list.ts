@@ -9,8 +9,7 @@ import {
   ImageQueryParams, 
   ImageListResponse,
   ImageStatsResponse,
-  BatchImageOperationResponse,
-  ImageItem
+  BatchImageOperationResponse
 } from "@/lib/types/image";
 import { isSuccessApiResponse } from "@/lib/types/common";
 
@@ -133,22 +132,15 @@ export async function getImageStatsAction(): Promise<ImageStatsResponse> {
  * @returns 批量操作响应
  */
 export async function batchDeleteImagesAction(imageIds: number[]): Promise<BatchImageOperationResponse> {
-  console.log('API batchDeleteImagesAction - 接收到的imageIds:', imageIds);
-  
   try {
     const apiService = await getAuthenticatedApiService();
     
-    const requestData = { image_ids: imageIds };
-    console.log('API batchDeleteImagesAction - 请求数据:', requestData);
-    
     const response = await apiService.delete('/images', {
-      data: requestData,
+      data: { image_ids: imageIds },
     });
     
-    console.log('API batchDeleteImagesAction - API响应:', response);
     return response.data;
   } catch (error: any) {
-    console.error('API batchDeleteImagesAction - 错误:', error);
     if (error?.response?.status === 401 || error?.code === 401) {
       redirect('/login');
     }

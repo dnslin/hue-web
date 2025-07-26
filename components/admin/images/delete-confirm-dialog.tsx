@@ -56,8 +56,6 @@ export function DeleteConfirmDialog({
     try {
       await onConfirm();
       onOpenChange(false);
-    } catch (error) {
-      // 错误处理在父组件中完成
     } finally {
       setDeleting(false);
     }

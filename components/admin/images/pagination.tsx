@@ -14,7 +14,7 @@ import { useImageListData } from "@/lib/store/images";
 
 export function ImagePagination() {
   const { filters, updateFilters } = useImageFilterStore();
-  const { total, loading } = useImageListData();
+  const { total } = useImageListData();
   
   const currentPage = filters.page || 1;
   const pageSize = filters.pageSize || 20;
