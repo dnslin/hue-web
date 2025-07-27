@@ -10,6 +10,7 @@ export * from "./data";
 export * from "./filter";
 export * from "./cache";
 export * from "./selection";
+export * from "./gallery";
 
 // 导出组合状态管理
 import { 
