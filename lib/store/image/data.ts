@@ -6,7 +6,7 @@ import { ImageResponse, ImageListParams } from "@/lib/types/image";
 import type { PaginatedApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
 import { useImageFilterStore } from "./filter";
-import { getImagesAction } from "@/lib/actions/images/image";
+import { getImagesAction, getImageViewAction } from "@/lib/actions/images/image";
 import { handleStoreError } from "@/lib/utils/error-handler";
 
 /**
@@ -34,6 +34,10 @@ export interface ImageDataState {
    * 是否已初始化订阅
    */
   isInitialized: boolean;
+  /**
+   * 图片URL缓存 { imageId: dataUrl }
+   */
+  imageUrlCache: Map<string, string>;
 }
 
 /**
@@ -55,6 +59,16 @@ export interface ImageDataActions {
    * @description 设置对 filter store 的订阅，以便在筛选条件变化时自动获取数据。
    */
   initialize: () => void;
+  /**
+   * 获取图片的DataURL（带缓存）
+   * @param imageId 图片ID
+   * @param thumb 是否获取缩略图
+   */
+  getImageUrl: (imageId: string, thumb?: boolean) => Promise<string | null>;
+  /**
+   * 清除图片URL缓存
+   */
+  clearImageUrlCache: () => void;
 }
 
 /**
@@ -74,12 +88,44 @@ export const createImageDataSlice: StateCreator<
   loading: false,
   error: null,
   isInitialized: false,
+  imageUrlCache: new Map<string, string>(),
 
   // --- 核心数据操作 (骨架实现) ---
 
   refreshImages: async () => {
     // 直接调用 fetchImages 实现刷新
     await get().fetchImages();
+  },
+
+  clearImageUrlCache: () => {
+    set({ imageUrlCache: new Map<string, string>() })
+  },
+
+  getImageUrl: async (imageId: string, thumb: boolean = false) => {
+    const cacheKey = `${imageId}_${thumb ? 'thumb' : 'full'}`
+    const cached = get().imageUrlCache.get(cacheKey)
+    
+    if (cached) {
+      return cached
+    }
+
+    try {
+      const imageData = await getImageViewAction(imageId, thumb)
+      
+      if (typeof imageData === 'string') {
+        // 缓存成功获取的图片数据
+        const newCache = new Map(get().imageUrlCache)
+        newCache.set(cacheKey, imageData)
+        set({ imageUrlCache: newCache })
+        return imageData
+      } else {
+        console.error('获取图片失败:', imageData?.msg || '未知错误')
+        return null
+      }
+    } catch (error) {
+      console.error('获取图片URL时发生错误:', error)
+      return null
+    }
   },
 
   fetchImages: async () => {

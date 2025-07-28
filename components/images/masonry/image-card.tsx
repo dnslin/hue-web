@@ -1,12 +1,12 @@
 'use client'
 
 import { motion } from 'motion/react'
+import { useState, useEffect } from 'react'
 import { ImageResponse } from '@/lib/types/image'
 import { MagicCard } from '@/components/magicui/magic-card'
 import { BorderBeam } from '@/components/magicui/border-beam'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AuthenticatedImage } from '@/components/shared/authenticated-image'
 import { imageBatchStore } from '@/lib/store/image/batch'
 import { imageDataStore } from '@/lib/store/image/data'
 import { useImageModalStore } from '@/hooks/images/use-image-modal'
@@ -31,23 +31,50 @@ import {
 
 /**
  * 图片卡片组件
- * 遵循 CLAUDE.md 的移动优先设计和触摸标准
  */
 interface ImageCardProps {
   image: ImageResponse
 }
 
 export function ImageCard({ image }: ImageCardProps) {
+  const [imageSrc, setImageSrc] = useState<string>('')
+  const [imageLoading, setImageLoading] = useState(true)
+  const [imageError, setImageError] = useState(false)
+  
   const { 
     isSelectionMode, 
     toggleImageSelection,
     isImageSelected 
   } = useStore(imageBatchStore)
   
-  const { images } = useStore(imageDataStore)
+  const { images, getImageUrl } = useStore(imageDataStore)
   const { openPreview, openEditor } = useImageModalStore()
   
   const isSelected = isImageSelected(image.id)
+
+  // 加载图片
+  useEffect(() => {
+    const loadImage = async () => {
+      setImageLoading(true)
+      setImageError(false)
+      
+      try {
+        const imageUrl = await getImageUrl(image.id.toString(), true) // 使用缩略图
+        if (imageUrl) {
+          setImageSrc(imageUrl)
+        } else {
+          setImageError(true)
+        }
+      } catch (error) {
+        console.error('加载图片失败:', error)
+        setImageError(true)
+      } finally {
+        setImageLoading(false)
+      }
+    }
+
+    loadImage()
+  }, [image.id, getImageUrl])
 
   // 处理图片选择
   const handleToggleSelection = (e: React.MouseEvent) => {
@@ -131,12 +158,35 @@ export function ImageCard({ image }: ImageCardProps) {
 
         {/* 图片区域 */}
         <div className="relative">
-          <AuthenticatedImage
-            imageId={image.id.toString()}
-            fileName={image.filename}
-            className="w-full h-auto object-cover"
-            thumb={true}
-          />
+          {imageLoading && (
+            <div 
+              className="w-full bg-muted/30 animate-pulse flex items-center justify-center"
+              style={{ height: '200px' }}
+            >
+              <span className="text-xs text-muted-foreground">加载中...</span>
+            </div>
+          )}
+          
+          {imageError && !imageLoading && (
+            <div 
+              className="w-full bg-muted/30 flex flex-col items-center justify-center text-muted-foreground"
+              style={{ height: '200px' }}
+            >
+              <span className="text-sm">图片加载失败</span>
+            </div>
+          )}
+
+          {!imageLoading && !imageError && imageSrc && (
+            <img
+              src={imageSrc}
+              alt={image.filename}
+              className="w-full h-auto object-cover"
+              style={{
+                // 确保触摸目标最小 44x44px (CLAUDE.md 标准)
+                minHeight: '44px'
+              }}
+            />
+          )}
 
           {/* 公开状态标识 */}
           <div className="absolute top-2 right-2">
