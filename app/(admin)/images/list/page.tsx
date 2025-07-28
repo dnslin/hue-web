@@ -23,7 +23,6 @@ export default function ImageListPage() {
   // 使用模态框状态
   const { 
     isPreviewOpen,
-    currentPreviewIndex,
     isEditorOpen,
     editingImage,
     closePreview,
@@ -56,11 +55,7 @@ export default function ImageListPage() {
       </div>
 
       {/* 图片预览弹窗 */}
-      <ImageLightbox 
-        isOpen={isPreviewOpen}
-        onClose={closePreview}
-        initialIndex={currentPreviewIndex}
-      />
+      <ImageLightbox />
 
       {/* 图片编辑器弹窗 */}
       <ImageEditorModal 
