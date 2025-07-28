@@ -146,17 +146,17 @@ export function ImageLightbox() {
     }
   }, [galleryItems])
 
-  // 当需要打开预览时
+  // 当组件挂载且数据准备好时打开gallery
   useEffect(() => {
-    if (isPreviewOpen && lightGalleryRef.current && galleryItems.length > 0 && !isLoading) {
-      // 使用setTimeout确保DOM已更新
+    if (lightGalleryRef.current && galleryItems.length > 0) {
+      // 使用短延迟确保DOM元素和样式都已就绪，保持动画效果
       setTimeout(() => {
         if (lightGalleryRef.current) {
           lightGalleryRef.current.openGallery(currentPreviewIndex)
         }
-      }, 100)
+      }, 50) // 减少延迟时间，保持动画但提高响应速度
     }
-  }, [isPreviewOpen, currentPreviewIndex, galleryItems, isLoading])
+  }, [galleryItems, currentPreviewIndex]) // 移除isPreviewOpen依赖，因为组件已经条件渲染
 
   // LightGallery 关闭后的回调
   const onAfterClose = useCallback(() => {
@@ -172,8 +172,14 @@ export function ImageLightbox() {
         className="gallery-item"
         data-src={item.src}
         data-sub-html={item.subHtml}
+        style={{ display: 'none' }} // 隐藏原始图片元素，防止显示在页面中
       >
-        <img className="img-responsive" src={item.thumb} alt="" />
+        <img 
+          className="img-responsive" 
+          src={item.thumb} 
+          alt="" 
+          style={{ display: 'none' }} // 确保图片也被隐藏
+        />
       </div>
     ))
   }, [galleryItems])
@@ -194,6 +200,11 @@ export function ImageLightbox() {
         )}
       </>
     )
+  }
+
+  // 只有在需要预览且有数据时才渲染LightGallery
+  if (!isPreviewOpen || galleryItems.length === 0) {
+    return null
   }
 
   return (
