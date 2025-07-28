@@ -34,7 +34,7 @@ This is a **Next.js 15** frontend application for **hue**, an image hosting serv
 - **Icons:** Lucide React (primary) + React Icons (supplementary)
 
 #### Animation Framework
-- **Motion:** Lightweight animation library (not Framer Motion)
+- **Framer-motion:** Lightweight animation library 
 - **Features:** GPU-accelerated animations, mouse tracking effects, micro-interactions
 - **Performance:** Optimized for both desktop and mobile experiences
 
