@@ -327,10 +327,7 @@ export function ImageCard({ image }: ImageCardProps) {
 
       {/* 删除确认对话框 */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="sm:max-w-md overflow-hidden">
-          {/* 顶部装饰渐变 */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-red-400 to-orange-400" />
-          
+        <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader className="pt-6">
             <div className="flex items-center justify-center mb-4">
               {/* 带动画的警告图标 */}
@@ -346,50 +343,52 @@ export function ImageCard({ image }: ImageCardProps) {
               删除图片
             </AlertDialogTitle>
             
-            <AlertDialogDescription className="text-center space-y-3">
-              <div className="text-base text-muted-foreground">
-                确定要删除这张图片吗？
-              </div>
-              
-              {/* 文件信息卡片 */}
-              <div className="mx-auto max-w-xs p-3 rounded-lg bg-muted/30 border border-border/50">
-                <div className="flex items-center gap-3">
-                  {/* 缩略图预览 */}
-                  <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden bg-muted">
-                    {imageSrc ? (
-                      <img 
-                        src={imageSrc} 
-                        alt={image.filename}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <HardDrive className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* 文件信息 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate" title={image.filename}>
-                      {image.filename}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {image.width} × {image.height} • {formatFileSize(image.size)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* 提示信息 */}
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/10 px-3 py-2 rounded-md border border-blue-200 dark:border-blue-800">
-                <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
-                此操作会将图片移到回收站，您可以稍后恢复
-              </div>
+            <AlertDialogDescription className="text-center text-base text-muted-foreground mb-4">
+              确定要删除这张图片吗？
             </AlertDialogDescription>
           </AlertDialogHeader>
           
-          <AlertDialogFooter className="pt-6 gap-3">
+          {/* 文件信息卡片 - 移出 AlertDialogDescription */}
+          <div className="px-6 mb-4">
+            <div className="mx-auto max-w-xs p-3 rounded-lg bg-muted/30 border border-border/50">
+              <div className="flex items-center gap-3">
+                {/* 缩略图预览 */}
+                <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden bg-muted">
+                  {imageSrc ? (
+                    <img 
+                      src={imageSrc} 
+                      alt={image.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <HardDrive className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* 文件信息 */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-foreground truncate" title={image.filename}>
+                    {image.filename}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {image.width} × {image.height} • {formatFileSize(image.size)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* 提示信息 */}
+          <div className="px-6 mb-6">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/10 px-3 py-2 rounded-md border border-blue-200 dark:border-blue-800">
+              <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
+              此操作会将图片移到回收站，您可以稍后恢复
+            </div>
+          </div>
+          
+          <AlertDialogFooter className="gap-3">
             <AlertDialogCancel 
               disabled={isDeleting}
               className="flex-1 h-11 font-medium transition-all duration-200 hover:scale-[1.02]"
