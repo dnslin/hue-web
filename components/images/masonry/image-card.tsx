@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { useState } from 'react'
 import { ImageResponse } from '@/lib/types/image'
 import { MagicCard } from '@/components/magicui/magic-card'
 import { BorderBeam } from '@/components/magicui/border-beam'
@@ -19,7 +18,6 @@ import {
   Download, 
   Trash2, 
   MoreHorizontal,
-  FileText,
   Calendar,
   HardDrive
 } from 'lucide-react'
@@ -133,40 +131,12 @@ export function ImageCard({ image }: ImageCardProps) {
 
         {/* 图片区域 */}
         <div className="relative">
-          {!imageLoaded && !imageError && (
-            <div 
-              className="w-full bg-muted/30 animate-pulse flex items-center justify-center"
-              style={{ height: '200px' }}
-            >
-              <FileText className="h-8 w-8 text-muted-foreground/50" />
-            </div>
-          )}
-          
-          {imageError ? (
-            <div 
-              className="w-full bg-muted/30 flex flex-col items-center justify-center text-muted-foreground"
-              style={{ height: '200px' }}
-            >
-              <FileText className="h-8 w-8 mb-2" />
-              <span className="text-sm">图片加载失败</span>
-            </div>
-          ) : (
-            <img
-              src={image.url}
-              alt={image.filename}
-              className={`
-                w-full h-auto object-cover transition-opacity duration-200
-                ${imageLoaded ? 'opacity-100' : 'opacity-0'}
-              `}
-              loading="lazy"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
-              style={{
-                // 确保触摸目标最小 44x44px (CLAUDE.md 标准)
-                minHeight: '44px'
-              }}
-            />
-          )}
+          <AuthenticatedImage
+            imageId={image.id.toString()}
+            fileName={image.filename}
+            className="w-full h-auto object-cover"
+            thumb={true}
+          />
 
           {/* 公开状态标识 */}
           <div className="absolute top-2 right-2">
