@@ -341,6 +341,31 @@ definitions:
     required:
       - image_ids
     type: object
+  dtos.BatchMoveImagesToAlbumDTO:
+    properties:
+      album_id:
+        description: 使用指针以区分设置为 nil (移出相册) 和具体相册ID
+        type: integer
+      image_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+      - image_ids
+    type: object
+  dtos.BatchUpdateImagePublicDTO:
+    properties:
+      image_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+      is_public:
+        type: boolean
+    required:
+      - image_ids
+    type: object
   dtos.BatchUpdateStorageStatusDTO:
     properties:
       ids:
@@ -3891,6 +3916,86 @@ paths:
           schema:
             $ref: "#/definitions/utils.Response"
       summary: 获取图片文件
+      tags:
+        - Images
+  /images/batch/move-to-album:
+    put:
+      consumes:
+        - application/json
+      description: 批量移动一个或多个图片到指定的相册。如果 album_id 为 null，则将图片移出相册。
+      parameters:
+        - description: 要移动的图片ID列表和目标相册ID
+          in: body
+          name: move_request
+          required: true
+          schema:
+            $ref: "#/definitions/dtos.BatchMoveImagesToAlbumDTO"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 移动成功
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "400":
+          description: 无效的请求体
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "401":
+          description: 未授权
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "403":
+          description: 无权限移动
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 部分图片或目标相册未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 批量移动图片到相册
+      tags:
+        - Images
+  /images/batch/public:
+    put:
+      consumes:
+        - application/json
+      description: 批量修改指定ID的图片的公开或私有属性。需要图片所有者权限。
+      parameters:
+        - description: 要更新的图片ID列表和公开状态
+          in: body
+          name: public_status
+          required: true
+          schema:
+            $ref: "#/definitions/dtos.BatchUpdateImagePublicDTO"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "400":
+          description: 无效的请求体
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "401":
+          description: 未授权
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "403":
+          description: 无权限修改
+          schema:
+            $ref: "#/definitions/utils.Response"
+        "404":
+          description: 部分或全部图片未找到
+          schema:
+            $ref: "#/definitions/utils.Response"
+      security:
+        - ApiKeyAuth: []
+      summary: 批量修改图片公开属性
       tags:
         - Images
   /me:
