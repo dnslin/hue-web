@@ -58,6 +58,30 @@ export async function getImageDetailAction(
 }
 
 /**
+ * 获取图片文件（可选缩略图）
+ * 注意：这个API返回图片文件或重定向到S3预签名URL
+ */
+export async function getImageViewAction(
+  id: number,
+  thumb?: boolean
+): Promise<Blob | string | ErrorApiResponse> {
+  try {
+    const apiService = await getAuthenticatedApiService();
+    const params = thumb ? { thumb } : {};
+
+    const response = await apiService.get(`${IMAGE_API_BASE}/${id}/view`, {
+      params,
+      responseType: "blob", // 期望接收二进制数据
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("getImageViewAction 错误:", error.msg);
+    return error as ErrorApiResponse;
+  }
+}
+
+/**
  * 上传图片（支持单个或批量）
  */
 export async function uploadImagesAction(
@@ -104,7 +128,9 @@ export async function updateImageAction(
 /**
  * 删除图片（移动到回收站）
  */
-export async function deleteImageAction(id: number): Promise<ApiResponse<any> | ErrorApiResponse> {
+export async function deleteImageAction(
+  id: number
+): Promise<ApiResponse<any> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.delete<ApiResponse<any>>(
@@ -145,9 +171,9 @@ export async function batchMoveImagesToAlbumAction(
 ): Promise<ApiResponse<any> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestData = { 
-      image_ids: imageIds, 
-      album_id: albumId 
+    const requestData = {
+      image_ids: imageIds,
+      album_id: albumId,
     };
     const response = await apiService.put<ApiResponse<any>>(
       `${IMAGE_API_BASE}/batch/move-to-album`,
@@ -169,9 +195,9 @@ export async function batchUpdateImagePublicAction(
 ): Promise<ApiResponse<any> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const requestData = { 
-      image_ids: imageIds, 
-      is_public: isPublic 
+    const requestData = {
+      image_ids: imageIds,
+      is_public: isPublic,
     };
     const response = await apiService.put<ApiResponse<any>>(
       `${IMAGE_API_BASE}/batch/public`,
@@ -250,3 +276,4 @@ export async function getAllImagesForExportAction(
     };
   }
 }
+
