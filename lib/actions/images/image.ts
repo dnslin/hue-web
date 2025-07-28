@@ -62,22 +62,44 @@ export async function getImageDetailAction(
  * 注意：这个API返回图片文件或重定向到S3预签名URL
  */
 export async function getImageViewAction(
-  id: number,
-  thumb?: boolean
-): Promise<Blob | string | ErrorApiResponse> {
+  id: string,
+  thumb: boolean = false
+): Promise<string | null | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
-    const params = thumb ? { thumb } : {};
-
     const response = await apiService.get(`${IMAGE_API_BASE}/${id}/view`, {
-      params,
-      responseType: "blob", // 期望接收二进制数据
+      params: { thumb },
+      responseType: "arraybuffer",
     });
 
-    return response.data;
+    // 获取响应头中的Content-Type
+    const contentType = response.headers["content-type"] || "image/jpeg";
+
+    // 检查响应数据
+    if (!response.data || response.data.byteLength === 0) {
+      return null;
+    }
+
+    // 将ArrayBuffer转换为Base64
+    const buffer = Buffer.from(response.data);
+    const base64 = buffer.toString("base64");
+
+    // 返回Data URL格式
+    return `data:${contentType};base64,${base64}`;
   } catch (error: any) {
-    console.error("getImageViewAction 错误:", error.msg);
-    return error as ErrorApiResponse;
+    if (error instanceof AuthenticationError) {
+      return {
+        code: 401,
+        msg: "认证失败，请重新登录",
+        error: error,
+      };
+    }
+
+    return {
+      code: error.code || 500,
+      msg: error.msg || "获取图片失败",
+      error,
+    };
   }
 }
 

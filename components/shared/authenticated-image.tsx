@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getImageData } from "@/lib/actions/images/image";
+import { getImageViewAction } from "@/lib/actions/images/image";
 
 interface AuthenticatedImageProps {
   imageId: string;
@@ -28,16 +28,19 @@ export function AuthenticatedImage({
       setLoading(true);
       setError(null);
       
-      const imageData = await getImageData(imageId, thumb);
+      const imageData = await getImageViewAction(imageId, thumb);
       
-      if (imageData) {
+      // 如果是字符串，说明成功获取到图片数据
+      if (typeof imageData === 'string') {
         setImageSrc(imageData);
-      } else {
+      } else if (imageData === null) {
         setError('服务器返回空数据');
+      } else {
+        // ErrorApiResponse 类型
+        setError(imageData.msg || '获取图片失败');
       }
     } catch (err: any) {
-      const errorMsg = err?.msg || err?.message || '未知错误';
-      setError(errorMsg);
+      setError(err?.message || '未知错误');
     } finally {
       setLoading(false);
     }
