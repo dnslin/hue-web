@@ -6,7 +6,7 @@ import { ImageResponse, ImageListParams } from "@/lib/types/image";
 import type { PaginatedApiResponse } from "@/lib/types/common";
 import { isSuccessApiResponse } from "@/lib/types/common";
 import { useImageFilterStore } from "./filter";
-import { getImagesAction, getImageViewAction } from "@/lib/actions/images/image";
+import { getImagesAction, getImageViewAction, deleteImageAction } from "@/lib/actions/images/image";
 import { handleStoreError } from "@/lib/utils/error-handler";
 
 /**
@@ -69,6 +69,11 @@ export interface ImageDataActions {
    * 清除图片URL缓存
    */
   clearImageUrlCache: () => void;
+  /**
+   * 删除单个图片
+   * @param imageId 图片ID
+   */
+  deleteImage: (imageId: number) => Promise<boolean>;
 }
 
 /**
@@ -99,6 +104,41 @@ export const createImageDataSlice: StateCreator<
 
   clearImageUrlCache: () => {
     set({ imageUrlCache: new Map<string, string>() })
+  },
+
+  deleteImage: async (imageId: number) => {
+    try {
+      const response = await deleteImageAction(imageId);
+      
+      if (isSuccessApiResponse(response)) {
+        // 删除成功，从当前列表中移除该图片
+        set((state) => ({
+          images: state.images.filter(img => img.id !== imageId),
+          total: Math.max(0, state.total - 1)
+        }));
+        
+        // 清除该图片的缓存
+        const newCache = new Map(get().imageUrlCache);
+        for (const key of newCache.keys()) {
+          if (key.startsWith(`${imageId}_`)) {
+            newCache.delete(key);
+          }
+        }
+        set({ imageUrlCache: newCache });
+        
+        return true;
+      } else {
+        console.error('删除图片失败:', response.msg);
+        const errorResult = await handleStoreError(response, "删除图片");
+        set({ error: errorResult.error });
+        return false;
+      }
+    } catch (error) {
+      console.error('删除图片时发生错误:', error);
+      const errorResult = await handleStoreError(error, "删除图片");
+      set({ error: errorResult.error });
+      return false;
+    }
   },
 
   getImageUrl: async (imageId: string, thumb: boolean = false) => {

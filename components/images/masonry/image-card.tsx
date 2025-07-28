@@ -11,6 +11,7 @@ import { imageBatchStore } from '@/lib/store/image/batch'
 import { imageDataStore } from '@/lib/store/image/data'
 import { useImageModalStore } from '@/hooks/images/use-image-modal'
 import { useStore } from 'zustand'
+import { cn } from '@/lib/utils'
 import { 
   Eye, 
   EyeOff, 
@@ -28,6 +29,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 /**
  * 图片卡片组件
@@ -40,6 +51,8 @@ export function ImageCard({ image }: ImageCardProps) {
   const [imageSrc, setImageSrc] = useState<string>('')
   const [imageLoading, setImageLoading] = useState(true)
   const [imageError, setImageError] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const { 
     isSelectionMode, 
@@ -47,7 +60,7 @@ export function ImageCard({ image }: ImageCardProps) {
     isImageSelected 
   } = useStore(imageBatchStore)
   
-  const { images, getImageUrl } = useStore(imageDataStore)
+  const { images, getImageUrl, deleteImage } = useStore(imageDataStore)
   const { openPreview, openEditor } = useImageModalStore()
   
   const isSelected = isImageSelected(image.id)
@@ -90,6 +103,22 @@ export function ImageCard({ image }: ImageCardProps) {
       // 找到当前图片在列表中的索引，打开预览
       const currentIndex = images.findIndex(img => img.id === image.id)
       openPreview(images, currentIndex >= 0 ? currentIndex : 0)
+    }
+  }
+
+  // 处理删除图片
+  const handleDeleteImage = async () => {
+    setIsDeleting(true)
+    try {
+      const success = await deleteImage(image.id)
+      if (success) {
+        setShowDeleteDialog(false)
+      } else {
+        // 删除失败的错误已经在 store 中处理，这里可以添加 toast 通知
+        console.error('删除失败')
+      }
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -233,12 +262,33 @@ export function ImageCard({ image }: ImageCardProps) {
                     <Edit className="h-4 w-4 mr-2" />
                     编辑
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={async (e) => {
+                    e.stopPropagation()
+                    try {
+                      const imageUrl = await getImageUrl(image.id.toString(), false) // 获取原图
+                      if (imageUrl) {
+                        const link = document.createElement('a')
+                        link.href = imageUrl
+                        link.download = image.filename
+                        document.body.appendChild(link)
+                        link.click()
+                        document.body.removeChild(link)
+                      }
+                    } catch (error) {
+                      console.error('下载图片失败:', error)
+                    }
+                  }}>
                     <Download className="h-4 w-4 mr-2" />
                     下载
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem 
+                    className="text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowDeleteDialog(true)
+                    }}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" />
                     删除
                   </DropdownMenuItem>
@@ -274,6 +324,106 @@ export function ImageCard({ image }: ImageCardProps) {
         </div>
         </MagicCard>
       </div>
+
+      {/* 删除确认对话框 */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="sm:max-w-md overflow-hidden">
+          {/* 顶部装饰渐变 */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-red-400 to-orange-400" />
+          
+          <AlertDialogHeader className="pt-6">
+            <div className="flex items-center justify-center mb-4">
+              {/* 带动画的警告图标 */}
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-red-100 dark:bg-red-900/20 animate-ping opacity-75" />
+                <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/10 border-2 border-red-200 dark:border-red-800">
+                  <Trash2 className="h-8 w-8 text-red-500 animate-pulse" />
+                </div>
+              </div>
+            </div>
+            
+            <AlertDialogTitle className="text-center text-xl font-semibold text-foreground mb-2">
+              删除图片
+            </AlertDialogTitle>
+            
+            <AlertDialogDescription className="text-center space-y-3">
+              <div className="text-base text-muted-foreground">
+                确定要删除这张图片吗？
+              </div>
+              
+              {/* 文件信息卡片 */}
+              <div className="mx-auto max-w-xs p-3 rounded-lg bg-muted/30 border border-border/50">
+                <div className="flex items-center gap-3">
+                  {/* 缩略图预览 */}
+                  <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden bg-muted">
+                    {imageSrc ? (
+                      <img 
+                        src={imageSrc} 
+                        alt={image.filename}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <HardDrive className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* 文件信息 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate" title={image.filename}>
+                      {image.filename}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {image.width} × {image.height} • {formatFileSize(image.size)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* 提示信息 */}
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/10 px-3 py-2 rounded-md border border-blue-200 dark:border-blue-800">
+                <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                此操作会将图片移到回收站，您可以稍后恢复
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <AlertDialogFooter className="pt-6 gap-3">
+            <AlertDialogCancel 
+              disabled={isDeleting}
+              className="flex-1 h-11 font-medium transition-all duration-200 hover:scale-[1.02]"
+            >
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteImage}
+              disabled={isDeleting}
+              className={cn(
+                "flex-1 h-11 font-medium transition-all duration-200",
+                "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
+                "text-white shadow-lg hover:shadow-xl hover:scale-[1.02]",
+                "disabled:from-red-300 disabled:to-red-400 disabled:shadow-none disabled:scale-100",
+                isDeleting && "cursor-not-allowed"
+              )}
+            >
+              {isDeleting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="relative">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <span className="text-sm">删除中...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  <span>确认删除</span>
+                </div>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   )
 }
