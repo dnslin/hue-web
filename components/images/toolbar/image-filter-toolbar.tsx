@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, SortAsc, SortDesc, X, LayoutGrid, Grid3x3, List } from 'lucide-react'
+import { Search, Filter, SortAsc, SortDesc, X, LayoutGrid, Grid3x3, List, CheckSquare } from 'lucide-react'
 import { useImageFilterStore } from '@/lib/store/image/filter'
+import { imageBatchStore } from '@/lib/store/image/batch'
 import { useState } from 'react'
+import { useStore } from 'zustand'
 
 interface ImageFilterToolbarProps {
   /**
@@ -48,6 +50,7 @@ export function ImageFilterToolbar({
   onPageSizeChange
 }: ImageFilterToolbarProps) {
   const { filters, setFilters, resetFilters } = useImageFilterStore()
+  const { isSelectionMode, setSelectionMode } = useStore(imageBatchStore)
   const [searchInput, setSearchInput] = useState(filters.filename || '')
 
   // 视图模式选项
@@ -124,8 +127,25 @@ export function ImageFilterToolbar({
           </Button>
         </div>
 
-        {/* 右侧：视图控制和筛选控制 */}
+        {/* 右侧：批量操作、视图控制和筛选控制 */}
         <div className="flex flex-wrap items-center gap-3">
+          {/* 批量操作快速入口 */}
+          <Button
+            variant={isSelectionMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectionMode(!isSelectionMode)}
+            className="h-9"
+          >
+            <CheckSquare className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">
+              {isSelectionMode ? '退出批量' : '批量操作'}
+            </span>
+            <span className="sm:hidden">批量</span>
+          </Button>
+
+          {/* 分隔符 - 桌面端显示 */}
+          <div className="w-px h-6 bg-border hidden md:block" />
+
           {/* 视图模式切换 - 桌面端显示 */}
           <div className="hidden md:flex items-center border rounded-lg">
             {viewModeOptions.map((option) => {

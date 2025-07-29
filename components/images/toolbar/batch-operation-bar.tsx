@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -17,12 +18,16 @@ import {
 import { imageBatchStore } from '@/lib/store/image/batch'
 import { imageDataStore } from '@/lib/store/image/data'
 import { useStore } from 'zustand'
+import { BatchDeleteConfirmDialog } from '@/components/images/dialogs/batch-delete-confirm-dialog'
+import { showToast } from '@/lib/utils/toast'
 
 /**
  * 批量操作工具栏组件
  * 提供批量选择、删除、移动、设置公开状态等功能
  */
 export function BatchOperationBar() {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  
   const { 
     selectedImageIds,
     isSelectionMode,
@@ -59,12 +64,17 @@ export function BatchOperationBar() {
 
   // 批量删除
   const handleBatchDelete = async () => {
-    if (confirm(`确定要删除选中的 ${selectedCount} 张图片吗？`)) {
-      const success = await batchDeleteSelected()
-      if (success) {
-        // 刷新图片列表
-        imageDataStore.getState().refreshImages()
-      }
+    const success = await batchDeleteSelected()
+    if (success) {
+      // 刷新图片列表
+      imageDataStore.getState().refreshImages()
+      // 显示成功提示
+      showToast.success(`已成功删除 ${selectedCount} 张图片`)
+      // 关闭对话框
+      setShowDeleteDialog(false)
+    } else {
+      // 错误处理已在 store 中完成，这里可以显示通用错误提示
+      showToast.error('删除失败，请稍后重试')
     }
   }
 
@@ -73,6 +83,12 @@ export function BatchOperationBar() {
     const success = await batchUpdatePublicStatus(isPublic)
     if (success) {
       imageDataStore.getState().refreshImages()
+      // 显示成功提示
+      const statusText = isPublic ? '公开' : '私有'
+      showToast.success(`已成功将 ${selectedCount} 张图片设为${statusText}`)
+    } else {
+      // 错误处理已在 store 中完成，这里可以显示通用错误提示
+      showToast.error('操作失败，请稍后重试')
     }
   }
 
@@ -145,7 +161,7 @@ export function BatchOperationBar() {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={handleBatchDelete}
+                onClick={() => setShowDeleteDialog(true)}
                 disabled={batchOperations.deleting}
                 className="h-9"
               >
@@ -211,6 +227,15 @@ export function BatchOperationBar() {
           </div>
         )}
       </div>
+
+      {/* 批量删除确认对话框 */}
+      <BatchDeleteConfirmDialog
+        isOpen={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        selectedCount={selectedCount}
+        onConfirm={handleBatchDelete}
+        isDeleting={batchOperations.deleting}
+      />
     </Card>
   )
 }

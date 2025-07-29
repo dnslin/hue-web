@@ -168,20 +168,47 @@ export function ImageCard({ image }: ImageCardProps) {
 
         {/* 选择模式复选框 */}
         {isSelectionMode && (
-          <div className="absolute top-2 left-2 z-20">
-            <Button
-              variant={isSelected ? "default" : "secondary"}
-              size="sm"
-              onClick={handleToggleSelection}
-              className="h-8 w-8 p-0 rounded-full"
-              style={{
-                // 确保触摸目标最小 44x44px (CLAUDE.md 标准)
-                minHeight: '44px',
-                minWidth: '44px'
-              }}
+          <div 
+            className="absolute top-2 left-2 z-20 cursor-pointer"
+            onClick={handleToggleSelection}
+            style={{
+              // 确保触摸目标最小 44x44px (CLAUDE.md 标准)
+              minHeight: '44px',
+              minWidth: '44px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'flex-start',
+              padding: '8px'
+            }}
+          >
+            <div
+              className={cn(
+                "flex items-center justify-center",
+                "w-5 h-5 rounded-sm border-[1.5px]",
+                "transition-all duration-200 ease-out",
+                "hover:scale-105 active:scale-95",
+                "backdrop-blur-md",
+                isSelected
+                  ? "bg-green-600 border-green-600 shadow-md shadow-green-600/40"
+                  : "bg-white/95 border-white/80 hover:border-green-400 hover:bg-green-50/95 shadow-sm"
+              )}
             >
-              {isSelected ? '✓' : ''}
-            </Button>
+              {isSelected && (
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3.5}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </div>
           </div>
         )}
 
