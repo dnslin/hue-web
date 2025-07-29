@@ -82,11 +82,14 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
       }
 
       // 将请求数据转换为 snake_case
-      if (config.data) {
-        config.data = deepConvertToSnakeCase(config.data);
-      }
-      if (config.params) {
-        config.params = deepConvertToSnakeCase(config.params);
+      // 只有 JSON 才转换 snake_case
+      if (!(config.data instanceof FormData)) {
+        if (config.data) config.data = deepConvertToSnakeCase(config.data);
+        if (config.params)
+          config.params = deepConvertToSnakeCase(config.params);
+      } else {
+        // 如果是 FormData，删除默认的 Content-Type
+        delete config.headers["Content-Type"];
       }
 
       return config;
