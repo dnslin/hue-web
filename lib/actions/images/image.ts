@@ -145,6 +145,7 @@ export async function uploadSingleImageWithProgress(
   options?: {
     albumId?: number;
     isPublic?: boolean;
+    storageStrategyId?: number;
     onProgress?: (progress: number) => void;
     onStart?: () => void;
     onComplete?: (result: UploadResponse) => void;
@@ -161,6 +162,10 @@ export async function uploadSingleImageWithProgress(
     
     if (options?.isPublic !== undefined) {
       formData.append('is_public', options.isPublic.toString());
+    }
+
+    if (options?.storageStrategyId !== undefined) {
+      formData.append('storage_strategy_id', options.storageStrategyId.toString());
     }
 
     options?.onStart?.();

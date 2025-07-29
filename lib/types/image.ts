@@ -98,6 +98,7 @@ export interface ImageUploadParams {
   files: File[];
   albumId?: number;
   isPublic?: boolean;
+  storageStrategyId?: number;
 }
 
 /**

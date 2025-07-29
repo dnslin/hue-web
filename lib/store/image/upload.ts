@@ -28,6 +28,7 @@ export interface UploadFileState {
 export interface UploadConfig {
   albumId?: number;
   isPublic?: boolean;
+  storageStrategyId?: number;
   maxSizeMB: number;
   allowedFormats: string[];
   batchLimit: number;
@@ -97,6 +98,7 @@ export interface ImageUploadActions {
 const getDefaultConfig = (): UploadConfig => ({
   albumId: undefined,
   isPublic: false,
+  storageStrategyId: undefined,
   maxSizeMB: 10,
   allowedFormats: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
   batchLimit: 20,
@@ -358,6 +360,7 @@ export const createImageUploadSlice: StateCreator<
         await uploadSingleImageWithProgress(fileState.file, {
           albumId: uploadConfig.albumId,
           isPublic: uploadConfig.isPublic,
+          storageStrategyId: uploadConfig.storageStrategyId,
           onProgress: (progress) => {
             updateFileProgress(fileState.id, progress);
           },

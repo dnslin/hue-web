@@ -36,6 +36,7 @@ import { getCurrentUploadConfig } from '@/lib/schema/image'
 import { formatFileSize } from '@/lib/dashboard/formatters'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { StorageStrategySelector } from './storage-strategy-selector'
 
 /**
  * 图片上传对话框组件
@@ -69,7 +70,6 @@ export function ImageUploadDialog() {
     retryFile,
     startUpload,
     pauseUpload,
-    resumeUpload,
     cancelAllUploads,
     clearError,
     loadSettingsConfig,
@@ -225,23 +225,34 @@ export function ImageUploadDialog() {
           <div className="flex-1 flex flex-col min-w-0">
             {/* 移动端设置面板 */}
             <div className="lg:hidden px-6 py-4 border-b bg-muted/10">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 rounded-lg bg-primary/10">
                     <Settings className="h-3 w-3 text-primary" />
                   </div>
                   <span className="font-medium text-sm">设置</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">公开访问</span>
-                    <Switch
-                      checked={uploadConfig.isPublic || false}
-                      onCheckedChange={(checked) => 
-                        updateConfig({ isPublic: checked })
-                      }
-                    />
-                  </div>
+              </div>
+              <div className="space-y-4">
+                {/* 存储策略选择 - 移动端 */}
+                <StorageStrategySelector
+                  value={uploadConfig.storageStrategyId}
+                  onValueChange={(strategyId) => 
+                    updateConfig({ storageStrategyId: strategyId })
+                  }
+                  showDetails={false}
+                  className="w-full h-9"
+                />
+                
+                {/* 公开访问设置 - 移动端 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">公开访问</span>
+                  <Switch
+                    checked={uploadConfig.isPublic || false}
+                    onCheckedChange={(checked) => 
+                      updateConfig({ isPublic: checked })
+                    }
+                  />
                 </div>
               </div>
             </div>
@@ -464,25 +475,44 @@ export function ImageUploadDialog() {
 
           {/* 右侧：设置面板（桌面端显示） */}
           <div className="hidden lg:block w-80 border-l bg-gradient-to-b from-muted/20 to-muted/10">
-            <div className="p-6 space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Settings className="h-4 w-4 text-primary" />
+            <div className="h-full flex flex-col">
+              {/* 设置面板标题 */}
+              <div className="p-5 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Settings className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-base">上传设置</h3>
                 </div>
-                <h3 className="font-semibold text-lg">上传设置</h3>
               </div>
               
-              <div className="space-y-6">
-                {/* 目标相册选择 */}
+              {/* 设置内容 - 充分利用空间，舒适布局 */}
+              <div className="flex-1 p-5 space-y-6">
+                {/* 存储策略选择 */}
                 <div className="space-y-3">
-                  <Label className="font-medium text-base">目标相册</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <StorageStrategySelector
+                    value={uploadConfig.storageStrategyId}
+                    onValueChange={(strategyId) => 
+                      updateConfig({ storageStrategyId: strategyId })
+                    }
+                    showDetails={true}
+                    className="w-full"
+                  />
+                </div>
+                
+                {/* 分隔线 */}
+                <Separator />
+                
+                {/* 目标相册 - 舒适版本 */}
+                <div className="space-y-3">
+                  <Label className="font-medium text-sm">目标相册</Label>
+                  <p className="text-xs text-muted-foreground">
                     选择图片要保存到的相册
                   </p>
-                  <div className="p-4 border-2 border-dashed rounded-xl bg-muted/50 text-center">
+                  <div className="p-4 border-2 border-dashed rounded-lg bg-muted/30 text-center">
                     <div className="space-y-2">
-                      <div className="w-10 h-10 mx-auto rounded-lg bg-muted flex items-center justify-center">
-                        <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-8 h-8 mx-auto rounded-lg bg-muted flex items-center justify-center">
+                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                       </div>
@@ -492,31 +522,32 @@ export function ImageUploadDialog() {
                   </div>
                 </div>
                 
+                {/* 分隔线 */}
                 <Separator />
                 
-                {/* 公开设置 */}
+                {/* 公开设置 - 舒适版本 */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="public-switch" className="font-medium text-base cursor-pointer">
+                    <Label htmlFor="public-switch-desktop" className="font-medium text-sm cursor-pointer">
                       公开访问
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       开启后图片将对所有人可见，可以通过直链访问
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 border rounded-xl bg-background">
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "w-3 h-3 rounded-full transition-colors",
                         uploadConfig.isPublic ? "bg-green-500" : "bg-gray-400"
                       )} />
-                      <span className="font-medium">
+                      <span className="text-sm font-medium">
                         {uploadConfig.isPublic ? '公开' : '私有'}
                       </span>
                     </div>
                     <Switch
-                      id="public-switch"
+                      id="public-switch-desktop"
                       checked={uploadConfig.isPublic || false}
                       onCheckedChange={(checked) => 
                         updateConfig({ isPublic: checked })
