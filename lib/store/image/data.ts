@@ -178,7 +178,9 @@ export const createImageDataSlice: StateCreator<
       pageSize: pagination.pageSize,
     };
 
-    set({ loading: true, error: null });
+    // 立即清空图片列表并设置loading状态，避免新旧数据混合导致的问题
+    set({ loading: true, error: null, images: [], total: 0 });
+    
     try {
       const response = await getImagesAction(apiParams);
 
