@@ -153,16 +153,8 @@ export async function updateImageAction(
 export async function deleteImageAction(
   id: number
 ): Promise<ApiResponse<any> | ErrorApiResponse> {
-  try {
-    const apiService = await getAuthenticatedApiService();
-    const response = await apiService.delete<ApiResponse<any>>(
-      `${IMAGE_API_BASE}/${id}`
-    );
-    return response.data;
-  } catch (error: any) {
-    console.error("deleteImageAction 错误:", error.msg);
-    return error as ErrorApiResponse;
-  }
+  // 复用批量删除接口，将单个ID包装成数组
+  return await batchDeleteImagesAction([id]);
 }
 
 /**
@@ -298,4 +290,3 @@ export async function getAllImagesForExportAction(
     };
   }
 }
-
