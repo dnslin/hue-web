@@ -32,7 +32,10 @@ import {
   Settings,
   Info,
 } from "lucide-react";
-import { useImageUploadStore } from "@/lib/store/image/upload";
+import {
+  useImageUploadStore,
+  imageUploadStore,
+} from "@/lib/store/image/upload";
 import { getCurrentUploadConfig } from "@/lib/schema/image";
 import { formatFileSize } from "@/lib/dashboard/formatters";
 import { cn } from "@/lib/utils";
@@ -102,7 +105,7 @@ export function ImageUploadDialog() {
 
     const cleanupInterval = setInterval(() => {
       // 执行定期清理
-      const store = useImageUploadStore.getState();
+      const store = imageUploadStore.getState();
       if (store.performResourceCleanup) {
         store.performResourceCleanup();
       }
@@ -114,7 +117,7 @@ export function ImageUploadDialog() {
           console.warn("📊 内存使用较高:", memoryInfo);
         }
       }
-    }, 10000); // 每10秒清理一次
+    }, 30000); // 每30秒执行一次
 
     return () => {
       clearInterval(cleanupInterval);

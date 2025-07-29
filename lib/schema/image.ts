@@ -238,6 +238,7 @@ export const getCurrentUploadConfig = () => {
   const settingsState = useSettingsStore.getState();
   const imageSettings = settingsState.settings.image;
 
+  // 如果设置未加载或为空，返回默认配置
   if (!imageSettings) {
     return {
       maxSizeMB: 10,
