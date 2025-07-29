@@ -152,7 +152,11 @@ export function ImageUploadDialog() {
                 </div>
                 图片上传
               </DialogTitle>
-              <DialogDescription className="text-base">
+              <DialogDescription className="text-base text-muted-foreground">
+                选择要上传的图片文件，支持多种格式和批量上传
+              </DialogDescription>
+              {/* 配置信息展示 */}
+              <div className="mt-3">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -195,7 +199,7 @@ export function ImageUploadDialog() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              </DialogDescription>
+              </div>
             </div>
             
             {/* 整体进度 */}
