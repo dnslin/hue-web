@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { UploadResponse } from "@/lib/types/image";
 import { ImageProcessingSetting } from "@/lib/types/settings";
 import { useSettingsStore } from "@/lib/store/settings";
+import { getCurrentUploadConfig } from "@/lib/schema/image";
 import { imageDataStore } from "./data";
 import { uploadSingleImageWithProgress } from "@/lib/actions/images/image";
 import { uploadProgressSimulator } from "@/lib/utils/upload-progress-simulator";
@@ -161,24 +162,22 @@ const validateFile = (
 };
 
 /**
- * 从设置中获取上传配置
+ * 从设置中获取上传配置 - 使用统一的配置获取逻辑
  */
-const getConfigFromSettings = (
-  imageSettings: ImageProcessingSetting | null
-): Partial<UploadConfig> => {
-  if (!imageSettings) return {};
+const getConfigFromSettings = (): Partial<UploadConfig> => {
+  try {
+    const config = getCurrentUploadConfig();
+    console.log("📋 从设置获取的配置:", config);
 
-  return {
-    maxSizeMB: imageSettings.uploadMaxSizeMB,
-    allowedFormats: imageSettings.allowedImageFormats
-      .split(",")
-      .map((format) => {
-        const trimmed = format.trim().toLowerCase();
-        return trimmed.startsWith("image/") ? trimmed : `image/${trimmed}`;
-      }),
-    batchLimit: imageSettings.batchUploadLimit,
-    compressionQuality: imageSettings.compressionQuality,
-  };
+    return {
+      maxSizeMB: config.maxSizeMB,
+      allowedFormats: config.allowedFormats,
+      batchLimit: config.batchLimit,
+    };
+  } catch (error) {
+    console.error("❌ 获取上传配置失败:", error);
+    return {};
+  }
 };
 
 /**
@@ -342,18 +341,13 @@ export const createImageUploadSlice: StateCreator<
 
   loadSettingsConfig: () => {
     try {
-      const settingsState = useSettingsStore.getState();
-      const imageSettings = settingsState.settings.image;
+      const configFromSettings = getConfigFromSettings();
 
-      if (imageSettings) {
-        const configFromSettings = getConfigFromSettings(imageSettings);
-
+      if (Object.keys(configFromSettings).length > 0) {
         set((state) => ({
           uploadConfig: { ...state.uploadConfig, ...configFromSettings },
           settingsLoaded: true,
         }));
-
-        console.log("✅ 上传配置已从设置中加载");
       } else {
         console.warn("⚠️ 图片设置未加载，使用默认配置");
         set({ settingsLoaded: true });
