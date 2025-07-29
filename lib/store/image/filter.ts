@@ -8,15 +8,15 @@ import { ImageListParams } from "@/lib/types/image";
 /**
  * @interface ImageFilters
  * @description 定义了可用于筛选图片列表的条件。
- *              包含前端专用的 search 字段用于统一搜索功能。
+ *              filename 字段直接对应后端API的文件名模糊搜索参数。
  */
 export interface ImageFilters
   extends Omit<
     ImageListParams,
-    "page" | "pageSize" | "keyword"
+    "page" | "pageSize"
   > {
-  /** 统一搜索字段，用于搜索图片文件名，对应后端的 keyword 参数 */
-  search?: string;
+  /** 文件名搜索字段，用于搜索图片文件名，对应后端的 filename 参数 */
+  filename?: string;
 }
 
 /**
@@ -70,7 +70,7 @@ export interface ImageFilterActions {
 // 默认初始状态
 const initialState: ImageFilterState = {
   filters: {
-    search: undefined,
+    filename: undefined,
     albumId: undefined,
     isPublic: undefined,
     sortBy: undefined,

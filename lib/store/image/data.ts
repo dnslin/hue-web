@@ -171,14 +171,9 @@ export const createImageDataSlice: StateCreator<
   fetchImages: async () => {
     const { filters, pagination } = useImageFilterStore.getState();
 
-    // 准备发送到后端的参数，转换 search 字段为 keyword
-    const { search, ...otherFilters } = filters;
+    // 直接传递所有过滤器参数，API服务会自动转换为snake_case
     const apiParams: ImageListParams = {
-      ...otherFilters,
-      // 如果有搜索关键词，转换为 keyword 参数
-      ...(search && {
-        keyword: search,
-      }),
+      ...filters,
       page: pagination.page,
       pageSize: pagination.pageSize,
     };

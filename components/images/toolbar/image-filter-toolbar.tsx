@@ -48,7 +48,7 @@ export function ImageFilterToolbar({
   onPageSizeChange
 }: ImageFilterToolbarProps) {
   const { filters, setFilters, resetFilters } = useImageFilterStore()
-  const [searchInput, setSearchInput] = useState(filters.search || '')
+  const [searchInput, setSearchInput] = useState(filters.filename || '')
 
   // 视图模式选项
   const viewModeOptions = [
@@ -77,7 +77,7 @@ export function ImageFilterToolbar({
 
   // 处理搜索
   const handleSearch = () => {
-    setFilters({ search: searchInput || undefined })
+    setFilters({ filename: searchInput || undefined })
   }
 
   // 处理键盘回车搜索
@@ -90,7 +90,7 @@ export function ImageFilterToolbar({
   // 清除搜索
   const clearSearch = () => {
     setSearchInput('')
-    setFilters({ search: undefined })
+    setFilters({ filename: undefined })
   }
 
   return (
@@ -214,7 +214,7 @@ export function ImageFilterToolbar({
             {/* 排序字段 */}
             <Select
               value={filters.sortBy || 'created_at'}
-              onValueChange={(value) => setFilters({ sortBy: value as 'created_at' | 'updated_at' | 'filename' | 'size' })}
+              onValueChange={(value) => setFilters({ sortBy: value as 'created_at' | 'updated_at' | 'size' })}
             >
               <SelectTrigger className="w-20 md:w-[100px] h-9">
                 <SelectValue placeholder="排序" />
@@ -227,10 +227,6 @@ export function ImageFilterToolbar({
                 <SelectItem value="updated_at">
                   <span className="md:hidden">更新</span>
                   <span className="hidden md:inline">更新时间</span>
-                </SelectItem>
-                <SelectItem value="filename">
-                  <span className="md:hidden">名称</span>
-                  <span className="hidden md:inline">文件名</span>
                 </SelectItem>
                 <SelectItem value="size">
                   <span className="md:hidden">大小</span>
@@ -272,16 +268,16 @@ export function ImageFilterToolbar({
       </div>
 
       {/* 活跃筛选器显示 */}
-      {(filters.search || filters.isPublic !== undefined) && (
+      {(filters.filename || filters.isPublic !== undefined) && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">筛选器:</span>
-          {filters.search && (
+          {filters.filename && (
             <Badge variant="secondary" className="text-xs">
-              搜索: {filters.search}
+              搜索: {filters.filename}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setFilters({ search: undefined })}
+                onClick={() => setFilters({ filename: undefined })}
                 className="ml-1 h-4 w-4 p-0"
               >
                 <X className="h-3 w-3" />

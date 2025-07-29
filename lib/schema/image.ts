@@ -42,9 +42,9 @@ export const createImageValidationSchemas = (imageSettings?: {
     page: z.number().int().min(1).optional().default(1),
     pageSize: z.number().int().min(1).max(100).optional().default(20),
     albumId: z.number().int().positive().optional(),
-    sortBy: z.enum(['created_at', 'updated_at', 'filename', 'size']).optional().default('created_at'),
+    sortBy: z.enum(['created_at', 'updated_at', 'size']).optional().default('created_at'),
     order: z.enum(['asc', 'desc']).optional().default('desc'),
-    keyword: z.string().max(100).optional(),
+    filename: z.string().max(100).optional(),
     isPublic: z.boolean().optional(),
   });
 

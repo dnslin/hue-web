@@ -85,9 +85,9 @@ export interface ImageListParams {
   page?: number;
   pageSize?: number;
   albumId?: number;
-  sortBy?: 'created_at' | 'updated_at' | 'filename' | 'size';
+  sortBy?: 'created_at' | 'updated_at' | 'size';
   order?: 'asc' | 'desc';
-  keyword?: string;
+  filename?: string;
   isPublic?: boolean;
 }
 
@@ -148,7 +148,7 @@ export enum ModerationStatus {
 /**
  * 图片排序字段类型
  */
-export type ImageSortField = 'created_at' | 'updated_at' | 'filename' | 'size' | 'width' | 'height';
+export type ImageSortField = 'created_at' | 'updated_at' | 'size' | 'width' | 'height';
 
 /**
  * 图片过滤条件
