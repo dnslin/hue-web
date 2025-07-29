@@ -14,13 +14,14 @@ interface FileProgressState {
   totalPausedTime: number;
   onProgress: (progress: number) => void;
   onComplete?: () => void;
+  // 新增：独立定时器ID
+  timerId?: number;
 }
 
 export class UploadProgressSimulator {
-  private globalTimer: number | null = null; // 用 number 类型，兼容浏览器
   private fileStates = new Map<string, FileProgressState>();
   private readonly updateInterval = 100; // 100ms
-  private readonly MAX_SIMULATE = 50; // 最大允许模拟上传数（保护内存）
+  private readonly MAX_SIMULATE = 20; // 降低最大并发数，保护内存
 
   /**
    * 启动单个文件上传进度模拟
@@ -28,13 +29,14 @@ export class UploadProgressSimulator {
   startSimulation(fileId: string, options: ProgressSimulatorOptions): void {
     // 并发保护
     if (this.fileStates.size >= this.MAX_SIMULATE) {
+      console.warn(`达到最大并发模拟数限制: ${this.MAX_SIMULATE}`);
       throw new Error("并发模拟上传数超限！");
     }
 
-    // 停止旧状态
+    // 停止旧状态和定时器
     this.stopSimulation(fileId);
 
-    this.fileStates.set(fileId, {
+    const state: FileProgressState = {
       fileSize: options.fileSize,
       startTime: Date.now(),
       currentProgress: 0,
@@ -42,10 +44,10 @@ export class UploadProgressSimulator {
       totalPausedTime: 0,
       onProgress: options.onProgress,
       onComplete: options.onComplete,
-    });
+    };
 
-    this.ensureGlobalTimer();
-    this.updateFileProgress(fileId); // 立即更新一次
+    this.fileStates.set(fileId, state);
+    this.startIndividualTimer(fileId);
   }
 
   pauseSimulation(fileId: string): void {
@@ -54,6 +56,8 @@ export class UploadProgressSimulator {
       state.isPaused = true;
       state.pausedAt = Date.now();
       state.pausedProgress = state.currentProgress;
+      // 暂停时清除定时器
+      this.clearIndividualTimer(fileId);
     }
   }
 
@@ -67,20 +71,23 @@ export class UploadProgressSimulator {
       // 支持动态修改回调
       state.onProgress = options.onProgress;
       state.onComplete = options.onComplete;
-      this.ensureGlobalTimer();
+      // 恢复时重新启动定时器
+      this.startIndividualTimer(fileId);
     }
   }
 
   stopSimulation(fileId: string): void {
+    this.clearIndividualTimer(fileId);
     this.fileStates.delete(fileId);
-    if (this.fileStates.size === 0) {
-      this.stopGlobalTimer();
-    }
   }
 
   cleanup(): void {
+    // 清理所有定时器
+    this.fileStates.forEach((_, fileId) => {
+      this.clearIndividualTimer(fileId);
+    });
     this.fileStates.clear();
-    this.stopGlobalTimer();
+    console.log("🧹 进度模拟器已清理所有资源");
   }
 
   getProgressState(fileId: string) {
@@ -91,76 +98,73 @@ export class UploadProgressSimulator {
     return this.fileStates.has(fileId);
   }
 
-  private ensureGlobalTimer(): void {
-    if (this.globalTimer === null && this.fileStates.size > 0) {
-      this.globalTimer = window.setInterval(() => {
-        this.updateAllProgress();
-      }, this.updateInterval);
-    }
+  // 获取当前活跃的模拟数量，用于内存监控
+  getActiveSimulationCount(): number {
+    return this.fileStates.size;
   }
 
-  private stopGlobalTimer(): void {
-    if (this.globalTimer !== null) {
-      clearInterval(this.globalTimer);
-      this.globalTimer = null;
-    }
-  }
-
-  private updateAllProgress(): void {
-    const filesToComplete: string[] = [];
-    this.fileStates.forEach((state, fileId) => {
-      if (!state.isPaused) {
-        const newProgress = this.calculateProgress(state);
-        if (newProgress !== state.currentProgress) {
-          state.currentProgress = newProgress;
-          try {
-            state.onProgress(newProgress);
-          } catch (e) {
-            // 回调异常不影响主流程
-            console.error("onProgress error", e);
-          }
-        }
-        if (newProgress >= 100) filesToComplete.push(fileId);
-      }
-    });
-
-    // 完成回调和清理
-    filesToComplete.forEach((fileId) => {
-      const state = this.fileStates.get(fileId);
-      if (state?.onComplete) {
-        try {
-          state.onComplete();
-        } catch (e) {
-          // 回调异常忽略
-        }
-      }
-      this.stopSimulation(fileId);
-    });
-
-    // 自动停表
-    if (this.fileStates.size === 0) this.stopGlobalTimer();
-  }
-
-  private updateFileProgress(fileId: string): void {
+  /**
+   * 为单个文件启动独立定时器
+   */
+  private startIndividualTimer(fileId: string): void {
     const state = this.fileStates.get(fileId);
     if (!state || state.isPaused) return;
+
+    // 清除可能存在的旧定时器
+    this.clearIndividualTimer(fileId);
+
+    state.timerId = window.setInterval(() => {
+      this.updateIndividualProgress(fileId);
+    }, this.updateInterval);
+  }
+
+  /**
+   * 清除单个文件的定时器
+   */
+  private clearIndividualTimer(fileId: string): void {
+    const state = this.fileStates.get(fileId);
+    if (state?.timerId) {
+      clearInterval(state.timerId);
+      state.timerId = undefined;
+    }
+  }
+
+  /**
+   * 更新单个文件的进度
+   */
+  private updateIndividualProgress(fileId: string): void {
+    const state = this.fileStates.get(fileId);
+    if (!state || state.isPaused) {
+      this.clearIndividualTimer(fileId);
+      return;
+    }
 
     const newProgress = this.calculateProgress(state);
     if (newProgress !== state.currentProgress) {
       state.currentProgress = newProgress;
+
+      // 安全调用进度回调
       try {
         state.onProgress(newProgress);
       } catch (e) {
-        // 回调异常不影响主流程
-        console.error("onProgress error", e);
+        console.error(`进度回调错误 [${fileId}]:`, e);
+        // 回调错误时停止该文件的模拟
+        this.stopSimulation(fileId);
+        return;
       }
     }
+
+    // 检查是否完成
     if (newProgress >= 100) {
+      // 完成回调
       if (state.onComplete) {
         try {
           state.onComplete();
-        } catch (e) {}
+        } catch (e) {
+          console.error(`完成回调错误 [${fileId}]:`, e);
+        }
       }
+      // 清理该文件的模拟
       this.stopSimulation(fileId);
     }
   }
@@ -169,26 +173,28 @@ export class UploadProgressSimulator {
     const now = Date.now();
     const elapsed = Math.max(0, now - state.startTime - state.totalPausedTime);
 
-    // 配置参数
-    const prepareTime = 300; // ms
+    // 根据文件大小调整时间参数
     const fileSizeMB = state.fileSize / (1024 * 1024);
-    const uploadTime = Math.max(1000, Math.min(fileSizeMB * 4000, 15000)); // ms
-    const processTime = 600; // ms
+
+    // 优化时间配置，减少计算复杂度
+    const prepareTime = 200; // 减少准备时间
+    const uploadTime = Math.max(800, Math.min(fileSizeMB * 3000, 12000)); // 优化上传时间计算
+    const processTime = 400; // 减少处理时间
 
     const totalTime = prepareTime + uploadTime + processTime;
 
     if (elapsed <= prepareTime) {
-      // 0~15%
-      return this.formatProgress((elapsed / prepareTime) * 15);
+      // 0~10%
+      return this.formatProgress((elapsed / prepareTime) * 10);
     } else if (elapsed <= prepareTime + uploadTime) {
-      // 15%~85%
+      // 10%~90%
       const uploadElapsed = elapsed - prepareTime;
       const uploadProgress = this.easeInOutQuad(uploadElapsed / uploadTime);
-      return this.formatProgress(15 + uploadProgress * 70);
+      return this.formatProgress(10 + uploadProgress * 80);
     } else if (elapsed <= totalTime) {
-      // 85%~100%
+      // 90%~100%
       const processElapsed = elapsed - prepareTime - uploadTime;
-      return this.formatProgress(85 + (processElapsed / processTime) * 15);
+      return this.formatProgress(90 + (processElapsed / processTime) * 10);
     } else {
       return 100;
     }
