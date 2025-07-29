@@ -62,7 +62,7 @@ export default function ImageListPage() {
 
   // 渲染内容区域
   const renderContent = () => {
-    // 加载状态
+    // 首次加载状态
     if (loading && images.length === 0) {
       return (
         <div className="flex justify-center items-center py-20">
@@ -74,7 +74,7 @@ export default function ImageListPage() {
       )
     }
 
-    // 错误状态
+    // 首次加载错误状态
     if (error && images.length === 0) {
       return (
         <div className="flex justify-center items-center py-20">
@@ -89,7 +89,7 @@ export default function ImageListPage() {
     }
 
     // 空状态
-    if (!loading && images.length === 0) {
+    if (!loading && !error && images.length === 0) {
       return (
         <div className="flex justify-center items-center py-20">
           <ImagePlaceholder
@@ -116,41 +116,68 @@ export default function ImageListPage() {
             />
           </div>
         )}
+
+        {/* 分页加载错误提示 */}
+        {error && images.length > 0 && !loading && (
+          <div className="flex justify-center py-8">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
+              <div className="flex items-center space-x-3">
+                <div className="text-red-500">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-red-800">加载更多图片失败</p>
+                  <p className="text-xs text-red-600 mt-1">{error}</p>
+                </div>
+                <button
+                  onClick={handleRetry}
+                  className="text-sm text-red-700 hover:text-red-900 font-medium"
+                >
+                  重试
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <PageContainer 
-      title="图片管理" 
-      description={`管理和浏览您的图片库 • 共 ${total} 张图片`}
-    >
-      <div className="space-y-6">
-        {/* 筛选和搜索工具栏（包含视图控制） */}
-        <Card className="p-4">
-          <ImageFilterToolbar 
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            columnCount={columnCount}
-            onColumnCountChange={setColumnCount}
-            pageSize={pagination.pageSize}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </Card>
+    <>
+      <PageContainer 
+        title="图片管理" 
+        description={`管理和浏览您的图片库 • 共 ${total} 张图片`}
+      >
+        <div className="space-y-6">
+          {/* 筛选和搜索工具栏（包含视图控制） */}
+          <Card className="p-4">
+            <ImageFilterToolbar 
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              columnCount={columnCount}
+              onColumnCountChange={setColumnCount}
+              pageSize={pagination.pageSize}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          </Card>
 
-        {/* 批量操作工具栏 */}
-        {isSelectionMode && <BatchOperationBar />}
+          {/* 批量操作工具栏 */}
+          {isSelectionMode && <BatchOperationBar />}
 
-        {/* 图片内容区域 */}
-        <div className="min-h-[500px]">
-          {renderContent()}
+          {/* 图片内容区域 */}
+          <div className="min-h-[500px]">
+            {renderContent()}
+          </div>
         </div>
-      </div>
+      </PageContainer>
 
-      {/* 图片预览弹窗 */}
+      {/* 图片预览弹窗 - 移到 PageContainer 外部 */}
       {isPreviewOpen && <ImageLightbox />}
 
-      {/* 图片编辑器弹窗 */}
+      {/* 图片编辑器弹窗 - 移到 PageContainer 外部 */}
       {editingImage && (
         <ImageEditorModal 
           image={editingImage}
@@ -158,6 +185,6 @@ export default function ImageListPage() {
           onClose={closeEditor}
         />
       )}
-    </PageContainer>
+    </>
   )
 }

@@ -1,43 +1,41 @@
 'use client'
 
-import { useCallback, useRef, useState, useEffect } from 'react'
-import LightGallery from 'lightgallery/react'
-import { LightGallery as ILightGallery } from 'lightgallery/lightgallery'
-import lgZoom from 'lightgallery/plugins/zoom'
-import lgThumbnail from 'lightgallery/plugins/thumbnail'
-import lgFullscreen from 'lightgallery/plugins/fullscreen'
+import { useCallback, useEffect, useState, useRef } from 'react'
+import { PhotoProvider, PhotoView } from 'react-photo-view'
 import { imageDataStore } from '@/lib/store/image/data'
 import { useImageModalStore } from '@/hooks/images/use-image-modal'
-
-// 导入样式文件
-import 'lightgallery/css/lightgallery.css'
-import 'lightgallery/css/lg-zoom.css'
-import 'lightgallery/css/lg-thumbnail.css'
-import 'lightgallery/css/lg-fullscreen.css'
+import 'react-photo-view/dist/react-photo-view.css'
 
 /**
  * 图片预览组件
- * 基于 LightGallery 实现图片预览、缩放和幻灯片功能
+ * 基于 react-photo-view 实现图片预览、缩放和手势操作
  */
 export function ImageLightbox() {
-  const lightGalleryRef = useRef<ILightGallery | null>(null)
-  const [galleryItems, setGalleryItems] = useState<Array<{
-    id: string
+  const [imageDataList, setImageDataList] = useState<Array<{
     src: string
-    thumb: string
-    subHtml: string
-    'data-lg-size': string
+    key: string
+    width: number
+    height: number
+    filename: string
+    size: number
+    createdAt: string
   }>>([])
   const [isLoading, setIsLoading] = useState(false)
-  
-  // 使用 modal store 的状态
-  const { previewImages, currentPreviewIndex, isPreviewOpen, closePreview } = useImageModalStore()
+  const triggerRef = useRef<HTMLDivElement>(null)
 
-  // 预加载图片数据并构建gallery items
+  // 使用 modal store 的状态
+  const { 
+    previewImages, 
+    currentPreviewIndex, 
+    isPreviewOpen, 
+    closePreview
+  } = useImageModalStore()
+
+  // 预加载图片数据
   useEffect(() => {
-    const loadGalleryImages = async () => {
+    const loadImages = async () => {
       if (previewImages.length === 0) {
-        setGalleryItems([])
+        setImageDataList([])
         return
       }
       
@@ -45,196 +43,155 @@ export function ImageLightbox() {
       try {
         const { getImageUrl } = imageDataStore.getState()
         
-        // 创建一个fallback图片的base64编码
-        const fallbackImage = `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" fill="#9ca3af">Image Load Failed</text></svg>')}`
-        
-        const imageData = await Promise.allSettled(
+        // 并行获取所有图片URL
+        const imageResults = await Promise.allSettled(
           previewImages.map(async (image) => {
-            try {
-              const fullUrl = await getImageUrl(image.id.toString(), false)
-              const thumbUrl = await getImageUrl(image.id.toString(), true)
-              
-              return {
-                id: image.id.toString(),
-                src: fullUrl || fallbackImage,
-                thumb: thumbUrl || fullUrl || fallbackImage,
-                subHtml: `
-                  <div class="lightgallery-captions">
-                    <h4>${image.filename}</h4>
-                    <p>尺寸: ${image.width}x${image.height} | 大小: ${formatFileSize(image.size)}</p>
-                    <p>创建时间: ${formatDate(image.createdAt)}</p>
-                  </div>
-                `,
-                'data-lg-size': `${image.width}-${image.height}`
-              }
-            } catch (error) {
-              return {
-                id: image.id.toString(),
-                src: fallbackImage,
-                thumb: fallbackImage,
-                subHtml: `
-                  <div class="lightgallery-captions">
-                    <h4>${image.filename} (Load Failed)</h4>
-                    <p>尺寸: ${image.width}x${image.height} | 大小: ${formatFileSize(image.size)}</p>
-                    <p>创建时间: ${formatDate(image.createdAt)}</p>
-                  </div>
-                `,
-                'data-lg-size': `${image.width}-${image.height}`
-              }
+            const fullUrl = await getImageUrl(image.id.toString(), false)
+            return {
+              src: fullUrl || '',
+              key: image.id.toString(),
+              width: image.width,
+              height: image.height,
+              filename: image.filename,
+              size: image.size,
+              createdAt: image.createdAt
             }
           })
         )
         
-        // 提取成功和失败的结果
-        const processedData = imageData.map((result, index) => {
-          if (result.status === 'fulfilled') {
-            return result.value
-          } else {
+        // 提取成功的结果，为失败的图片提供fallback
+        const processedData = imageResults
+          .map((result, index) => {
+            if (result.status === 'fulfilled' && result.value.src) {
+              return result.value
+            }
+            // 为失败的图片提供fallback
             const image = previewImages[index]
             return {
-              id: image.id.toString(),
-              src: fallbackImage,
-              thumb: fallbackImage,
-              subHtml: `
-                <div class="lightgallery-captions">
-                  <h4>${image.filename} (Process Failed)</h4>
-                  <p>尺寸: ${image.width}x${image.height} | 大小: ${formatFileSize(image.size)}</p>
-                  <p>创建时间: ${formatDate(image.createdAt)}</p>
-                </div>
-              `,
-              'data-lg-size': `${image.width}-${image.height}`
+              src: `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" fill="#9ca3af">加载失败</text></svg>')}`,
+              key: image.id.toString(),
+              width: image.width,
+              height: image.height,
+              filename: image.filename,
+              size: image.size,
+              createdAt: image.createdAt
             }
-          }
-        })
+          })
         
-        setGalleryItems(processedData)
+        setImageDataList(processedData)
       } catch (error) {
-        setGalleryItems([])
+        console.error('加载图片数据失败:', error)
+        setImageDataList([])
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadGalleryImages()
+    loadImages()
   }, [previewImages])
 
+  // 当需要打开预览且数据准备完成时，自动触发点击
+  useEffect(() => {
+    if (isPreviewOpen && imageDataList.length > 0 && !isLoading && triggerRef.current) {
+      // 短延迟确保DOM渲染完成
+      const timer = setTimeout(() => {
+        if (triggerRef.current) {
+          const targetChild = triggerRef.current.children[currentPreviewIndex] as HTMLElement
+          if (targetChild) {
+            targetChild.click()
+          }
+        }
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [isPreviewOpen, imageDataList.length, isLoading, currentPreviewIndex])
+
   // 格式化文件大小
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = useCallback((bytes: number) => {
     if (bytes === 0) return '0 B'
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-  }
-
-  // 格式化日期
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('zh-CN')
-  }
-
-  // 初始化回调
-  const onInit = useCallback((detail: { instance: ILightGallery }) => {
-    if (detail) {
-      lightGalleryRef.current = detail.instance
-    }
   }, [])
 
-  // 刷新gallery当items改变时
-  useEffect(() => {
-    if (lightGalleryRef.current && galleryItems.length > 0) {
-      lightGalleryRef.current.refresh()
-    }
-  }, [galleryItems])
+  // 格式化日期
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleString('zh-CN')
+  }, [])
 
-  // 当组件挂载且数据准备好时打开gallery
-  useEffect(() => {
-    if (lightGalleryRef.current && galleryItems.length > 0) {
-      // 使用短延迟确保DOM元素和样式都已就绪，保持动画效果
-      setTimeout(() => {
-        if (lightGalleryRef.current) {
-          lightGalleryRef.current.openGallery(currentPreviewIndex)
-        }
-      }, 50) // 减少延迟时间，保持动画但提高响应速度
-    }
-  }, [galleryItems, currentPreviewIndex]) // 移除isPreviewOpen依赖，因为组件已经条件渲染
+  // 自定义工具栏渲染
+  const customToolbarRender = useCallback(({ index }: { index: number }) => {
+    const currentImage = imageDataList[index]
+    if (!currentImage) return null
 
-  // LightGallery 关闭后的回调
-  const onAfterClose = useCallback(() => {
-    closePreview()
+    return (
+      <div className="fixed top-0 left-0 right-0 z-50 bg-black/75 text-white p-4">
+        <div className="flex justify-between items-center">
+          <div className="flex-1">
+            <h4 className="text-lg font-medium truncate">{currentImage.filename}</h4>
+            <p className="text-sm text-gray-300">
+              尺寸: {currentImage.width}×{currentImage.height} | 
+              大小: {formatFileSize(currentImage.size)} | 
+              创建时间: {formatDate(currentImage.createdAt)}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }, [imageDataList, formatFileSize, formatDate])
+
+  // 关闭处理
+  const handleVisibleChange = useCallback((visible: boolean) => {
+    if (!visible) {
+      closePreview()
+    }
   }, [closePreview])
 
-  // 构建gallery items的渲染函数
-  const getGalleryItems = useCallback(() => {
-    return galleryItems.map((item) => (
-      <div
-        key={item.id}
-        data-lg-size={item['data-lg-size']}
-        className="gallery-item"
-        data-src={item.src}
-        data-sub-html={item.subHtml}
-        style={{ display: 'none' }} // 隐藏原始图片元素，防止显示在页面中
-      >
-        <img 
-          className="img-responsive" 
-          src={item.thumb} 
-          alt="" 
-          style={{ display: 'none' }} // 确保图片也被隐藏
-        />
-      </div>
-    ))
-  }, [galleryItems])
-
-  // 如果正在加载，显示加载状态
-  if (isLoading) {
+  // 加载状态
+  if (isLoading && isPreviewOpen) {
     return (
-      <>
-        {isPreviewOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-            <div className="text-center text-white">
-              <div className="mb-4">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-              </div>
-              <p className="text-lg">正在加载图片...</p>
-            </div>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
+        <div className="text-center text-white">
+          <div className="mb-4">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
           </div>
-        )}
-      </>
+          <p className="text-lg">正在加载图片...</p>
+        </div>
+      </div>
     )
   }
 
-  // 只有在需要预览且有数据时才渲染LightGallery
-  if (!isPreviewOpen || galleryItems.length === 0) {
+  // 只有在需要预览且数据准备完成时才渲染
+  if (!isPreviewOpen || imageDataList.length === 0) {
     return null
   }
 
   return (
-    <LightGallery
-      onInit={onInit}
-      onAfterClose={onAfterClose}
-      plugins={[lgZoom, lgThumbnail, lgFullscreen]}
-      // 许可证配置 - 开发环境使用GPLv3许可证
-      licenseKey="GPLv3"
-      // 配置选项
-      speed={500}
-      thumbnail={true}
-      zoom={true}
-      fullScreen={true}
-      // 关闭按钮和最大化按钮
-      closable={true}
-      showMaximizeIcon={true}
-      // 缩略图配置
-      thumbWidth={130}
-      thumbHeight={'100px'}
-      thumbMargin={6}
-      // 字幕配置
-      appendSubHtmlTo='.lg-item'
-      slideDelay={400}
-      // 不使用URL hash
-      hash={false}
-      // 自定义CSS类
-      elementClassNames='hue-image-gallery'
+    <PhotoProvider
+      onVisibleChange={handleVisibleChange}
+      speed={() => 400}
+      easing={() => "cubic-bezier(0.25, 0.8, 0.25, 1)"}
+      photoClosable={false}
+      maskClosable={true}
+      pullClosable={true}
+      bannerVisible={false}
+      loop={imageDataList.length >= 3}
+      toolbarRender={customToolbarRender}
+      className="hue-image-gallery"
     >
-      {getGalleryItems()}
-    </LightGallery>
+      <div ref={triggerRef} style={{ display: 'none' }}>
+        {imageDataList.map((item) => (
+          <PhotoView
+            key={item.key}
+            src={item.src}
+            width={item.width}
+            height={item.height}
+          >
+            <div />
+          </PhotoView>
+        ))}
+      </div>
+    </PhotoProvider>
   )
 }

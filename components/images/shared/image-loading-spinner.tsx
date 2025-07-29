@@ -45,10 +45,10 @@ export function ImageLoadingSpinner({
 
   const SpinnerContent = (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
       className={cn(
         "flex flex-col items-center justify-center gap-3 text-muted-foreground",
         className
@@ -56,23 +56,24 @@ export function ImageLoadingSpinner({
     >
       {/* 旋转的加载图标 */}
       <motion.div
+        initial={{ rotate: 0 }}
         animate={{ rotate: 360 }}
         transition={{
-          duration: 1,
+          duration: 1.2,
           repeat: Infinity,
           ease: "linear"
         }}
       >
-        <Loader2 className={cn(config.icon, 'text-green-600')} />
+        <Loader2 className={cn(config.icon, 'text-primary')} />
       </motion.div>
       
       {/* 加载文本 */}
       {text && (
         <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.2 }}
-          className={cn(config.text, 'font-medium')}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.05, duration: 0.15, ease: "easeOut" }}
+          className={cn(config.text, 'font-normal text-muted-foreground')}
         >
           {text}
         </motion.p>
@@ -83,9 +84,15 @@ export function ImageLoadingSpinner({
   // 如果需要遮罩层
   if (overlay) {
     return (
-      <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      >
         {SpinnerContent}
-      </div>
+      </motion.div>
     )
   }
 
@@ -110,13 +117,14 @@ export function SimpleImageSpinner({
 
   return (
     <motion.div
+      initial={{ rotate: 0 }}
       animate={{ rotate: 360 }}
       transition={{
-        duration: 1,
+        duration: 1.2,
         repeat: Infinity,
         ease: "linear"
       }}
-      className={cn("text-green-600", className)}
+      className={cn("text-primary", className)}
     >
       <Loader2 className={sizeConfig[size]} />
     </motion.div>
