@@ -486,8 +486,8 @@ export function ImageUploadDialog() {
                 </div>
               </div>
               
-              {/* 设置内容 - 充分利用空间，舒适布局 */}
-              <div className="flex-1 p-5 space-y-6">
+              {/* 设置内容 - 可滚动区域，保持舒适布局 */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
                 {/* 存储策略选择 */}
                 <div className="space-y-3">
                   <StorageStrategySelector
@@ -498,28 +498,6 @@ export function ImageUploadDialog() {
                     showDetails={true}
                     className="w-full"
                   />
-                </div>
-                
-                {/* 分隔线 */}
-                <Separator />
-                
-                {/* 目标相册 - 舒适版本 */}
-                <div className="space-y-3">
-                  <Label className="font-medium text-sm">目标相册</Label>
-                  <p className="text-xs text-muted-foreground">
-                    选择图片要保存到的相册
-                  </p>
-                  <div className="p-4 border-2 border-dashed rounded-lg bg-muted/30 text-center">
-                    <div className="space-y-2">
-                      <div className="w-8 h-8 mx-auto rounded-lg bg-muted flex items-center justify-center">
-                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                      </div>
-                      <p className="text-sm text-muted-foreground">暂无相册可选</p>
-                      <p className="text-xs text-muted-foreground">将保存到默认位置</p>
-                    </div>
-                  </div>
                 </div>
                 
                 {/* 分隔线 */}
@@ -553,6 +531,28 @@ export function ImageUploadDialog() {
                         updateConfig({ isPublic: checked })
                       }
                     />
+                  </div>
+                </div>
+                
+                {/* 分隔线 */}
+                <Separator />
+                
+                {/* 目标相册 - 舒适版本 */}
+                <div className="space-y-3">
+                  <Label className="font-medium text-sm">目标相册</Label>
+                  <p className="text-xs text-muted-foreground">
+                    选择图片要保存到的相册
+                  </p>
+                  <div className="p-4 border-2 border-dashed rounded-lg bg-muted/30 text-center">
+                    <div className="space-y-2">
+                      <div className="w-8 h-8 mx-auto rounded-lg bg-muted flex items-center justify-center">
+                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-muted-foreground">暂无相册可选</p>
+                      <p className="text-xs text-muted-foreground">将保存到默认位置</p>
+                    </div>
                   </div>
                 </div>
               </div>
