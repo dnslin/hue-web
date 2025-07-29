@@ -14,6 +14,7 @@ import { ImageEditorModal } from '@/components/images/preview/image-editor-modal
 import { ImageLoadingSpinner } from '@/components/images/shared/image-loading-spinner'
 import { ImageErrorFallback } from '@/components/images/shared/image-error-fallback'
 import { ImagePlaceholder } from '@/components/images/shared/image-placeholder'
+import { ImageUploadDialog } from '@/components/images/upload/image-upload-dialog'
 import { PageContainer } from '@/components/layouts/page-container'
 import { Card } from '@/components/ui/card'
 
@@ -185,6 +186,9 @@ export default function ImageListPage() {
           onClose={closeEditor}
         />
       )}
+
+      {/* 图片上传对话框 */}
+      <ImageUploadDialog />
     </>
   )
 }

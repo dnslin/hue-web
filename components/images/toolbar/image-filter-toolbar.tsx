@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, SortAsc, SortDesc, X, LayoutGrid, Grid3x3, List, CheckSquare } from 'lucide-react'
+import { Search, Filter, SortAsc, SortDesc, X, LayoutGrid, Grid3x3, List, CheckSquare, Upload } from 'lucide-react'
 import { useImageFilterStore } from '@/lib/store/image/filter'
 import { imageBatchStore } from '@/lib/store/image/batch'
+import { useImageUploadStore } from '@/lib/store/image/upload'
+import { imageDataStore } from '@/lib/store/image/data'
 import { useState } from 'react'
 import { useStore } from 'zustand'
 
@@ -51,6 +53,8 @@ export function ImageFilterToolbar({
 }: ImageFilterToolbarProps) {
   const { filters, setFilters, resetFilters } = useImageFilterStore()
   const { isSelectionMode, setSelectionMode } = useStore(imageBatchStore)
+  const { openDialog } = useImageUploadStore()
+  const { images } = useStore(imageDataStore)
   const [searchInput, setSearchInput] = useState(filters.filename || '')
 
   // 视图模式选项
@@ -101,7 +105,8 @@ export function ImageFilterToolbar({
       {/* 主要工具栏 */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* 左侧：搜索栏 */}
-        <div className="flex flex-1 items-center gap-2 max-w-md">
+        <div className="flex flex-1 items-center gap-4 max-w-md">
+          {/* 搜索栏 */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -127,21 +132,34 @@ export function ImageFilterToolbar({
           </Button>
         </div>
 
-        {/* 右侧：批量操作、视图控制和筛选控制 */}
+        {/* 右侧：上传按钮、批量操作、视图控制和筛选控制 */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* 批量操作快速入口 */}
+          {/* 上传按钮 */}
           <Button
-            variant={isSelectionMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectionMode(!isSelectionMode)}
-            className="h-9"
+            onClick={openDialog}
+            className="h-9 whitespace-nowrap"
+            title="上传图片"
           >
-            <CheckSquare className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">
-              {isSelectionMode ? '退出批量' : '批量操作'}
-            </span>
-            <span className="sm:hidden">批量</span>
+            <Upload className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">上传图片</span>
+            <span className="sm:hidden">上传</span>
           </Button>
+
+          {/* 批量操作快速入口 - 只在有图片时显示 */}
+          {images.length > 0 && (
+            <Button
+              variant={isSelectionMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectionMode(!isSelectionMode)}
+              className="h-9"
+            >
+              <CheckSquare className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">
+                {isSelectionMode ? '退出批量' : '批量操作'}
+              </span>
+              <span className="sm:hidden">批量</span>
+            </Button>
+          )}
 
           {/* 分隔符 - 桌面端显示 */}
           <div className="w-px h-6 bg-border hidden md:block" />

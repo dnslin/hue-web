@@ -1,14 +1,12 @@
 import { z } from "zod";
+import { ImageProcessingSetting } from "@/lib/types/settings";
+import { useSettingsStore } from "@/lib/store/settings";
 
 /**
  * 创建动态的图片验证 Schema
  * 从设置中获取支持的图片类型和最大文件大小
  */
-export const createImageValidationSchemas = (imageSettings?: {
-  allowedImageFormats: string;
-  uploadMaxSizeMB: number;
-  batchUploadLimit: number;
-}) => {
+export const createImageValidationSchemas = (imageSettings?: ImageProcessingSetting) => {
   // 默认配置（当设置未加载时使用）
   const defaultSupportedTypes = [
     "image/jpeg",
@@ -183,3 +181,42 @@ export type ImageUpdateParamsFormValues = z.infer<typeof imageUpdateParamsSchema
 export type ImageDeleteParamsFormValues = z.infer<typeof imageDeleteParamsSchema>;
 export type BatchImageParamsFormValues = z.infer<typeof batchImageParamsSchema>;
 export type ImageFiltersFormValues = z.infer<typeof imageFiltersSchema>;
+
+/**
+ * 从 settings store 获取当前图片设置并创建动态验证 schemas
+ * 这个函数应该在组件中使用，可以获取到最新的设置
+ */
+export const createDynamicImageSchemas = () => {
+  const settingsState = useSettingsStore.getState();
+  const imageSettings = settingsState.settings.image;
+  
+  return createImageValidationSchemas(imageSettings || undefined);
+};
+
+/**
+ * 获取当前的上传配置信息
+ * 用于在 UI 组件中显示限制信息
+ */
+export const getCurrentUploadConfig = () => {
+  const settingsState = useSettingsStore.getState();
+  const imageSettings = settingsState.settings.image;
+  
+  if (!imageSettings) {
+    return {
+      maxSizeMB: 10,
+      allowedFormats: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
+      batchLimit: 20,
+    };
+  }
+  
+  return {
+    maxSizeMB: imageSettings.uploadMaxSizeMB,
+    allowedFormats: imageSettings.allowedImageFormats
+      .split(',')
+      .map(format => {
+        const trimmed = format.trim().toLowerCase();
+        return trimmed.startsWith('image/') ? trimmed : `image/${trimmed}`;
+      }),
+    batchLimit: imageSettings.batchUploadLimit,
+  };
+};
