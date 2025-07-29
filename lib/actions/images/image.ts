@@ -11,7 +11,7 @@ import {
   ImageUpdateParams,
   BatchUploadResponse,
   ImageDetail,
-  UploadResponse,
+  UploadActionResult,
 } from "@/lib/types/image";
 import type {
   ApiResponse,
@@ -105,30 +105,17 @@ export async function getImageViewAction(
 }
 
 /**
- * 上传图片（支持单个或批量），带进度回调
+ * 上传图片（支持单个或批量）
+ * 注意：Server Actions 环境中不支持进度回调
  */
 export async function uploadImagesAction(
-  formData: FormData,
-  onProgress?: (progress: number) => void
+  formData: FormData
 ): Promise<ApiResponse<BatchUploadResponse> | ErrorApiResponse> {
   try {
     const apiService = await getAuthenticatedApiService();
     const response = await apiService.post<ApiResponse<BatchUploadResponse>>(
       IMAGE_API_BASE,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            onProgress(percentCompleted);
-          }
-        },
-      }
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -138,7 +125,8 @@ export async function uploadImagesAction(
 }
 
 /**
- * 上传单个文件的高级函数，支持更详细的进度跟踪
+ * 上传单个文件的 Server Action 函数
+ * 移除了所有客户端回调，改用返回值传递结果
  */
 export async function uploadSingleImageWithProgress(
   file: File,
@@ -146,64 +134,85 @@ export async function uploadSingleImageWithProgress(
     albumId?: number;
     isPublic?: boolean;
     storageStrategyId?: number;
-    onProgress?: (progress: number) => void;
-    onStart?: () => void;
-    onComplete?: (result: UploadResponse) => void;
-    onError?: (error: string) => void;
   }
-): Promise<UploadResponse | null> {
+): Promise<UploadActionResult> {
   try {
     const formData = new FormData();
-    formData.append('files', file);
-    
+    formData.append("files", file);
+
     if (options?.albumId !== undefined) {
-      formData.append('album_id', options.albumId.toString());
+      formData.append("album_id", options.albumId.toString());
     }
-    
+
     if (options?.isPublic !== undefined) {
-      formData.append('is_public', options.isPublic.toString());
+      formData.append("is_public", options.isPublic.toString());
     }
 
     if (options?.storageStrategyId !== undefined) {
-      formData.append('storage_strategy_id', options.storageStrategyId.toString());
+      formData.append(
+        "storage_strategy_id",
+        options.storageStrategyId.toString()
+      );
     }
 
-    options?.onStart?.();
+    // 移除 onProgress 回调，直接调用上传函数
+    const result = await uploadImagesAction(formData);
 
-    const result = await uploadImagesAction(formData, options?.onProgress);
-
-    if ('code' in result && result.code !== 0) {
+    if ("code" in result && result.code !== 0) {
       // 错误响应
-      const errorMsg = result.msg || '上传失败';
-      options?.onError?.(errorMsg);
-      return null;
+      const errorMsg = result.msg || "上传失败";
+      return {
+        success: false,
+        error: errorMsg,
+        filename: file.name,
+      };
     }
 
     // 成功响应
     const batchResponse = (result as ApiResponse<BatchUploadResponse>).data;
-    
+
     if (!batchResponse) {
-      options?.onError?.('响应数据为空');
-      return null;
-    }
-    
-    if (batchResponse.successCount > 0 && batchResponse.successFiles.length > 0) {
-      const uploadedFile = batchResponse.successFiles[0];
-      options?.onComplete?.(uploadedFile);
-      return uploadedFile;
-    } else if (batchResponse.failureCount > 0 && batchResponse.failureFiles.length > 0) {
-      const errorMsg = batchResponse.failureFiles[0].error || '上传失败';
-      options?.onError?.(errorMsg);
-      return null;
+      return {
+        success: false,
+        error: "响应数据为空",
+        filename: file.name,
+      };
     }
 
-    options?.onError?.('未知上传错误');
-    return null;
-    
+    if (
+      batchResponse.successCount > 0 &&
+      batchResponse.successFiles.length > 0
+    ) {
+      const uploadedFile = batchResponse.successFiles[0];
+      return {
+        success: true,
+        data: uploadedFile,
+        filename: file.name,
+      };
+    } else if (
+      batchResponse.failureCount > 0 &&
+      batchResponse.failureFiles.length > 0
+    ) {
+      const errorMsg = batchResponse.failureFiles[0].error || "上传失败";
+      return {
+        success: false,
+        error: errorMsg,
+        filename: file.name,
+      };
+    }
+
+    return {
+      success: false,
+      error: "未知上传错误",
+      filename: file.name,
+    };
   } catch (error: any) {
-    const errorMsg = error.msg || error.message || '上传时发生未知错误';
-    options?.onError?.(errorMsg);
-    return null;
+    const errorMsg = error.msg || error.message || "上传时发生未知错误";
+    return {
+      success: false,
+      error: errorMsg,
+      filename: file.name,
+    };
   }
 }
 
@@ -370,3 +379,4 @@ export async function getAllImagesForExportAction(
     };
   }
 }
+

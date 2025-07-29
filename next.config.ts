@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
     // 在生产构建期间忽略 ESLint 错误
     ignoreDuringBuilds: true,
   },
+  // 实验性功能配置
+  experimental: {
+    // 配置 Server Actions 请求体大小限制
+    serverActions: {
+      // 设置为 20MB 以支持大图片上传（当前应用支持最大 10MB 图片）
+      bodySizeLimit: "20mb",
+    },
+  },
   // 配置反向代理解决跨域问题
   async rewrites() {
     return [

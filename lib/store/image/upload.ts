@@ -2,7 +2,7 @@
 
 import { StateCreator } from "zustand";
 import { createStore, useStore } from "zustand";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { UploadResponse } from "@/lib/types/image";
 import { ImageProcessingSetting } from "@/lib/types/settings";
 import { useSettingsStore } from "@/lib/store/settings";
@@ -16,7 +16,7 @@ export interface UploadFileState {
   id: string;
   file: File;
   progress: number;
-  status: 'pending' | 'uploading' | 'success' | 'error' | 'cancelled';
+  status: "pending" | "uploading" | "success" | "error" | "cancelled";
   error?: string;
   result?: UploadResponse;
   preview?: string; // 预览URL
@@ -43,19 +43,19 @@ export interface ImageUploadState {
   files: UploadFileState[];
   isUploading: boolean;
   uploadConfig: UploadConfig;
-  
+
   // 对话框状态
   isDialogOpen: boolean;
-  
+
   // 统计信息
   totalFiles: number;
   completedFiles: number;
   failedFiles: number;
   overallProgress: number;
-  
+
   // 错误信息
   globalError: string | null;
-  
+
   // 设置状态
   settingsLoaded: boolean;
 }
@@ -67,29 +67,34 @@ export interface ImageUploadActions {
   // 对话框管理
   openDialog: () => void;
   closeDialog: () => void;
-  
+
   // 文件管理
   addFiles: (files: File[]) => void;
   removeFile: (fileId: string) => void;
   clearFiles: () => void;
   retryFile: (fileId: string) => void;
   cancelFile: (fileId: string) => void;
-  
+
   // 配置管理
   updateConfig: (config: Partial<UploadConfig>) => void;
   loadSettingsConfig: () => void;
-  
+
   // 上传控制
   startUpload: () => Promise<void>;
   pauseUpload: () => void;
   resumeUpload: () => void;
   cancelAllUploads: () => void;
-  
+
   // 状态管理
   updateFileProgress: (fileId: string, progress: number) => void;
-  updateFileStatus: (fileId: string, status: UploadFileState['status'], error?: string, result?: UploadResponse) => void;
+  updateFileStatus: (
+    fileId: string,
+    status: UploadFileState["status"],
+    error?: string,
+    result?: UploadResponse
+  ) => void;
   clearError: () => void;
-  
+
   // 重置
   reset: () => void;
 }
@@ -100,7 +105,13 @@ const getDefaultConfig = (): UploadConfig => ({
   isPublic: false,
   storageStrategyId: undefined,
   maxSizeMB: 10,
-  allowedFormats: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
+  allowedFormats: [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ],
   batchLimit: 20,
   compressionQuality: 85,
 });
@@ -112,48 +123,57 @@ const createFilePreview = (file: File): string => {
   try {
     return URL.createObjectURL(file);
   } catch (error) {
-    console.warn('无法创建文件预览:', error);
-    return '';
+    console.warn("无法创建文件预览:", error);
+    return "";
   }
 };
 
 /**
  * 验证文件格式和大小
  */
-const validateFile = (file: File, config: UploadConfig): { valid: boolean; error?: string } => {
+const validateFile = (
+  file: File,
+  config: UploadConfig
+): { valid: boolean; error?: string } => {
   // 检查文件大小
   const maxSizeBytes = config.maxSizeMB * 1024 * 1024;
   if (file.size > maxSizeBytes) {
     return {
       valid: false,
-      error: `文件大小 ${(file.size / 1024 / 1024).toFixed(1)}MB 超过限制 ${config.maxSizeMB}MB`
+      error: `文件大小 ${(file.size / 1024 / 1024).toFixed(1)}MB 超过限制 ${
+        config.maxSizeMB
+      }MB`,
     };
   }
-  
+
   // 检查文件格式
   if (!config.allowedFormats.includes(file.type.toLowerCase())) {
     return {
       valid: false,
-      error: `不支持的文件格式 ${file.type}。支持格式：${config.allowedFormats.join(', ')}`
+      error: `不支持的文件格式 ${
+        file.type
+      }。支持格式：${config.allowedFormats.join(", ")}`,
     };
   }
-  
+
   return { valid: true };
 };
 
 /**
  * 从设置中获取上传配置
  */
-const getConfigFromSettings = (imageSettings: ImageProcessingSetting | null): Partial<UploadConfig> => {
+const getConfigFromSettings = (
+  imageSettings: ImageProcessingSetting | null
+): Partial<UploadConfig> => {
   if (!imageSettings) return {};
-  
+
   return {
     maxSizeMB: imageSettings.uploadMaxSizeMB,
     allowedFormats: imageSettings.allowedImageFormats
-      .split(',')
-      .map(format => {
+      .split(",")
+      .map((format) => {
         const trimmed = format.trim().toLowerCase();
-        return trimmed.startsWith('image/') ? trimmed : `image/${trimmed}`;
+        return trimmed.startsWith("image/") ? trimmed : `image/${trimmed}`;
       }),
     batchLimit: imageSettings.batchUploadLimit,
     compressionQuality: imageSettings.compressionQuality,
@@ -203,73 +223,73 @@ export const createImageUploadSlice: StateCreator<
   addFiles: (newFiles: File[]) => {
     const state = get();
     const { uploadConfig } = state;
-    
+
     // 检查批量上传限制
     const totalCount = state.files.length + newFiles.length;
     if (totalCount > uploadConfig.batchLimit) {
       set({
-        globalError: `一次最多上传 ${uploadConfig.batchLimit} 个文件，当前已有 ${state.files.length} 个文件`
+        globalError: `一次最多上传 ${uploadConfig.batchLimit} 个文件，当前已有 ${state.files.length} 个文件`,
       });
       return;
     }
-    
+
     const validFiles: UploadFileState[] = [];
     const errors: string[] = [];
-    
-    newFiles.forEach(file => {
+
+    newFiles.forEach((file) => {
       const validation = validateFile(file, uploadConfig);
-      
+
       if (validation.valid) {
         validFiles.push({
           id: uuidv4(),
           file,
           progress: 0,
-          status: 'pending',
+          status: "pending",
           preview: createFilePreview(file),
         });
       } else {
         errors.push(`${file.name}: ${validation.error}`);
       }
     });
-    
-    set(state => ({
+
+    set((state) => ({
       files: [...state.files, ...validFiles],
       totalFiles: state.files.length + validFiles.length,
-      globalError: errors.length > 0 ? errors.join('; ') : null,
+      globalError: errors.length > 0 ? errors.join("; ") : null,
     }));
   },
 
   removeFile: (fileId: string) => {
-    set(state => {
-      const fileToRemove = state.files.find(f => f.id === fileId);
-      
+    set((state) => {
+      const fileToRemove = state.files.find((f) => f.id === fileId);
+
       // 清理预览URL
       if (fileToRemove?.preview) {
         URL.revokeObjectURL(fileToRemove.preview);
       }
-      
-      const newFiles = state.files.filter(f => f.id !== fileId);
-      
+
+      const newFiles = state.files.filter((f) => f.id !== fileId);
+
       return {
         files: newFiles,
         totalFiles: newFiles.length,
         // 重新计算统计
-        completedFiles: newFiles.filter(f => f.status === 'success').length,
-        failedFiles: newFiles.filter(f => f.status === 'error').length,
+        completedFiles: newFiles.filter((f) => f.status === "success").length,
+        failedFiles: newFiles.filter((f) => f.status === "error").length,
       };
     });
   },
 
   clearFiles: () => {
     const state = get();
-    
+
     // 清理所有预览URL
-    state.files.forEach(file => {
+    state.files.forEach((file) => {
       if (file.preview) {
         URL.revokeObjectURL(file.preview);
       }
     });
-    
+
     set({
       files: [],
       totalFiles: 0,
@@ -281,20 +301,20 @@ export const createImageUploadSlice: StateCreator<
   },
 
   retryFile: (fileId: string) => {
-    set(state => ({
-      files: state.files.map(file =>
+    set((state) => ({
+      files: state.files.map((file) =>
         file.id === fileId
-          ? { ...file, status: 'pending', error: undefined, progress: 0 }
+          ? { ...file, status: "pending", error: undefined, progress: 0 }
           : file
       ),
     }));
   },
 
   cancelFile: (fileId: string) => {
-    set(state => ({
-      files: state.files.map(file =>
-        file.id === fileId && file.status === 'uploading'
-          ? { ...file, status: 'cancelled' }
+    set((state) => ({
+      files: state.files.map((file) =>
+        file.id === fileId && file.status === "uploading"
+          ? { ...file, status: "cancelled" }
           : file
       ),
     }));
@@ -302,8 +322,8 @@ export const createImageUploadSlice: StateCreator<
 
   // 配置管理
   updateConfig: (newConfig: Partial<UploadConfig>) => {
-    set(state => ({
-      uploadConfig: { ...state.uploadConfig, ...newConfig }
+    set((state) => ({
+      uploadConfig: { ...state.uploadConfig, ...newConfig },
     }));
   },
 
@@ -311,22 +331,22 @@ export const createImageUploadSlice: StateCreator<
     try {
       const settingsState = useSettingsStore.getState();
       const imageSettings = settingsState.settings.image;
-      
+
       if (imageSettings) {
         const configFromSettings = getConfigFromSettings(imageSettings);
-        
-        set(state => ({
+
+        set((state) => ({
           uploadConfig: { ...state.uploadConfig, ...configFromSettings },
           settingsLoaded: true,
         }));
-        
-        console.log('✅ 上传配置已从设置中加载');
+
+        console.log("✅ 上传配置已从设置中加载");
       } else {
-        console.warn('⚠️ 图片设置未加载，使用默认配置');
+        console.warn("⚠️ 图片设置未加载，使用默认配置");
         set({ settingsLoaded: true });
       }
     } catch (error) {
-      console.error('❌ 加载上传设置失败:', error);
+      console.error("❌ 加载上传设置失败:", error);
       set({ settingsLoaded: true }); // 标记为已加载以避免重复尝试
     }
   },
@@ -335,12 +355,12 @@ export const createImageUploadSlice: StateCreator<
   startUpload: async () => {
     const state = get();
     if (state.isUploading || state.files.length === 0) return;
-    
-    const pendingFiles = state.files.filter(f => f.status === 'pending');
+
+    const pendingFiles = state.files.filter((f) => f.status === "pending");
     if (pendingFiles.length === 0) return;
 
     set({ isUploading: true, globalError: null });
-    
+
     console.log(`🚀 开始上传 ${pendingFiles.length} 个文件...`);
 
     // 并发上传控制（同时最多上传3个文件）
@@ -353,33 +373,34 @@ export const createImageUploadSlice: StateCreator<
       const { uploadConfig } = get();
 
       activeUploads.add(fileState.id);
-      
+
       try {
-        updateFileStatus(fileState.id, 'uploading');
-        
-        await uploadSingleImageWithProgress(fileState.file, {
+        updateFileStatus(fileState.id, "uploading");
+        console.log(`📤 开始上传: ${fileState.file.name}`);
+
+        // 简单的进度模拟（因为 Server Actions 无法提供实时进度）
+        updateFileProgress(fileState.id, 10);
+
+        const result = await uploadSingleImageWithProgress(fileState.file, {
           albumId: uploadConfig.albumId,
           isPublic: uploadConfig.isPublic,
           storageStrategyId: uploadConfig.storageStrategyId,
-          onProgress: (progress) => {
-            updateFileProgress(fileState.id, progress);
-          },
-          onStart: () => {
-            console.log(`📤 开始上传: ${fileState.file.name}`);
-          },
-          onComplete: (result) => {
-            console.log(`✅ 上传成功: ${fileState.file.name}`);
-            updateFileStatus(fileState.id, 'success', undefined, result);
-          },
-          onError: (error) => {
-            console.error(`❌ 上传失败: ${fileState.file.name} - ${error}`);
-            updateFileStatus(fileState.id, 'error', error);
-          },
         });
 
+        // 根据返回值处理结果
+        if (result.success && result.data) {
+          console.log(`✅ 上传成功: ${fileState.file.name}`);
+          updateFileProgress(fileState.id, 100);
+          updateFileStatus(fileState.id, "success", undefined, result.data);
+        } else {
+          console.error(
+            `❌ 上传失败: ${fileState.file.name} - ${result.error}`
+          );
+          updateFileStatus(fileState.id, "error", result.error || "上传失败");
+        }
       } catch (error: any) {
         console.error(`❌ 上传异常: ${fileState.file.name}`, error);
-        updateFileStatus(fileState.id, 'error', error.message || '上传异常');
+        updateFileStatus(fileState.id, "error", error.message || "上传异常");
       } finally {
         activeUploads.delete(fileState.id);
       }
@@ -387,21 +408,21 @@ export const createImageUploadSlice: StateCreator<
 
     // 启动并发上传
     const uploadPromises: Promise<void>[] = [];
-    
+
     while (uploadQueue.length > 0 || activeUploads.size > 0) {
       // 检查是否被暂停或取消
       if (!get().isUploading) {
-        console.log('⏸️ 上传被暂停');
+        console.log("⏸️ 上传被暂停");
         break;
       }
 
       // 启动新的上传（在并发限制内）
       while (uploadQueue.length > 0 && activeUploads.size < concurrencyLimit) {
         const fileState = uploadQueue.shift()!;
-        
+
         // 检查文件是否被取消
-        const currentFile = get().files.find(f => f.id === fileState.id);
-        if (!currentFile || currentFile.status === 'cancelled') {
+        const currentFile = get().files.find((f) => f.id === fileState.id);
+        if (!currentFile || currentFile.status === "cancelled") {
           continue;
         }
 
@@ -418,14 +439,14 @@ export const createImageUploadSlice: StateCreator<
     await Promise.all(uploadPromises);
 
     set({ isUploading: false });
-    
+
     const finalState = get();
     const completed = finalState.completedFiles;
     const failed = finalState.failedFiles;
     const total = finalState.totalFiles;
-    
+
     console.log(`🎯 上传完成: ${completed}/${total} 成功, ${failed} 失败`);
-    
+
     // 如果有成功上传的文件，刷新图片列表
     if (completed > 0) {
       const imageDataStoreState = imageDataStore.getState();
@@ -435,7 +456,7 @@ export const createImageUploadSlice: StateCreator<
 
   pauseUpload: () => {
     set({ isUploading: false });
-    console.log('⏸️ 上传已暂停');
+    console.log("⏸️ 上传已暂停");
   },
 
   resumeUpload: () => {
@@ -443,26 +464,30 @@ export const createImageUploadSlice: StateCreator<
   },
 
   cancelAllUploads: () => {
-    set(state => ({
+    set((state) => ({
       isUploading: false,
-      files: state.files.map(file =>
-        file.status === 'uploading' ? { ...file, status: 'cancelled' } : file
+      files: state.files.map((file) =>
+        file.status === "uploading" ? { ...file, status: "cancelled" } : file
       ),
     }));
-    console.log('🛑 所有上传已取消');
+    console.log("🛑 所有上传已取消");
   },
 
   // 状态管理
   updateFileProgress: (fileId: string, progress: number) => {
-    set(state => {
-      const newFiles = state.files.map(file =>
+    set((state) => {
+      const newFiles = state.files.map((file) =>
         file.id === fileId ? { ...file, progress } : file
       );
-      
+
       // 计算整体进度
-      const totalProgress = newFiles.reduce((sum, file) => sum + file.progress, 0);
-      const overallProgress = newFiles.length > 0 ? Math.round(totalProgress / newFiles.length) : 0;
-      
+      const totalProgress = newFiles.reduce(
+        (sum, file) => sum + file.progress,
+        0
+      );
+      const overallProgress =
+        newFiles.length > 0 ? Math.round(totalProgress / newFiles.length) : 0;
+
       return {
         files: newFiles,
         overallProgress,
@@ -470,23 +495,34 @@ export const createImageUploadSlice: StateCreator<
     });
   },
 
-  updateFileStatus: (fileId: string, status: UploadFileState['status'], error?: string, result?: UploadResponse) => {
-    set(state => {
-      const newFiles = state.files.map(file =>
+  updateFileStatus: (
+    fileId: string,
+    status: UploadFileState["status"],
+    error?: string,
+    result?: UploadResponse
+  ) => {
+    set((state) => {
+      const newFiles = state.files.map((file) =>
         file.id === fileId
-          ? { ...file, status, error, result, progress: status === 'success' ? 100 : file.progress }
+          ? {
+              ...file,
+              status,
+              error,
+              result,
+              progress: status === "success" ? 100 : file.progress,
+            }
           : file
       );
-      
+
       return {
         files: newFiles,
-        completedFiles: newFiles.filter(f => f.status === 'success').length,
-        failedFiles: newFiles.filter(f => f.status === 'error').length,
+        completedFiles: newFiles.filter((f) => f.status === "success").length,
+        failedFiles: newFiles.filter((f) => f.status === "error").length,
       };
     });
-    
+
     // 如果上传成功，刷新图片列表
-    if (status === 'success') {
+    if (status === "success") {
       const imageDataStoreState = imageDataStore.getState();
       imageDataStoreState.refreshImages?.();
     }
@@ -499,14 +535,14 @@ export const createImageUploadSlice: StateCreator<
   // 重置
   reset: () => {
     const state = get();
-    
+
     // 清理预览URL
-    state.files.forEach(file => {
+    state.files.forEach((file) => {
       if (file.preview) {
         URL.revokeObjectURL(file.preview);
       }
     });
-    
+
     set({
       files: [],
       isUploading: false,
@@ -519,8 +555,8 @@ export const createImageUploadSlice: StateCreator<
       uploadConfig: getDefaultConfig(),
       settingsLoaded: false,
     });
-    
-    console.log('🔄 上传状态已重置');
+
+    console.log("🔄 上传状态已重置");
   },
 });
 

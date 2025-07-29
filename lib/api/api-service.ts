@@ -100,13 +100,15 @@ const createApiService = (options?: ApiServiceOptions): AxiosInstance => {
   instance.interceptors.response.use(
     (response: AxiosResponse<ApiResponse<any>>) => {
       // 跳过二进制数据的转换（如图片、文件等）
-      if (response.config.responseType === 'arraybuffer' || 
-          response.config.responseType === 'blob' ||
-          response.headers['content-type']?.startsWith('image/') ||
-          response.headers['content-type']?.startsWith('application/octet-stream')) {
+      if (
+        response.config.responseType === "arraybuffer" ||
+        response.config.responseType === "blob" ||
+        response.headers["content-type"]?.startsWith("image/") ||
+        response.headers["content-type"]?.startsWith("application/octet-stream")
+      ) {
         return response;
       }
-      
+
       // 将响应数据转换为 camelCase (msg -> message, request_id -> requestId)
       response.data = deepConvertToCamelCase(response.data);
       return response;
@@ -161,11 +163,6 @@ export const getAuthenticatedApiService = async () => {
     console.log("[Debug API] getAuthenticatedApiService: 开始执行。");
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
-    console.log(
-      `[Debug API] getAuthenticatedApiService: 获取到 token: ${
-        token ? "存在" : "不存在"
-      }`
-    );
     return createApiService({ authToken: token });
   } catch (error) {
     console.error(

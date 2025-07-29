@@ -85,8 +85,8 @@ export interface ImageListParams {
   page?: number;
   pageSize?: number;
   albumId?: number;
-  sortBy?: 'created_at' | 'updated_at' | 'size';
-  order?: 'asc' | 'desc';
+  sortBy?: "created_at" | "updated_at" | "size";
+  order?: "asc" | "desc";
   filename?: string;
   isPublic?: boolean;
 }
@@ -123,7 +123,7 @@ export interface ImageDeleteParams {
  */
 export interface BatchImageParams {
   imageIds: number[];
-  action: 'delete' | 'move_to_album' | 'set_public' | 'set_private';
+  action: "delete" | "move_to_album" | "set_public" | "set_private";
   albumId?: number; // 移动到相册时需要
   permanent?: boolean; // 删除时是否永久删除
 }
@@ -140,16 +140,21 @@ export interface RecycleBinImage extends ImageResponse {
  * 图片审核状态枚举
  */
 export enum ModerationStatus {
-  PENDING = 0,    // 待审核
-  APPROVED = 1,   // 已通过
-  REJECTED = 2,   // 已拒绝
-  REVIEWING = 3   // 审核中
+  PENDING = 0, // 待审核
+  APPROVED = 1, // 已通过
+  REJECTED = 2, // 已拒绝
+  REVIEWING = 3, // 审核中
 }
 
 /**
  * 图片排序字段类型
  */
-export type ImageSortField = 'created_at' | 'updated_at' | 'size' | 'width' | 'height';
+export type ImageSortField =
+  | "created_at"
+  | "updated_at"
+  | "size"
+  | "width"
+  | "height";
 
 /**
  * 图片过滤条件
@@ -179,4 +184,15 @@ export interface ImageStats {
   unalbumCount: number;
   averageSize: number;
   recentUploads: number; // 最近7天上传数量
+}
+
+/**
+ * Server Action 上传结果类型
+ * 用于替代客户端回调，提供统一的返回值格式
+ */
+export interface UploadActionResult {
+  success: boolean;
+  data?: UploadResponse;
+  error?: string;
+  filename?: string;
 }
