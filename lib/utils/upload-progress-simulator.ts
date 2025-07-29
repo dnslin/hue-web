@@ -213,20 +213,20 @@ export class UploadProgressSimulator {
     if (elapsed <= prepareTime) {
       // 准备阶段 (0-15%)
       const progress = (elapsed / prepareTime) * 15;
-      return Math.min(progress, 15);
+      return this.formatProgress(Math.min(progress, 15));
     } else if (elapsed <= prepareTime + uploadTime) {
       // 上传阶段 (15-85%)
       const uploadElapsed = elapsed - prepareTime;
       const uploadProgress = this.easeInOutQuad(uploadElapsed / uploadTime);
-      return Math.min(15 + uploadProgress * 70, 85);
+      return this.formatProgress(Math.min(15 + uploadProgress * 70, 85));
     } else if (elapsed <= totalTime) {
       // 处理阶段 (85-100%)
       const processElapsed = elapsed - prepareTime - uploadTime;
       const processProgress = (processElapsed / processTime) * 15;
-      return Math.min(85 + processProgress, 100);
+      return this.formatProgress(Math.min(85 + processProgress, 100));
     } else {
       // 完成
-      return 100;
+      return this.formatProgress(100);
     }
   }
 
@@ -236,6 +236,13 @@ export class UploadProgressSimulator {
    */
   private easeInOutQuad(t: number): number {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  /**
+   * 格式化进度值，保留两位小数
+   */
+  private formatProgress(progress: number): number {
+    return Math.round(progress * 100) / 100;
   }
 }
 
