@@ -9,7 +9,6 @@ import { useSettingsStore } from "@/lib/store/settings";
 import { getCurrentUploadConfig } from "@/lib/schema/image";
 import { imageDataStore } from "./data";
 import { uploadSingleImageWithProgress } from "@/lib/actions/images/image";
-import { uploadProgressSimulator } from "@/lib/utils/upload-progress-simulator";
 
 /**
  * 单个上传文件的状态接口
@@ -17,7 +16,6 @@ import { uploadProgressSimulator } from "@/lib/utils/upload-progress-simulator";
 export interface UploadFileState {
   id: string;
   file: File;
-  progress: number;
   status: "pending" | "uploading" | "success" | "error" | "cancelled";
   error?: string;
   result?: UploadResponse;
@@ -53,7 +51,6 @@ export interface ImageUploadState {
   totalFiles: number;
   completedFiles: number;
   failedFiles: number;
-  overallProgress: number;
 
   // 错误信息
   globalError: string | null;
@@ -61,7 +58,7 @@ export interface ImageUploadState {
   // 设置状态
   settingsLoaded: boolean;
 
-  // 新增：上传队列管理
+  // 上传队列管理
   uploadQueue: string[]; // 待上传的文件ID队列
   activeUploads: Set<string>; // 正在上传的文件ID集合
 }
@@ -92,7 +89,6 @@ export interface ImageUploadActions {
   cancelAllUploads: () => void;
 
   // 状态管理
-  updateFileProgress: (fileId: string, progress: number) => void;
   updateFileStatus: (
     fileId: string,
     status: UploadFileState["status"],
@@ -104,26 +100,9 @@ export interface ImageUploadActions {
   // 重置
   reset: () => void;
 
-  // 新增：内存管理
-  getMemoryUsage: () => { fileCount: number; simulatorCount: number };
-
-  // 新增：上传队列处理
+  // 上传队列处理
   processUploadQueue: (concurrencyLimit: number) => Promise<void>;
   processIndividualUpload: (fileId: string) => Promise<void>;
-
-  // 新增：资源清理和检查
-  performResourceCleanup: () => {
-    cleanupCount: number;
-    simulatorCount: number;
-  };
-  checkMemoryUsage: () => {
-    fileCount: number;
-    simulatorCount: number;
-    previewCount: number;
-    activeUploads: number;
-    queueLength: number;
-  };
-  emergencyCleanup: () => void;
 }
 
 // 默认上传配置
@@ -139,7 +118,7 @@ const getDefaultConfig = (): UploadConfig => ({
     "image/webp",
     "image/gif",
   ],
-  batchLimit: 15, // 降低批量限制，保护内存
+  batchLimit: 15,
   compressionQuality: 85,
 });
 
@@ -215,7 +194,7 @@ const getConfigFromSettings = (): Partial<UploadConfig> => {
     return {
       maxSizeMB: config.maxSizeMB,
       allowedFormats: config.allowedFormats,
-      batchLimit: Math.min(config.batchLimit, 15), // 限制最大批量数
+      batchLimit: Math.min(config.batchLimit, 15),
     };
   } catch (error) {
     console.error("❌ 获取上传配置失败:", error);
@@ -240,7 +219,6 @@ export const createImageUploadSlice: StateCreator<
   totalFiles: 0,
   completedFiles: 0,
   failedFiles: 0,
-  overallProgress: 0,
   globalError: null,
   settingsLoaded: false,
   uploadQueue: [],
@@ -261,9 +239,6 @@ export const createImageUploadSlice: StateCreator<
     if (state.isUploading) {
       get().pauseUpload();
     }
-
-    // 清理所有进度模拟器资源
-    uploadProgressSimulator.cleanup();
 
     set({ isDialogOpen: false });
   },
@@ -292,7 +267,6 @@ export const createImageUploadSlice: StateCreator<
         validFiles.push({
           id: uuidv4(),
           file,
-          progress: 0,
           status: "pending",
           preview: createFilePreview(file),
         });
@@ -309,9 +283,6 @@ export const createImageUploadSlice: StateCreator<
   },
 
   removeFile: (fileId: string) => {
-    // 停止该文件的进度模拟
-    uploadProgressSimulator.stopSimulation(fileId);
-
     set((state) => {
       const fileToRemove = state.files.find((f) => f.id === fileId);
 
@@ -342,24 +313,18 @@ export const createImageUploadSlice: StateCreator<
   clearFiles: () => {
     const state = get();
 
-    // 清理所有预览URL和进度模拟
+    // 清理所有预览URL
     state.files.forEach((file) => {
       if (file.preview) {
         revokeFilePreview(file.preview);
       }
-      // 停止每个文件的进度模拟
-      uploadProgressSimulator.stopSimulation(file.id);
     });
-
-    // 清理所有进度模拟器资源
-    uploadProgressSimulator.cleanup();
 
     set({
       files: [],
       totalFiles: 0,
       completedFiles: 0,
       failedFiles: 0,
-      overallProgress: 0,
       globalError: null,
       uploadQueue: [],
       activeUploads: new Set(),
@@ -370,16 +335,13 @@ export const createImageUploadSlice: StateCreator<
     set((state) => ({
       files: state.files.map((file) =>
         file.id === fileId
-          ? { ...file, status: "pending", error: undefined, progress: 0 }
+          ? { ...file, status: "pending", error: undefined }
           : file
       ),
     }));
   },
 
   cancelFile: (fileId: string) => {
-    // 停止进度模拟
-    uploadProgressSimulator.stopSimulation(fileId);
-
     set((state) => {
       const newActiveUploads = new Set(state.activeUploads);
       newActiveUploads.delete(fileId);
@@ -421,7 +383,7 @@ export const createImageUploadSlice: StateCreator<
     }
   },
 
-  // 上传控制 - 重构版本
+  // 上传控制
   startUpload: async () => {
     const state = get();
     if (state.isUploading || state.files.length === 0) return;
@@ -514,9 +476,9 @@ export const createImageUploadSlice: StateCreator<
     }
   },
 
-  // 新增：处理单个文件上传
+  // 处理单个文件上传
   processIndividualUpload: async (fileId: string) => {
-    const { updateFileProgress, updateFileStatus, uploadConfig } = get();
+    const { updateFileStatus, uploadConfig } = get();
     const fileState = get().files.find((f) => f.id === fileId);
 
     if (!fileState) {
@@ -530,33 +492,9 @@ export const createImageUploadSlice: StateCreator<
       return;
     }
 
-    let simulationStarted = false;
-
     try {
       updateFileStatus(fileId, "uploading");
       console.log(`📤 开始上传: ${fileState.file.name}`);
-
-      // 启动进度模拟 - 增加错误处理
-      try {
-        uploadProgressSimulator.startSimulation(fileId, {
-          fileSize: fileState.file.size,
-          onProgress: (progress) => {
-            // 安全的进度更新
-            try {
-              updateFileProgress(fileId, progress);
-            } catch (error) {
-              console.error(`进度更新失败 [${fileId}]:`, error);
-            }
-          },
-          onComplete: () => {
-            console.log(`🎯 进度模拟完成: ${fileState.file.name}`);
-          },
-        });
-        simulationStarted = true;
-      } catch (error) {
-        console.error(`启动进度模拟失败 [${fileId}]:`, error);
-        // 进度模拟失败不影响实际上传
-      }
 
       // 设置上传超时（30秒）
       const uploadTimeout = 30000;
@@ -572,14 +510,8 @@ export const createImageUploadSlice: StateCreator<
 
       const result = await Promise.race([uploadPromise, timeoutPromise]);
 
-      // 停止进度模拟
-      if (simulationStarted) {
-        uploadProgressSimulator.stopSimulation(fileId);
-      }
-
       if (result.success && result.data) {
         console.log(`✅ 上传成功: ${fileState.file.name}`);
-        updateFileProgress(fileId, 100);
         updateFileStatus(fileId, "success", undefined, result.data);
       } else {
         console.error(`❌ 上传失败: ${fileState.file.name} - ${result.error}`);
@@ -587,11 +519,6 @@ export const createImageUploadSlice: StateCreator<
       }
     } catch (error: any) {
       console.error(`❌ 上传异常: ${fileState.file.name}`, error);
-
-      // 停止进度模拟
-      if (simulationStarted) {
-        uploadProgressSimulator.stopSimulation(fileId);
-      }
 
       // 根据错误类型提供更具体的错误信息
       let errorMessage = "上传异常";
@@ -616,145 +543,16 @@ export const createImageUploadSlice: StateCreator<
     }
   },
 
-  // 新增：资源清理检查
-  performResourceCleanup: () => {
-    const state = get();
-    let cleanupCount = 0;
-
-    // 清理已完成或失败文件的预览URL
-    state.files.forEach((file) => {
-      if (
-        (file.status === "success" || file.status === "error") &&
-        file.preview
-      ) {
-        revokeFilePreview(file.preview);
-        cleanupCount++;
-      }
-    });
-
-    // 检查进度模拟器状态
-    const simulatorCount = uploadProgressSimulator.getActiveSimulationCount();
-    if (
-      simulatorCount >
-      state.files.filter((f) => f.status === "uploading").length
-    ) {
-      console.warn("检测到进度模拟器泄漏，执行清理");
-      uploadProgressSimulator.cleanup();
-    }
-
-    if (cleanupCount > 0) {
-      console.log(`🧹 清理了 ${cleanupCount} 个预览URL`);
-    }
-
-    return { cleanupCount, simulatorCount };
-  },
-
-  // 新增：内存使用检查
-  checkMemoryUsage: () => {
-    const state = get();
-    const memoryInfo = {
-      fileCount: state.files.length,
-      simulatorCount: uploadProgressSimulator.getActiveSimulationCount(),
-      previewCount: state.files.filter((f) => f.preview).length,
-      activeUploads: state.activeUploads.size,
-      queueLength: state.uploadQueue.length,
-    };
-
-    // 内存使用警告
-    if (memoryInfo.fileCount > 20) {
-      console.warn("⚠️ 文件数量过多，建议清理");
-      set({ globalError: "文件数量过多，建议清理不需要的文件以优化性能" });
-    }
-
-    if (memoryInfo.simulatorCount > memoryInfo.fileCount) {
-      console.warn("⚠️ 检测到进度模拟器泄漏");
-    }
-
-    return memoryInfo;
-  },
-
-  // 新增：紧急清理
-  emergencyCleanup: () => {
-    console.log("🚨 执行紧急清理...");
-
-    const state = get();
-
-    // 停止所有上传
-    if (state.isUploading) {
-      get().cancelAllUploads();
-    }
-
-    // 清理所有预览URL
-    state.files.forEach((file) => {
-      if (file.preview) {
-        revokeFilePreview(file.preview);
-      }
-    });
-
-    // 清理进度模拟器
-    uploadProgressSimulator.cleanup();
-
-    // 重置状态
-    set({
-      files: [],
-      isUploading: false,
-      totalFiles: 0,
-      completedFiles: 0,
-      failedFiles: 0,
-      overallProgress: 0,
-      globalError: null,
-      uploadQueue: [],
-      activeUploads: new Set(),
-    });
-
-    console.log("🧹 紧急清理完成");
-  },
-
   pauseUpload: () => {
-    const state = get();
-
-    // 暂停所有正在上传的文件的进度模拟
-    state.files.forEach((file) => {
-      if (file.status === "uploading") {
-        uploadProgressSimulator.pauseSimulation(file.id);
-      }
-    });
-
     set({ isUploading: false });
-    console.log("⏸️ 上传已暂停，进度模拟已暂停");
+    console.log("⏸️ 上传已暂停");
   },
 
   resumeUpload: () => {
-    const state = get();
-
-    // 恢复所有暂停的文件的进度模拟
-    state.files.forEach((file) => {
-      if (file.status === "uploading") {
-        uploadProgressSimulator.resumeSimulation(file.id, {
-          fileSize: file.file.size,
-          onProgress: (progress) => {
-            get().updateFileProgress(file.id, progress);
-          },
-          onComplete: () => {
-            console.log(`🎯 进度模拟完成: ${file.file.name}`);
-          },
-        });
-      }
-    });
-
     get().startUpload();
   },
 
   cancelAllUploads: () => {
-    const state = get();
-
-    // 停止所有文件的进度模拟
-    state.files.forEach((file) => {
-      if (file.status === "uploading") {
-        uploadProgressSimulator.stopSimulation(file.id);
-      }
-    });
-
     set((prevState) => ({
       isUploading: false,
       uploadQueue: [],
@@ -763,31 +561,10 @@ export const createImageUploadSlice: StateCreator<
         file.status === "uploading" ? { ...file, status: "cancelled" } : file
       ),
     }));
-    console.log("🛑 所有上传已取消，进度模拟已停止");
+    console.log("🛑 所有上传已取消");
   },
 
   // 状态管理
-  updateFileProgress: (fileId: string, progress: number) => {
-    set((state) => {
-      const newFiles = state.files.map((file) =>
-        file.id === fileId ? { ...file, progress } : file
-      );
-
-      // 计算整体进度
-      const totalProgress = newFiles.reduce(
-        (sum, file) => sum + file.progress,
-        0
-      );
-      const overallProgress =
-        newFiles.length > 0 ? Math.round(totalProgress / newFiles.length) : 0;
-
-      return {
-        files: newFiles,
-        overallProgress,
-      };
-    });
-  },
-
   updateFileStatus: (
     fileId: string,
     status: UploadFileState["status"],
@@ -802,7 +579,6 @@ export const createImageUploadSlice: StateCreator<
               status,
               error,
               result,
-              progress: status === "success" ? 100 : file.progress,
             }
           : file
       );
@@ -829,17 +605,12 @@ export const createImageUploadSlice: StateCreator<
   reset: () => {
     const state = get();
 
-    // 清理预览URL和进度模拟
+    // 清理预览URL
     state.files.forEach((file) => {
       if (file.preview) {
         revokeFilePreview(file.preview);
       }
-      // 停止每个文件的进度模拟
-      uploadProgressSimulator.stopSimulation(file.id);
     });
-
-    // 清理所有进度模拟器资源
-    uploadProgressSimulator.cleanup();
 
     set({
       files: [],
@@ -848,7 +619,6 @@ export const createImageUploadSlice: StateCreator<
       totalFiles: 0,
       completedFiles: 0,
       failedFiles: 0,
-      overallProgress: 0,
       globalError: null,
       uploadConfig: getDefaultConfig(),
       settingsLoaded: false,
@@ -856,16 +626,7 @@ export const createImageUploadSlice: StateCreator<
       activeUploads: new Set(),
     });
 
-    console.log("🔄 上传状态已重置，进度模拟器已清理");
-  },
-
-  // 新增：内存使用监控
-  getMemoryUsage: () => {
-    const state = get();
-    return {
-      fileCount: state.files.length,
-      simulatorCount: uploadProgressSimulator.getActiveSimulationCount(),
-    };
+    console.log("🔄 上传状态已重置");
   },
 });
 

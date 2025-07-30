@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -30,11 +29,9 @@ import {
   AlertCircle,
   File,
   Settings,
-  Info,
 } from "lucide-react";
 import {
   useImageUploadStore,
-  imageUploadStore,
 } from "@/lib/store/image/upload";
 import { getCurrentUploadConfig } from "@/lib/schema/image";
 import { formatFileSize } from "@/lib/dashboard/formatters";
@@ -60,7 +57,6 @@ export function ImageUploadDialog() {
     totalFiles,
     completedFiles,
     failedFiles,
-    overallProgress,
     isUploading,
     globalError,
 
@@ -79,7 +75,6 @@ export function ImageUploadDialog() {
     clearError,
     loadSettingsConfig,
     updateConfig,
-    getMemoryUsage,
   } = useImageUploadStore();
 
   // 加载设置配置
@@ -88,41 +83,6 @@ export function ImageUploadDialog() {
       loadSettingsConfig();
     }
   }, [isDialogOpen, settingsLoaded, loadSettingsConfig]);
-
-  // 组件卸载时的清理工作
-  useEffect(() => {
-    return () => {
-      // 组件卸载时确保资源被清理
-      if (!isDialogOpen) {
-        console.log("🧹 ImageUploadDialog 组件卸载，执行资源清理");
-      }
-    };
-  }, [isDialogOpen]);
-
-  // 定期资源清理和内存监控
-  useEffect(() => {
-    if (!isDialogOpen) return;
-
-    const cleanupInterval = setInterval(() => {
-      // 执行定期清理
-      const store = imageUploadStore.getState();
-      if (store.performResourceCleanup) {
-        store.performResourceCleanup();
-      }
-
-      // 检查内存使用
-      if (store.checkMemoryUsage) {
-        const memoryInfo = store.checkMemoryUsage();
-        if (memoryInfo.fileCount > 15) {
-          console.warn("📊 内存使用较高:", memoryInfo);
-        }
-      }
-    }, 30000); // 每30秒执行一次
-
-    return () => {
-      clearInterval(cleanupInterval);
-    };
-  }, [isDialogOpen]);
 
   // 文件选择处理
   const handleFileSelect = () => {
@@ -164,9 +124,6 @@ export function ImageUploadDialog() {
   const pendingCount = files.filter((f) => f.status === "pending").length;
   const uploadingCount = files.filter((f) => f.status === "uploading").length;
 
-  // 获取内存使用情况
-  const memoryUsage = getMemoryUsage();
-
   // 状态图标
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -207,7 +164,16 @@ export function ImageUploadDialog() {
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeDialog()}>
+    <>
+      {/* 添加shimmer动画的CSS */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
+      
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeDialog()}>
       <DialogContent className="!w-[1200px] !max-w-[95vw] h-[85vh] max-h-[700px] p-0 gap-0">
         {/* 头部 */}
         <DialogHeader className="px-6 py-5 border-b bg-gradient-to-r from-background to-muted/20">
@@ -218,24 +184,6 @@ export function ImageUploadDialog() {
                   <Upload className="h-5 w-5 text-primary" />
                 </div>
                 图片上传
-                {/* 内存使用指示器 */}
-                {memoryUsage.fileCount > 10 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-md text-xs">
-                          <Info className="h-3 w-3" />
-                          <span>{memoryUsage.fileCount} 文件</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>当前文件数: {memoryUsage.fileCount}</p>
-                        <p>活跃模拟器: {memoryUsage.simulatorCount}</p>
-                        <p>建议及时清理不需要的文件</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
               </DialogTitle>
               <DialogDescription className="text-base text-muted-foreground">
                 选择要上传的图片文件，支持多种格式和批量上传
@@ -316,13 +264,6 @@ export function ImageUploadDialog() {
               </div>
             )}
           </div>
-
-          {/* 整体进度条 */}
-          {totalFiles > 0 && (
-            <div className="mt-3">
-              <Progress value={overallProgress} className="h-2" />
-            </div>
-          )}
         </DialogHeader>
 
         {/* 主体内容 */}
@@ -519,7 +460,7 @@ export function ImageUploadDialog() {
                                     •
                                   </span>
                                   <span className="text-xs text-primary">
-                                    {file.progress}%
+                                    上传中
                                   </span>
                                 </>
                               )}
@@ -536,12 +477,18 @@ export function ImageUploadDialog() {
                               )}
                             </div>
 
-                            {/* 进度条 */}
+                            {/* 上传中的动画进度条 */}
                             {file.status === "uploading" && (
-                              <Progress
-                                value={file.progress}
-                                className="h-1 mt-2"
-                              />
+                              <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full rounded-full shimmer-bar"
+                                  style={{
+                                    background: 'linear-gradient(90deg, transparent 0%, hsl(var(--primary)) 50%, transparent 100%)',
+                                    backgroundSize: '200% 100%',
+                                    animation: 'shimmer 2s ease-in-out infinite'
+                                  }}
+                                />
+                              </div>
                             )}
                           </div>
 
@@ -679,39 +626,6 @@ export function ImageUploadDialog() {
                     </div>
                   </div>
                 </div>
-
-                {/* 新增：内存使用信息 */}
-                {memoryUsage.fileCount > 0 && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <Label className="font-medium text-sm">资源使用</Label>
-                      <div className="p-3 border rounded-lg bg-background space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            文件数量
-                          </span>
-                          <span className="font-medium">
-                            {memoryUsage.fileCount}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            活跃模拟器
-                          </span>
-                          <span className="font-medium">
-                            {memoryUsage.simulatorCount}
-                          </span>
-                        </div>
-                        {memoryUsage.fileCount > 10 && (
-                          <p className="text-xs text-orange-600">
-                            文件较多，建议及时清理不需要的文件
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </div>
@@ -771,5 +685,6 @@ export function ImageUploadDialog() {
         />
       </DialogContent>
     </Dialog>
+    </>
   );
 }
